@@ -106,7 +106,6 @@ public class ReshapePreprocessor extends BaseInputPreProcessor {
     public INDArray preProcess(INDArray input, int miniBatchSize, LayerWorkspaceMgr workspaceMgr) {
         // the target shape read from a keras config does not have mini-batch size included. We prepend it here dynamically.
         long[] targetShape = getShape(this.targetShape, miniBatchSize);
-        long[] inputShape = getShape(this.inputShape, miniBatchSize);
 
         if (prodLong(input.shape()) == prodLong((targetShape))) {
             if (input.ordering() != 'c' || !Shape.hasDefaultStridesForShape(input)) {
@@ -115,7 +114,7 @@ public class ReshapePreprocessor extends BaseInputPreProcessor {
             return workspaceMgr.leverageTo(ArrayType.ACTIVATIONS, input.reshape(targetShape));
         } else {
             throw new IllegalStateException("Input shape " + Arrays.toString(input.shape())
-                    + " and output shape" + Arrays.toString(inputShape) + " do not match");
+                    + " and target shape" + Arrays.toString(targetShape) + " do not match");
         }
     }
 
@@ -148,15 +147,17 @@ public class ReshapePreprocessor extends BaseInputPreProcessor {
                 ret = InputType.feedForward(shape[1]);
                 break;
             case 3:
-                RNNFormat format = RNNFormat.NCW;
+                RNNFormat format = RNNFormat.NWC;
                 if(this.format != null && this.format instanceof RNNFormat)
-                    format = (RNNFormat)this.format;
+                    format = (RNNFormat) this.format;
 
                 ret = InputType.recurrent(shape[2], shape[1], format);
                 break;
             case 4:
                 if (inputShape.length == 1 || inputType.getType() == InputType.Type.RNN) {
-                    ret = InputType.convolutional(shape[1], shape[2], shape[3]);
+                    //note here the default is tensorflow initialization for keras.
+                    //being channels first has side effects when working with other models
+                    ret = InputType.convolutional(shape[1], shape[2], shape[3],CNN2DFormat.NHWC);
                 } else {
 
                     CNN2DFormat cnnFormat = CNN2DFormat.NCHW;

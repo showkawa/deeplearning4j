@@ -15,23 +15,37 @@
  ******************************************************************************/
 package org.deeplearning4j.rl4j.network;
 
-import org.nd4j.linalg.dataset.api.DataSet;
+import org.deeplearning4j.rl4j.agent.learning.update.FeaturesLabels;
+import org.deeplearning4j.rl4j.agent.learning.update.Gradients;
 
 /**
  * An interface defining the <i>trainable</i> aspect of a {@link NeuralNet}.
  */
-public interface ITrainableNeuralNet<NET_TYPE extends ITrainableNeuralNet> {
+public interface ITrainableNeuralNet<NET_TYPE extends ITrainableNeuralNet> extends IOutputNeuralNet {
     /**
      * Train the neural net using the supplied <i>feature-labels</i>
      * @param featuresLabels The feature-labels
      */
-    void fit(DataSet featuresLabels);
+    void fit(FeaturesLabels featuresLabels);
+
+    /**
+     * Use the supplied <i>feature-labels</i> to compute the {@link Gradients} on the neural network.
+     * @param featuresLabels The feature-labels
+     * @return The computed {@link Gradients}
+     */
+    Gradients computeGradients(FeaturesLabels featuresLabels);
+
+    /**
+     * Applies a {@link Gradients} to the network
+     * @param gradients
+     */
+    void applyGradients(Gradients gradients);
 
     /**
      * Changes this instance to be a copy of the <i>from</i> network.
      * @param from The network that will be the source of the copy.
      */
-    void copy(NET_TYPE from);
+    void copyFrom(NET_TYPE from);
 
     /**
      * Creates a clone of the network instance.

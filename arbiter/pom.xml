@@ -76,7 +76,7 @@
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
-                <version>2.0.0</version>
+                <version>2.12.1</version>
                 <configuration>
                     <configFile>${session.executionRootDirectory}/contrib/formatter.xml</configFile>
                     <directories>
@@ -151,7 +151,7 @@
                                 <skip>${skipTestResourceEnforcement}</skip>
                                 <rules>
                                     <requireActiveProfile>
-                                        <profiles>test-nd4j-native,test-nd4j-cuda-10.2</profiles>
+                                        <profiles>test-nd4j-native,test-nd4j-cuda-11.0</profiles>
                                         <all>false</all>
                                     </requireActiveProfile>
                                 </rules>
@@ -333,11 +333,11 @@
         </profile>
 
         <profile>
-            <id>test-nd4j-cuda-10.2</id>
+            <id>test-nd4j-cuda-11.0</id>
             <dependencies>
                 <dependency>
                     <groupId>org.nd4j</groupId>
-                    <artifactId>nd4j-cuda-10.2</artifactId>
+                    <artifactId>nd4j-cuda-11.0</artifactId>
                     <version>${nd4j.version}</version>
                     <scope>test</scope>
                 </dependency>
