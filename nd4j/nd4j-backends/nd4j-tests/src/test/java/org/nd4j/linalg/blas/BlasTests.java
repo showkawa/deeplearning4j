@@ -1,29 +1,35 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.blas;
 
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -32,18 +38,16 @@ import org.nd4j.linalg.factory.Nd4jBackend;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-@RunWith(Parameterized.class)
-public class BlasTests extends BaseNd4jTest {
+@NativeTag
+public class BlasTests extends BaseNd4jTestWithBackends {
 
-    public BlasTests(Nd4jBackend backend) {
-        super(backend);
-    }
 
-    @Test
-    public void simpleTest() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void simpleTest(Nd4jBackend backend) {
         INDArray m1 = Nd4j.create(new double[][]{{1.0}, {2.0}, {3.0}, {4.0}});
 
         m1 = m1.reshape(2, 2);
@@ -72,8 +76,9 @@ public class BlasTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testGemmInvalid1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGemmInvalid1(Nd4jBackend backend) {
         final INDArray a = Nd4j.rand(3, 4);
         final INDArray b = Nd4j.rand(4, 5);
 
@@ -88,8 +93,9 @@ public class BlasTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testGemmInvalid3() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGemmInvalid3(Nd4jBackend backend) {
         final INDArray a = Nd4j.rand(4, 3);
         final INDArray b = Nd4j.rand(4, 5);
 
@@ -104,8 +110,9 @@ public class BlasTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testGemm1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGemm1(Nd4jBackend backend) {
         final INDArray a = Nd4j.rand(4, 3);
         final INDArray b = Nd4j.rand(4, 5);
 
@@ -115,8 +122,9 @@ public class BlasTests extends BaseNd4jTest {
         assertEquals(result, result2);
     }
 
-    @Test
-    public void testGemm2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGemm2(Nd4jBackend backend) {
         final INDArray a = Nd4j.rand(4, 3);
         final INDArray b = Nd4j.rand(4, 5);
 
@@ -130,8 +138,9 @@ public class BlasTests extends BaseNd4jTest {
         assertEquals(result, view);
     }
 
-    @Test
-    public void testGemm3() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGemm3(Nd4jBackend backend) {
         final INDArray a = Nd4j.rand(4, 3);
         final INDArray b = Nd4j.rand(4, 5);
 
@@ -146,8 +155,9 @@ public class BlasTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testMmuli1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMmuli1(Nd4jBackend backend) {
         final INDArray activations = Nd4j.createUninitialized(new long[]{1, 3, 1}, 'f');
         final INDArray z = activations.tensorAlongDimension(0, 1, 2);
 
@@ -160,8 +170,9 @@ public class BlasTests extends BaseNd4jTest {
         assertEquals(ab, z);
     }
 
-    @Test
-    public void testMmuli2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMmuli2(Nd4jBackend backend) {
         final INDArray activations = Nd4j.createUninitialized(new long[]{2, 3, 1}, 'f');
         final INDArray z = activations.tensorAlongDimension(0, 1, 2);
 
@@ -174,8 +185,9 @@ public class BlasTests extends BaseNd4jTest {
         assertEquals(ab, z);
     }
 
-    @Test
-    public void testMmuli3(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMmuli3(Nd4jBackend backend){
         final INDArray activations = Nd4j.createUninitialized(new long[]{1, 3, 2}, 'f');
         final INDArray z = activations.tensorAlongDimension(0, 1, 2);
 
@@ -187,8 +199,9 @@ public class BlasTests extends BaseNd4jTest {
         assertEquals(ab, z);
     }
 
-    @Test
-    public void test_Fp16_Mmuli_1(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void test_Fp16_Mmuli_1(Nd4jBackend backend){
         final INDArray activations = Nd4j.createUninitialized(DataType.HALF, new long[]{1, 3, 2}, 'f');
         final INDArray z = activations.tensorAlongDimension(0, 1, 2);
 
@@ -200,8 +213,9 @@ public class BlasTests extends BaseNd4jTest {
         assertEquals(ab, z);
     }
 
-    @Test
-    public void test_Fp16_Mmuli_2(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void test_Fp16_Mmuli_2(Nd4jBackend backend){
         val a = Nd4j.create(DataType.HALF, 32, 768);
         val b = Nd4j.create(DataType.HALF, 768);
 
@@ -209,8 +223,10 @@ public class BlasTests extends BaseNd4jTest {
     }
 
     @Test
-    @Ignore
-    public void testHalfPrecision() {
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testHalfPrecision(Nd4jBackend backend) {
         val a = Nd4j.create(DataType.HALF, 64, 768);
         val b = Nd4j.create(DataType.HALF, 768, 1024);
         val c = Nd4j.create(DataType.HALF, new long[]{64, 1024}, 'f');
@@ -229,8 +245,9 @@ public class BlasTests extends BaseNd4jTest {
         log.info("Median time: {} ms", durations.get(durations.size() / 2));
     }
 
-    @Test
-    public void testMmuli4(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMmuli4(Nd4jBackend backend){
         try {
             Nd4j.rand(1, 3).mmuli(Nd4j.rand(3, 1), Nd4j.createUninitialized(new int[]{10, 10, 1}));
             fail("Expected exception");

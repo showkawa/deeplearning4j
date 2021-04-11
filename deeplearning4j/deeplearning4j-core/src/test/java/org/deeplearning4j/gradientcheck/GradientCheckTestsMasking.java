@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.gradientcheck;
 
@@ -29,7 +33,10 @@ import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.conf.layers.recurrent.SimpleRnn;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -43,12 +50,14 @@ import org.nd4j.linalg.lossfunctions.impl.*;
 import java.util.Arrays;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.nd4j.linalg.indexing.NDArrayIndex.*;
 
-/**Gradient checking tests with masking (i.e., variable length time series inputs, one-to-many and many-to-one etc)
- */
+@Tag(TagNames.NDARRAY_ETL)
+@Tag(TagNames.TRAINING)
+@Tag(TagNames.DL4J_OLD_API)
+@NativeTag
 public class GradientCheckTestsMasking extends BaseDL4JTest {
 
     private static final boolean PRINT_RESULTS = true;
@@ -137,7 +146,7 @@ public class GradientCheckTestsMasking extends BaseDL4JTest {
 
                 String msg = "gradientCheckMaskingOutputSimple() - timeSeriesLength=" + timeSeriesLength
                                 + ", miniBatchSize=" + 1;
-                assertTrue(msg, gradOK);
+                assertTrue(gradOK,msg);
                 TestUtils.testModelSerialization(mln);
             }
         }
@@ -267,7 +276,7 @@ public class GradientCheckTestsMasking extends BaseDL4JTest {
                 boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(features)
                         .labels(labels).labelMask(labelMask));
 
-                assertTrue(msg, gradOK);
+                assertTrue(gradOK,msg);
                 TestUtils.testModelSerialization(net);
             }
         }
@@ -363,7 +372,7 @@ public class GradientCheckTestsMasking extends BaseDL4JTest {
                 boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(features)
                         .labels(labels).labelMask(labelMask));
 
-                assertTrue(msg, gradOK);
+                assertTrue(gradOK,msg);
 
 
                 //Check the equivalent compgraph:
@@ -386,7 +395,7 @@ public class GradientCheckTestsMasking extends BaseDL4JTest {
                 gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.GraphConfig().net(graph).inputs(new INDArray[]{features})
                         .labels(new INDArray[]{labels}).labelMask(new INDArray[]{labelMask}));
 
-                assertTrue(msg + " (compgraph)", gradOK);
+                assertTrue(gradOK,msg + " (compgraph)");
                 TestUtils.testModelSerialization(graph);
             }
         }
@@ -422,7 +431,7 @@ public class GradientCheckTestsMasking extends BaseDL4JTest {
         while(attempts++ < 1000 && lm.sumNumber().intValue() == 0){
             lm = TestUtils.randomBernoulli(mb, 1);
         }
-        assertTrue("Could not generate non-zero mask after " + attempts + " attempts", lm.sumNumber().intValue() > 0);
+        assertTrue( lm.sumNumber().intValue() > 0,"Could not generate non-zero mask after " + attempts + " attempts");
 
         boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(f)
                 .labels(l).labelMask(lm));
@@ -444,7 +453,7 @@ public class GradientCheckTestsMasking extends BaseDL4JTest {
 
             double score2 = net.score(new DataSet(f,l,null,lm));
 
-            assertEquals(String.valueOf(i), score, score2, 1e-8);
+            assertEquals( score, score2, 1e-8,String.valueOf(i));
         }
     }
 
@@ -479,7 +488,7 @@ public class GradientCheckTestsMasking extends BaseDL4JTest {
         while(attempts++ < 1000 && lm.sumNumber().intValue() == 0){
             lm = TestUtils.randomBernoulli(mb, 1);
         }
-        assertTrue("Could not generate non-zero mask after " + attempts + " attempts", lm.sumNumber().intValue() > 0);
+        assertTrue(lm.sumNumber().intValue() > 0,"Could not generate non-zero mask after " + attempts + " attempts");
 
         boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.GraphConfig().net(net).inputs(new INDArray[]{f})
                 .labels(new INDArray[]{l}).labelMask(new INDArray[]{lm}));
@@ -501,7 +510,7 @@ public class GradientCheckTestsMasking extends BaseDL4JTest {
 
             double score2 = net.score(new DataSet(f,l,null,lm));
 
-            assertEquals(String.valueOf(i), score, score2, 1e-8);
+            assertEquals(score, score2, 1e-8,String.valueOf(i));
         }
     }
 }

@@ -1,26 +1,32 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
-
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 package org.deeplearning4j.datasets.iterator;
 
 import org.deeplearning4j.BaseDL4JTest;
 import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.dataset.adapter.MultiDataSetIteratorAdapter;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
@@ -29,27 +35,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Created by susaneraly on 6/8/17.
- */
-public class EarlyTerminationMultiDataSetIteratorTest extends BaseDL4JTest {
+@DisplayName("Early Termination Multi Data Set Iterator Test")
+@NativeTag
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.LARGE_RESOURCES)
+@Tag(TagNames.LONG_TEST)
+class EarlyTerminationMultiDataSetIteratorTest extends BaseDL4JTest {
 
     int minibatchSize = 5;
+
     int numExamples = 105;
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
+
+
 
     @Test
-    public void testNextAndReset() throws Exception {
-
+    @DisplayName("Test Next And Reset")
+    void testNextAndReset() throws Exception {
         int terminateAfter = 2;
-
-        MultiDataSetIterator iter =
-                        new MultiDataSetIteratorAdapter(new MnistDataSetIterator(minibatchSize, numExamples));
-
+        MultiDataSetIterator iter = new MultiDataSetIteratorAdapter(new MnistDataSetIterator(minibatchSize, numExamples));
         int count = 0;
         List<MultiDataSet> seenMDS = new ArrayList<>();
         while (count < terminateAfter) {
@@ -57,10 +62,7 @@ public class EarlyTerminationMultiDataSetIteratorTest extends BaseDL4JTest {
             count++;
         }
         iter.reset();
-
-        EarlyTerminationMultiDataSetIterator earlyEndIter =
-                        new EarlyTerminationMultiDataSetIterator(iter, terminateAfter);
-
+        EarlyTerminationMultiDataSetIterator earlyEndIter = new EarlyTerminationMultiDataSetIterator(iter, terminateAfter);
         assertTrue(earlyEndIter.hasNext());
         count = 0;
         while (earlyEndIter.hasNext()) {
@@ -70,8 +72,7 @@ public class EarlyTerminationMultiDataSetIteratorTest extends BaseDL4JTest {
             count++;
         }
         assertEquals(count, terminateAfter);
-
-        //check data is repeated
+        // check data is repeated
         earlyEndIter.reset();
         count = 0;
         while (earlyEndIter.hasNext()) {
@@ -83,34 +84,28 @@ public class EarlyTerminationMultiDataSetIteratorTest extends BaseDL4JTest {
     }
 
     @Test
-    public void testNextNum() throws IOException {
+    @DisplayName("Test Next Num")
+    void testNextNum() throws IOException {
         int terminateAfter = 1;
-
-        MultiDataSetIterator iter =
-                        new MultiDataSetIteratorAdapter(new MnistDataSetIterator(minibatchSize, numExamples));
-        EarlyTerminationMultiDataSetIterator earlyEndIter =
-                        new EarlyTerminationMultiDataSetIterator(iter, terminateAfter);
-
+        MultiDataSetIterator iter = new MultiDataSetIteratorAdapter(new MnistDataSetIterator(minibatchSize, numExamples));
+        EarlyTerminationMultiDataSetIterator earlyEndIter = new EarlyTerminationMultiDataSetIterator(iter, terminateAfter);
         earlyEndIter.next(10);
         assertEquals(false, earlyEndIter.hasNext());
-
         earlyEndIter.reset();
         assertEquals(true, earlyEndIter.hasNext());
     }
 
     @Test
-    public void testCallstoNextNotAllowed() throws IOException {
-        int terminateAfter = 1;
+    @DisplayName("Test calls to Next Not Allowed")
+    void testCallstoNextNotAllowed() throws IOException {
+        assertThrows(RuntimeException.class,() -> {
+            int terminateAfter = 1;
+            MultiDataSetIterator iter = new MultiDataSetIteratorAdapter(new MnistDataSetIterator(minibatchSize, numExamples));
+            EarlyTerminationMultiDataSetIterator earlyEndIter = new EarlyTerminationMultiDataSetIterator(iter, terminateAfter);
+            earlyEndIter.next(10);
+            iter.reset();
+            earlyEndIter.next(10);
+        });
 
-        MultiDataSetIterator iter =
-                        new MultiDataSetIteratorAdapter(new MnistDataSetIterator(minibatchSize, numExamples));
-        EarlyTerminationMultiDataSetIterator earlyEndIter =
-                        new EarlyTerminationMultiDataSetIterator(iter, terminateAfter);
-
-        earlyEndIter.next(10);
-        iter.reset();
-        exception.expect(RuntimeException.class);
-        earlyEndIter.next(10);
     }
-
 }

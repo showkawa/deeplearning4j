@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.nn.updater;
 
@@ -34,8 +38,11 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.DefaultParamInitializer;
 import org.deeplearning4j.nn.params.PretrainParamInitializer;
 import org.deeplearning4j.nn.updater.graph.ComputationGraphUpdater;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -49,10 +56,11 @@ import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
 import static org.nd4j.linalg.indexing.NDArrayIndex.point;
-
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class TestUpdaters extends BaseDL4JTest {
 
     protected int nIn = 3;
@@ -66,7 +74,7 @@ public class TestUpdaters extends BaseDL4JTest {
     protected String key;
 
 
-    @Before
+    @BeforeEach
     public void beforeDo() {
         gradients = Nd4j.ones(1, nIn * nOut + nOut);
         weightGradient = gradients.get(point(0), interval(0, nIn * nOut));
@@ -316,7 +324,7 @@ public class TestUpdaters extends BaseDL4JTest {
             count++;
         }
 
-        assertEquals("Count should be equal to 2, one for weight gradient and one for bias gradient", 2, count);
+        assertEquals(2, count,"Count should be equal to 2, one for weight gradient and one for bias gradient");
 
         /*
         * Check that we are not erroneously mutating moving avg gradient while calculating
@@ -336,7 +344,7 @@ public class TestUpdaters extends BaseDL4JTest {
             actualM[i] = Math.round(actualM[i] * 1e2) / 1e2;
         }
 
-        assertEquals("Wrong weight gradient after first iteration's update", Arrays.equals(expectedM, actualM), true);
+        assertEquals(Arrays.equals(expectedM, actualM), true, "Wrong weight gradient after first iteration's update");
 
     }
 
@@ -600,7 +608,7 @@ public class TestUpdaters extends BaseDL4JTest {
                     assertTrue(gu instanceof SgdUpdater);
                     break;
                 case 1:
-                    assertTrue(gu instanceof org.nd4j.linalg.learning.NoOpUpdater);
+                    assertTrue(gu instanceof NoOpUpdater);
                     break;
                 case 2:
                     assertTrue(gu instanceof AdaGradUpdater);

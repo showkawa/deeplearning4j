@@ -1,19 +1,22 @@
-/* ******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- * Copyright (c) 2019 Konduit K.K.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.ui;
 
@@ -35,8 +38,11 @@ import org.deeplearning4j.ui.model.stats.StatsListener;
 import org.deeplearning4j.ui.model.stats.impl.SbeStatsInitializationReport;
 import org.deeplearning4j.ui.model.stats.impl.SbeStatsReport;
 import org.deeplearning4j.ui.model.storage.impl.SbeStorageMetaData;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -46,16 +52,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Created by Alex on 10/11/2016.
- */
-@Ignore
+@Disabled
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.UI)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class TestRemoteReceiver extends BaseDL4JTest {
 
     @Test
-    @Ignore
+    @Disabled
     public void testRemoteBasic() throws Exception {
 
         List<Persistable> updates = new ArrayList<>();
@@ -123,7 +130,7 @@ public class TestRemoteReceiver extends BaseDL4JTest {
 
 
     @Test
-    @Ignore
+    @Disabled
     public void testRemoteFull() throws Exception {
         //Use this in conjunction with startRemoteUI()
 
@@ -150,7 +157,7 @@ public class TestRemoteReceiver extends BaseDL4JTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void startRemoteUI() throws Exception {
 
         UIServer s = UIServer.getInstance();

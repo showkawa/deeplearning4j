@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.nn.layers.recurrent;
 
@@ -31,39 +35,52 @@ import org.deeplearning4j.nn.conf.layers.recurrent.SimpleRnn;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.enums.RnnDataFormat;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.linalg.learning.config.NoOp;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.common.primitives.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
-@RunWith(Parameterized.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class TestRnnLayers extends BaseDL4JTest {
 
-    private RNNFormat rnnDataFormat;
 
-    public TestRnnLayers(RNNFormat rnnDataFormat){
-        this.rnnDataFormat = rnnDataFormat;
+    public static Stream<Arguments> params() {
+        List<Arguments> args = new ArrayList<>();
+        for(Nd4jBackend nd4jBackend : BaseNd4jTestWithBackends.BACKENDS) {
+            for(RNNFormat rnnFormat : RNNFormat.values()) {
+                args.add(Arguments.of(rnnFormat,nd4jBackend));
+            }
+        }
+        return args.stream();
     }
-    @Parameterized.Parameters
-    public static Object[] params(){
-        return RNNFormat.values();
-    }
-    @Test
-    public void testTimeStepIs3Dimensional() {
+
+    @ParameterizedTest
+    @MethodSource("org.deeplearning4j.nn.layers.recurrent.TestRnnLayers#params")
+    public void testTimeStepIs3Dimensional(RNNFormat rnnDataFormat,Nd4jBackend backend) {
 
         int nIn = 12;
         int nOut = 3;
@@ -112,8 +129,9 @@ public class TestRnnLayers extends BaseDL4JTest {
 
     }
 
-    @Test
-    public void testDropoutRecurrentLayers(){
+    @ParameterizedTest
+    @MethodSource("org.deeplearning4j.nn.layers.recurrent.TestRnnLayers#params")
+    public void testDropoutRecurrentLayers(RNNFormat rnnDataFormat,Nd4jBackend backend) {
         Nd4j.getRandom().setSeed(12345);
 
         String[] layerTypes = new String[]{"graves", "lstm", "simple"};
@@ -131,9 +149,9 @@ public class TestRnnLayers extends BaseDL4JTest {
                     layerD2 = new GravesLSTM.Builder().dropOut(cd).activation(Activation.TANH).nIn(10).nOut(10).dataFormat(rnnDataFormat).build();
                     break;
                 case "lstm":
-                    layer = new org.deeplearning4j.nn.conf.layers.LSTM.Builder().activation(Activation.TANH).nIn(10).nOut(10).dataFormat(rnnDataFormat).build();
-                    layerD = new org.deeplearning4j.nn.conf.layers.LSTM.Builder().dropOut(0.5).activation(Activation.TANH).nIn(10).nOut(10).dataFormat(rnnDataFormat).build();
-                    layerD2 = new org.deeplearning4j.nn.conf.layers.LSTM.Builder().dropOut(cd).activation(Activation.TANH).nIn(10).nOut(10).dataFormat(rnnDataFormat).build();
+                    layer = new LSTM.Builder().activation(Activation.TANH).nIn(10).nOut(10).dataFormat(rnnDataFormat).build();
+                    layerD = new LSTM.Builder().dropOut(0.5).activation(Activation.TANH).nIn(10).nOut(10).dataFormat(rnnDataFormat).build();
+                    layerD2 = new LSTM.Builder().dropOut(cd).activation(Activation.TANH).nIn(10).nOut(10).dataFormat(rnnDataFormat).build();
                     break;
                 case "simple":
                     layer = new SimpleRnn.Builder().activation(Activation.TANH).nIn(10).nOut(10).dataFormat(rnnDataFormat).build();
@@ -174,8 +192,8 @@ public class TestRnnLayers extends BaseDL4JTest {
             MultiLayerNetwork netD2 = new MultiLayerNetwork(confD2);
             netD2.init();
 
-            assertEquals(s, net.params(), netD.params());
-            assertEquals(s, net.params(), netD2.params());
+            assertEquals(net.params(), netD.params(), s);
+            assertEquals(net.params(), netD2.params(), s);
 
             INDArray f = Nd4j.rand(DataType.FLOAT, new int[]{3, 10, 10});
 
@@ -183,18 +201,18 @@ public class TestRnnLayers extends BaseDL4JTest {
             INDArray out1 = net.output(f);
             INDArray out1D = netD.output(f);
             INDArray out1D2 = netD2.output(f);
-            assertEquals(s, out1, out1D);
-            assertEquals(s, out1, out1D2);
+            assertEquals(out1, out1D, s);
+            assertEquals(out1, out1D2, s);
 
 
             INDArray out2 = net.output(f, true);
             INDArray out2D = netD.output(f, true);
-            assertNotEquals(s, out2, out2D);
+            assertNotEquals(out2, out2D, s);
 
             INDArray l = TestUtils.randomOneHotTimeSeries(3, 10, 10, 12345);
             net.fit(f.dup(), l);
             netD.fit(f.dup(), l);
-            assertNotEquals(s, net.params(), netD.params());
+            assertNotEquals(net.params(), netD.params(), s);
 
             netD2.fit(f.dup(), l);
             netD2.fit(f.dup(), l);
@@ -206,14 +224,15 @@ public class TestRnnLayers extends BaseDL4JTest {
                     new Pair<>(1, 0),
                     new Pair<>(2, 0));
 
-            assertEquals(s, expected, cd.getAllCalls());
+            assertEquals(expected, cd.getAllCalls(), s);
         }
     }
 
-    @Test
-    public void testMismatchedInputLabelLength(){
+    @ParameterizedTest
+    @MethodSource("org.deeplearning4j.nn.layers.recurrent.TestRnnLayers#params")
+    public void testMismatchedInputLabelLength(RNNFormat rnnDataFormat,Nd4jBackend backend){
 
-        for( int i=0; i<2; i++ ){
+        for( int i = 0; i < 2; i++) {
 
             NeuralNetConfiguration.ListBuilder lb = new NeuralNetConfiguration.Builder()
 
@@ -244,7 +263,7 @@ public class TestRnnLayers extends BaseDL4JTest {
                 if(msg == null)
                     t.printStackTrace();
                 System.out.println(i);
-                assertTrue(msg, msg != null && msg.contains("sequence length") && msg.contains("input") && msg.contains("label"));
+                assertTrue(msg != null && msg.contains("sequence length") && msg.contains("input") && msg.contains("label"), msg);
             }
 
         }

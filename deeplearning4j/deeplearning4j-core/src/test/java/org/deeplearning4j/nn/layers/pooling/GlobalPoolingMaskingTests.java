@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.nn.layers.pooling;
 
@@ -25,7 +29,10 @@ import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.conf.layers.GlobalPoolingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -37,13 +44,11 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 import java.util.Random;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.nd4j.linalg.indexing.NDArrayIndex.*;
-
-/**
- * Created by Alex on 18/01/2017.
- */
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class GlobalPoolingMaskingTests extends BaseDL4JTest {
 
     @Test
@@ -63,7 +68,7 @@ public class GlobalPoolingMaskingTests extends BaseDL4JTest {
                             .dist(new NormalDistribution(0, 1.0)).seed(12345L).list()
                             .layer(0, new GravesLSTM.Builder().nIn(nIn).nOut(layerSize).activation(Activation.TANH)
                                             .build())
-                            .layer(1, new org.deeplearning4j.nn.conf.layers.GlobalPoolingLayer.Builder()
+                            .layer(1, new GlobalPoolingLayer.Builder()
                                             .poolingType(PoolingType.AVG).build())
                             .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
                                             .activation(Activation.SOFTMAX).nIn(layerSize).nOut(nOut).build())
@@ -126,7 +131,7 @@ public class GlobalPoolingMaskingTests extends BaseDL4JTest {
                             .convolutionMode(ConvolutionMode.Same).seed(12345L).list()
                             .layer(0, new ConvolutionLayer.Builder().nIn(depthIn).nOut(depthOut).kernelSize(height, 2)
                                             .stride(height, 1).activation(Activation.TANH).build())
-                            .layer(1, new org.deeplearning4j.nn.conf.layers.GlobalPoolingLayer.Builder().poolingType(pt)
+                            .layer(1, new GlobalPoolingLayer.Builder().poolingType(pt)
                                             .build())
                             .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
                                             .activation(Activation.SOFTMAX).nIn(depthOut).nOut(nOut).build())
@@ -189,7 +194,7 @@ public class GlobalPoolingMaskingTests extends BaseDL4JTest {
                             .convolutionMode(ConvolutionMode.Same).seed(12345L).list()
                             .layer(0, new ConvolutionLayer.Builder().nIn(depthIn).nOut(depthOut).kernelSize(2, width)
                                             .stride(1, width).activation(Activation.TANH).build())
-                            .layer(1, new org.deeplearning4j.nn.conf.layers.GlobalPoolingLayer.Builder().poolingType(pt)
+                            .layer(1, new GlobalPoolingLayer.Builder().poolingType(pt)
                                             .build())
                             .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
                                             .activation(Activation.SOFTMAX).nIn(depthOut).nOut(nOut).build())
@@ -253,7 +258,7 @@ public class GlobalPoolingMaskingTests extends BaseDL4JTest {
                             .convolutionMode(ConvolutionMode.Same).seed(12345L).list()
                             .layer(0, new ConvolutionLayer.Builder().nIn(depthIn).nOut(depthOut).kernelSize(height, 2)
                                             .stride(height, 1).activation(Activation.TANH).build())
-                            .layer(1, new org.deeplearning4j.nn.conf.layers.GlobalPoolingLayer.Builder().poolingType(pt)
+                            .layer(1, new GlobalPoolingLayer.Builder().poolingType(pt)
                                             .build())
                             .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
                                             .activation(Activation.SOFTMAX).nIn(depthOut).nOut(nOut).build())
@@ -287,7 +292,7 @@ public class GlobalPoolingMaskingTests extends BaseDL4JTest {
                 INDArray outSubset = net.output(subset);
                 INDArray outMaskedSubset = outMasked.getRow(i, true);
 
-                assertEquals("minibatch: " + i, outSubset, outMaskedSubset);
+                assertEquals(outSubset, outMaskedSubset, "minibatch: " + i);
             }
         }
     }
@@ -312,7 +317,7 @@ public class GlobalPoolingMaskingTests extends BaseDL4JTest {
                             .convolutionMode(ConvolutionMode.Same).seed(12345L).list()
                             .layer(0, new ConvolutionLayer.Builder().nIn(depthIn).nOut(depthOut).kernelSize(2, width)
                                             .stride(1, width).activation(Activation.TANH).build())
-                            .layer(1, new org.deeplearning4j.nn.conf.layers.GlobalPoolingLayer.Builder().poolingType(pt)
+                            .layer(1, new GlobalPoolingLayer.Builder().poolingType(pt)
                                             .build())
                             .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
                                             .activation(Activation.SOFTMAX).nIn(depthOut).nOut(nOut).build())
@@ -346,7 +351,7 @@ public class GlobalPoolingMaskingTests extends BaseDL4JTest {
                 INDArray outSubset = net.output(subset);
                 INDArray outMaskedSubset = outMasked.getRow(i, true);
 
-                assertEquals("minibatch: " + i, outSubset, outMaskedSubset);
+                assertEquals(outSubset, outMaskedSubset, "minibatch: " + i);
             }
         }
     }
@@ -371,7 +376,7 @@ public class GlobalPoolingMaskingTests extends BaseDL4JTest {
                     .convolutionMode(ConvolutionMode.Same).seed(12345L).list()
                     .layer(0, new ConvolutionLayer.Builder().nIn(depthIn).nOut(depthOut).kernelSize(2, 2)
                             .stride(1, 1).activation(Activation.TANH).build())
-                    .layer(1, new org.deeplearning4j.nn.conf.layers.GlobalPoolingLayer.Builder().poolingType(pt)
+                    .layer(1, new GlobalPoolingLayer.Builder().poolingType(pt)
                             .build())
                     .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
                             .activation(Activation.SOFTMAX).nIn(depthOut).nOut(nOut).build())
@@ -411,7 +416,7 @@ public class GlobalPoolingMaskingTests extends BaseDL4JTest {
                 INDArray outSubset = net.output(subset);
                 INDArray outMaskedSubset = outMasked.getRow(i,true);
 
-                assertEquals("minibatch: " + i + ", " + pt, outSubset, outMaskedSubset);
+                assertEquals(outSubset, outMaskedSubset, "minibatch: " + i + ", " + pt);
             }
         }
     }

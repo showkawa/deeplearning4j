@@ -1,21 +1,26 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.spark;
 
+import com.sun.jna.Platform;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.deeplearning4j.datasets.iterator.impl.IrisDataSetIterator;
@@ -39,7 +44,7 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.spark.earlystopping.SparkDataSetLossCalculator;
 import org.deeplearning4j.spark.earlystopping.SparkEarlyStoppingTrainer;
 import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -53,12 +58,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestEarlyStoppingSpark extends BaseSparkTest {
 
     @Test
     public void testEarlyStoppingIris() {
+        if(Platform.isWindows()) {
+            //Spark tests don't run on windows
+            return;
+        }
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                         .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                         .updater(new Sgd()).weightInit(WeightInit.XAVIER).list()
@@ -109,7 +118,10 @@ public class TestEarlyStoppingSpark extends BaseSparkTest {
     @Test
     public void testBadTuning() {
         //Test poor tuning (high LR): should terminate on MaxScoreIterationTerminationCondition
-
+        if(Platform.isWindows()) {
+            //Spark tests don't run on windows
+            return;
+        }
         Nd4j.getRandom().setSeed(12345);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(12345)
                         .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
@@ -146,7 +158,10 @@ public class TestEarlyStoppingSpark extends BaseSparkTest {
     @Test
     public void testTimeTermination() {
         //test termination after max time
-
+        if(Platform.isWindows()) {
+            //Spark tests don't run on windows
+            return;
+        }
         Nd4j.getRandom().setSeed(12345);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(12345)
                         .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
@@ -176,8 +191,8 @@ public class TestEarlyStoppingSpark extends BaseSparkTest {
         long endTime = System.currentTimeMillis();
         int durationSeconds = (int) (endTime - startTime) / 1000;
 
-        assertTrue("durationSeconds = " + durationSeconds, durationSeconds >= 3);
-        assertTrue("durationSeconds = " + durationSeconds, durationSeconds <= 20);
+        assertTrue(durationSeconds >= 3, "durationSeconds = " + durationSeconds);
+        assertTrue(durationSeconds <= 20, "durationSeconds = " + durationSeconds);
 
         assertEquals(EarlyStoppingResult.TerminationReason.IterationTerminationCondition,
                         result.getTerminationReason());
@@ -189,7 +204,10 @@ public class TestEarlyStoppingSpark extends BaseSparkTest {
     public void testNoImprovementNEpochsTermination() {
         //Idea: terminate training if score (test set loss) does not improve for 5 consecutive epochs
         //Simulate this by setting LR = 0.0
-
+        if(Platform.isWindows()) {
+            //Spark tests don't run on windows
+            return;
+        }
         Nd4j.getRandom().setSeed(12345);
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(12345)
                         .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
@@ -224,6 +242,10 @@ public class TestEarlyStoppingSpark extends BaseSparkTest {
 
     @Test
     public void testListeners() {
+        if(Platform.isWindows()) {
+            //Spark tests don't run on windows
+            return;
+        }
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                         .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                         .updater(new Sgd()).weightInit(WeightInit.XAVIER).list()

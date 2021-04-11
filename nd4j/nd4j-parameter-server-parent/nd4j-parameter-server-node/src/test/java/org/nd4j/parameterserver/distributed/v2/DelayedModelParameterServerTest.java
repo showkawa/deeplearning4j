@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.parameterserver.distributed.v2;
 
@@ -20,10 +24,10 @@ import io.reactivex.functions.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.nd4j.common.tests.BaseND4JTest;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.common.primitives.AtomicBoolean;
@@ -44,25 +48,30 @@ import org.nd4j.parameterserver.distributed.v2.util.MessageSplitter;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
+@Disabled
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class DelayedModelParameterServerTest extends BaseND4JTest {
     private static final String rootId = "ROOT_NODE";
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MessageSplitter.getInstance().reset();
     }
 
-    @After
+    @AfterEach
     public void setDown() throws Exception {
         MessageSplitter.getInstance().reset();
     }
 
-    @Test(timeout = 20000L)
+    @Test()
+    @Timeout(20000L)
     public void testBasicInitialization_1() throws Exception {
         val connector = new DummyTransport.Connector();
         val rootTransport = new DelayedDummyTransport(rootId, connector);
@@ -77,7 +86,8 @@ public class DelayedModelParameterServerTest extends BaseND4JTest {
         rootServer.shutdown();
     }
 
-    @Test(timeout = 40000L)
+    @Test()
+    @Timeout(40000L)
     public void testBasicInitialization_2() throws Exception {
         for (int e = 0; e < 100; e++) {
             val connector = new DummyTransport.Connector();
@@ -101,17 +111,17 @@ public class DelayedModelParameterServerTest extends BaseND4JTest {
             val meshA = clientTransportA.getMesh();
             val meshB = clientTransportB.getMesh();
 
-            assertEquals("Root node failed",3, meshR.totalNodes());
-            assertEquals("B node failed", 3, meshB.totalNodes());
-            assertEquals("A node failed", 3, meshA.totalNodes());
+            assertEquals(3, meshR.totalNodes(),"Root node failed");
+            assertEquals(3, meshB.totalNodes(),"B node failed");
+            assertEquals(3, meshA.totalNodes(),"A node failed");
             assertEquals(meshR, meshA);
             assertEquals(meshA, meshB);
 
             log.info("Iteration [{}] finished", e);
         }
     }
-
-    @Test(timeout = 180000L)
+    @Test()
+    @Timeout(180000L)
     public void testUpdatesPropagation_1() throws Exception {
         val conf = VoidConfiguration.builder().meshBuildMode(MeshBuildMode.PLAIN).build();
         val array = Nd4j.ones(10, 10);
@@ -165,11 +175,12 @@ public class DelayedModelParameterServerTest extends BaseND4JTest {
 
         for (int e = 0; e < servers.size(); e++) {
             val s = servers.get(e);
-            assertEquals("Failed at node [" + e + "]", 1, s.getUpdates().size());
+            assertEquals(1, s.getUpdates().size(),"Failed at node [" + e + "]");
         }
     }
 
-    @Test(timeout = 180000L)
+    @Test()
+    @Timeout(180000L)
     public void testModelAndUpdaterParamsUpdate_1() throws Exception {
         val config = VoidConfiguration.builder().meshBuildMode(MeshBuildMode.PLAIN).build();
         val connector = new DummyTransport.Connector();
@@ -294,7 +305,7 @@ public class DelayedModelParameterServerTest extends BaseND4JTest {
             // we're skipping node 23 since it was reconnected, and has different MPS instance
             // and node 96, since it sends update
             if (e != 23 && e != 96)
-                assertEquals("Failed at node: [" + e + "]", 1, counters[e].get());
+                assertEquals(1, counters[e].get(),"Failed at node: [" + e + "]");
         }
 
         assertTrue(updatedModel.get());
@@ -302,7 +313,8 @@ public class DelayedModelParameterServerTest extends BaseND4JTest {
         assertTrue(gotGradients.get());
     }
 
-    @Test(timeout = 180000L)
+    @Test()
+    @Timeout(180000L)
     public void testMeshConsistency_1() throws Exception {
         Nd4j.create(1);
         final int numMessages = 500;
@@ -377,12 +389,13 @@ public class DelayedModelParameterServerTest extends BaseND4JTest {
         // now we're checking all nodes, they should get numMessages - messages that were sent through them
         for (int e = 0; e < servers.size(); e++) {
             val server = servers.get(e);
-            assertEquals("Failed at node: [" + e + "]", numMessages - deductions[e], counters[e].get());
+            assertEquals(numMessages - deductions[e], counters[e].get(),"Failed at node: [" + e + "]");
         }
     }
 
 
-    @Test(timeout = 180000L)
+    @Test()
+    @Timeout(180000L)
     public void testMeshConsistency_2() throws Exception {
         Nd4j.create(1);
         final int numMessages = 100;
@@ -462,7 +475,7 @@ public class DelayedModelParameterServerTest extends BaseND4JTest {
         // now we're checking all nodes, they should get numMessages - messages that were sent through them
         for (int e = 0; e < servers.size(); e++) {
             val server = servers.get(e);
-            assertEquals("Failed at node: [" + e + "]", numMessages - deductions[e], counters[e].get());
+            assertEquals( numMessages - deductions[e], counters[e].get(),"Failed at node: [" + e + "]");
         }
     }
 }

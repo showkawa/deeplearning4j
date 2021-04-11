@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.text.tokenization.tokenizer;
 
@@ -22,10 +26,14 @@ import org.deeplearning4j.BaseDL4JTest;
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.BertWordPiecePreProcessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.BertWordPieceTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.nd4j.common.io.ClassPathResource;
 import org.nd4j.common.resources.Resources;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -35,9 +43,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
+@Disabled
+@Tag(TagNames.FILE_IO)
+@NativeTag
 public class BertWordPieceTokenizerTests extends BaseDL4JTest {
 
     private File pathToVocab =  Resources.asFile("other/vocab.txt");
@@ -107,7 +118,7 @@ public class BertWordPieceTokenizerTests extends BaseDL4JTest {
     }
 
     @Test
-    @Ignore("AB 2019/05/24 - Disabled until dev branch merged - see issue #7657")
+    @Disabled("AB 2019/05/24 - Disabled until dev branch merged - see issue #7657")
     public void testBertWordPieceTokenizer5() throws Exception {
         // Longest Token in Vocab is 22 chars long, so make sure splits on the edge are properly handled
         String toTokenize = "Donaudampfschifffahrts Kapitänsmützeninnenfuttersaum";
@@ -189,7 +200,7 @@ public class BertWordPieceTokenizerTests extends BaseDL4JTest {
                 String m = e.getMessage();
                 assertNotNull(m);
                 m = m.toLowerCase();
-                assertTrue(m, m.contains("invalid") && m.contains("token") && m.contains("preprocessor"));
+                assertTrue(m.contains("invalid") && m.contains("token") && m.contains("preprocessor"), m);
             }
 
             try {
@@ -199,13 +210,14 @@ public class BertWordPieceTokenizerTests extends BaseDL4JTest {
                 String m = e.getMessage();
                 assertNotNull(m);
                 m = m.toLowerCase();
-                assertTrue(m, m.contains("invalid") && m.contains("token") && m.contains("preprocessor"));
+                assertTrue(m.contains("invalid") && m.contains("token") && m.contains("preprocessor"), m);
             }
         }
     }
 
 
-    @Test(timeout = 300000)
+    @Test()
+    @Timeout(300000)
     public void testBertWordPieceTokenizer10() throws Exception {
         File f = Resources.asFile("deeplearning4j-nlp/bert/uncased_L-12_H-768_A-12/vocab.txt");
         BertWordPieceTokenizerFactory t = new BertWordPieceTokenizerFactory(f, true, true, StandardCharsets.UTF_8);

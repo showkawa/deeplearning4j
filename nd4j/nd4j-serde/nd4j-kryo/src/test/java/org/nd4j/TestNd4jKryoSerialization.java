@@ -1,53 +1,81 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j;
 
+import com.sun.jna.Platform;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.serializer.SerializerInstance;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.nd4j.common.primitives.*;
+import org.nd4j.common.resources.Downloader;
 import org.nd4j.common.tests.BaseND4JTest;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import scala.Tuple2;
 
+import java.io.File;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-/**
- * Created by Alex on 04/07/2016.
- */
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+@Slf4j
+@Tag(TagNames.SPARK)
+@Tag(TagNames.DIST_SYSTEMS)
 public class TestNd4jKryoSerialization extends BaseND4JTest {
 
     private JavaSparkContext sc;
 
-    @Before
+    @BeforeAll
+    @SneakyThrows
+    public static void beforeAll() {
+        if(Platform.isWindows()) {
+            File hadoopHome = new File(System.getProperty("java.io.tmpdir"),"hadoop-tmp");
+            File binDir = new File(hadoopHome,"bin");
+            if(!binDir.exists())
+                binDir.mkdirs();
+            File outputFile = new File(binDir,"winutils.exe");
+            if(!outputFile.exists()) {
+                log.info("Fixing spark for windows");
+                Downloader.download("winutils.exe",
+                        URI.create("https://github.com/cdarlint/winutils/blob/master/hadoop-2.6.5/bin/winutils.exe?raw=true").toURL(),
+                        outputFile,"db24b404d2331a1bec7443336a5171f1",3);
+            }
+
+            System.setProperty("hadoop.home.dir", hadoopHome.getAbsolutePath());
+        }
+    }
+
+    @BeforeEach
     public void before() {
         SparkConf sparkConf = new SparkConf();
         sparkConf.setMaster("local[*]");
@@ -115,11 +143,11 @@ public class TestNd4jKryoSerialization extends BaseND4JTest {
 
 //        assertEquals(in, deserialized);
         boolean equals = in.equals(deserialized);
-        assertTrue(in.getClass() + "\t" + in.toString(), equals);
+        assertTrue(equals,in.getClass() + "\t" + in.toString());
     }
 
 
-    @After
+    @AfterEach
     public void after() {
         if (sc != null)
             sc.close();

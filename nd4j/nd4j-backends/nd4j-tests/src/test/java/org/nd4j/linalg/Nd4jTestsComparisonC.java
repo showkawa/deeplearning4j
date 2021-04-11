@@ -1,26 +1,33 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -34,33 +41,25 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-
-/**
- * Tests comparing Nd4j ops to other libraries
- */
-@RunWith(Parameterized.class)
-public class Nd4jTestsComparisonC extends BaseNd4jTest {
+@NativeTag
+public class Nd4jTestsComparisonC extends BaseNd4jTestWithBackends {
     private static Logger log = LoggerFactory.getLogger(Nd4jTestsComparisonC.class);
 
     public static final int SEED = 123;
 
-    DataType initialType;
-
-    public Nd4jTestsComparisonC(Nd4jBackend backend) {
-        super(backend);
-        this.initialType = Nd4j.dataType();
-    }
+    DataType initialType = Nd4j.dataType();
 
 
-    @Before
+
+    @BeforeEach
     public void before() throws Exception {
         DataTypeUtil.setDTypeForContext(DataType.DOUBLE);
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         DataTypeUtil.setDTypeForContext(initialType);
     }
@@ -71,8 +70,9 @@ public class Nd4jTestsComparisonC extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testGemmWithOpsCommonsMath() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGemmWithOpsCommonsMath(Nd4jBackend backend) {
         List<Pair<INDArray, String>> first = NDArrayCreationUtil.getAllTestMatricesWithShape(3, 5, SEED, DataType.DOUBLE);
         List<Pair<INDArray, String>> firstT = NDArrayCreationUtil.getAllTestMatricesWithShape(5, 3, SEED, DataType.DOUBLE);
         List<Pair<INDArray, String>> second = NDArrayCreationUtil.getAllTestMatricesWithShape(5, 4, SEED, DataType.DOUBLE);
@@ -105,14 +105,14 @@ public class Nd4jTestsComparisonC extends BaseNd4jTest {
                         String errorMsgtf = getGemmErrorMsg(i, j, true, false, a, b, p1T, p2);
                         String errorMsgtt = getGemmErrorMsg(i, j, true, true, a, b, p1T, p2T);
                         //System.out.println((String.format("Running iteration %d %d %d %d", i, j, k, m)));
-                        assertTrue(errorMsgff, CheckUtil.checkGemm(p1.getFirst(), p2.getFirst(), cff, false, false, a,
-                                        b, 1e-4, 1e-6));
-                        assertTrue(errorMsgft, CheckUtil.checkGemm(p1.getFirst(), p2T.getFirst(), cft, false, true, a,
-                                        b, 1e-4, 1e-6));
-                        assertTrue(errorMsgtf, CheckUtil.checkGemm(p1T.getFirst(), p2.getFirst(), ctf, true, false, a,
-                                        b, 1e-4, 1e-6));
-                        assertTrue(errorMsgtt, CheckUtil.checkGemm(p1T.getFirst(), p2T.getFirst(), ctt, true, true, a,
-                                        b, 1e-4, 1e-6));
+                        assertTrue( CheckUtil.checkGemm(p1.getFirst(), p2.getFirst(), cff, false, false, a,
+                                b, 1e-4, 1e-6),errorMsgff);
+                        assertTrue(CheckUtil.checkGemm(p1.getFirst(), p2T.getFirst(), cft, false, true, a,
+                                b, 1e-4, 1e-6),errorMsgft);
+                        assertTrue(CheckUtil.checkGemm(p1T.getFirst(), p2.getFirst(), ctf, true, false, a,
+                                b, 1e-4, 1e-6),errorMsgtf);
+                        assertTrue( CheckUtil.checkGemm(p1T.getFirst(), p2T.getFirst(), ctt, true, true, a,
+                                b, 1e-4, 1e-6),errorMsgtt);
 
                         //Also: Confirm that if the C array is uninitialized and beta is 0.0, we don't have issues like 0*NaN = NaN
                         if (b == 0.0) {
@@ -121,14 +121,14 @@ public class Nd4jTestsComparisonC extends BaseNd4jTest {
                             ctf.assign(Double.NaN);
                             ctt.assign(Double.NaN);
 
-                            assertTrue(errorMsgff, CheckUtil.checkGemm(p1.getFirst(), p2.getFirst(), cff, false, false,
-                                            a, b, 1e-4, 1e-6));
-                            assertTrue(errorMsgft, CheckUtil.checkGemm(p1.getFirst(), p2T.getFirst(), cft, false, true,
-                                            a, b, 1e-4, 1e-6));
-                            assertTrue(errorMsgtf, CheckUtil.checkGemm(p1T.getFirst(), p2.getFirst(), ctf, true, false,
-                                            a, b, 1e-4, 1e-6));
-                            assertTrue(errorMsgtt, CheckUtil.checkGemm(p1T.getFirst(), p2T.getFirst(), ctt, true, true,
-                                            a, b, 1e-4, 1e-6));
+                            assertTrue( CheckUtil.checkGemm(p1.getFirst(), p2.getFirst(), cff, false, false,
+                                    a, b, 1e-4, 1e-6),errorMsgff);
+                            assertTrue( CheckUtil.checkGemm(p1.getFirst(), p2T.getFirst(), cft, false, true,
+                                    a, b, 1e-4, 1e-6),errorMsgft);
+                            assertTrue(CheckUtil.checkGemm(p1T.getFirst(), p2.getFirst(), ctf, true, false,
+                                    a, b, 1e-4, 1e-6),errorMsgtf);
+                            assertTrue(CheckUtil.checkGemm(p1T.getFirst(), p2T.getFirst(), ctt, true, true,
+                                    a, b, 1e-4, 1e-6),errorMsgtt);
                         }
 
                     }
@@ -139,13 +139,13 @@ public class Nd4jTestsComparisonC extends BaseNd4jTest {
 
 
     private static String getTestWithOpsErrorMsg(int i, int j, String op, Pair<INDArray, String> first,
-                    Pair<INDArray, String> second) {
+                                                 Pair<INDArray, String> second) {
         return i + "," + j + " - " + first.getSecond() + "." + op + "(" + second.getSecond() + ")";
     }
 
     private static String getGemmErrorMsg(int i, int j, boolean transposeA, boolean transposeB, double alpha,
-                    double beta, Pair<INDArray, String> first, Pair<INDArray, String> second) {
+                                          double beta, Pair<INDArray, String> first, Pair<INDArray, String> second) {
         return i + "," + j + " - gemm(tA=" + transposeA + ",tB=" + transposeB + ",alpha=" + alpha + ",beta=" + beta
-                        + "). A=" + first.getSecond() + ", B=" + second.getSecond();
+                + "). A=" + first.getSecond() + ", B=" + second.getSecond();
     }
 }

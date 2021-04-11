@@ -1,19 +1,44 @@
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
+
 package org.nd4j.autodiff.ui;
 
 import com.google.flatbuffers.Table;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.autodiff.listeners.impl.UIListener;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.autodiff.samediff.TrainingConfig;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.graph.UIEvent;
 import org.nd4j.graph.UIGraphStructure;
 import org.nd4j.graph.UIStaticInfoRecord;
 import org.nd4j.graph.ui.LogFileWriter;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.IrisDataSetIterator;
@@ -23,35 +48,38 @@ import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.common.primitives.Pair;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class UIListenerTest extends BaseNd4jTest {
+@Tag(TagNames.SAMEDIFF)
+@Tag(TagNames.UI)
+@Tag(TagNames.FILE_IO)
+public class UIListenerTest extends BaseNd4jTestWithBackends {
 
-    public UIListenerTest(Nd4jBackend backend) {
-        super(backend);
-    }
+
+    @TempDir Path testDir;
 
     @Override
     public char ordering() {
         return 'c';
     }
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
 
-    @Test
-    public void testUIListenerBasic() throws Exception {
+
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testUIListenerBasic(Nd4jBackend backend) throws Exception {
         Nd4j.getRandom().setSeed(12345);
 
         IrisDataSetIterator iter = new IrisDataSetIterator(150, 150);
 
         SameDiff sd = getSimpleNet();
 
-        File dir = testDir.newFolder();
+        File dir = testDir.toFile();
         File f = new File(dir, "logFile.bin");
         UIListener l = UIListener.builder(f)
                 .plotLosses(1)
@@ -79,14 +107,16 @@ public class UIListenerTest extends BaseNd4jTest {
         assertArrayEquals(new long[]{150, 3}, out.shape());
     }
 
-    @Test
-    public void testUIListenerContinue() throws Exception {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testUIListenerContinue(Nd4jBackend backend) throws Exception {
         IrisDataSetIterator iter = new IrisDataSetIterator(150, 150);
 
         SameDiff sd1 = getSimpleNet();
         SameDiff sd2 = getSimpleNet();
 
-        File dir = testDir.newFolder();
+        File dir = testDir.resolve("new-dir-1").toFile();
+        dir.mkdirs();
         File f = new File(dir, "logFileNoContinue.bin");
         f.delete();
         UIListener l1 = UIListener.builder(f)
@@ -170,12 +200,14 @@ public class UIListenerTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testUIListenerBadContinue() throws Exception {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testUIListenerBadContinue(Nd4jBackend backend) throws Exception {
         IrisDataSetIterator iter = new IrisDataSetIterator(150, 150);
         SameDiff sd1 = getSimpleNet();
 
-        File dir = testDir.newFolder();
+        File dir = testDir.resolve("new-dir-2").toFile();
+        dir.mkdirs();
         File f = new File(dir, "logFile.bin");
         f.delete();
         UIListener l1 = UIListener.builder(f)
@@ -213,8 +245,8 @@ public class UIListenerTest extends BaseNd4jTest {
             fail("Expected exception");
         } catch (Throwable t){
             String m = t.getMessage();
-            assertTrue(m, m.contains("placeholder"));
-            assertTrue(m, m.contains("FileMode.CREATE_APPEND_NOCHECK"));
+            assertTrue(m.contains("placeholder"),m);
+            assertTrue(m.contains("FileMode.CREATE_APPEND_NOCHECK"),m);
         }
 
 
@@ -234,8 +266,8 @@ public class UIListenerTest extends BaseNd4jTest {
             fail("Expected exception");
         } catch (Throwable t){
             String m = t.getMessage();
-            assertTrue(m, m.contains("variable"));
-            assertTrue(m, m.contains("FileMode.CREATE_APPEND_NOCHECK"));
+            assertTrue(m.contains("variable"),m);
+            assertTrue(m.contains("FileMode.CREATE_APPEND_NOCHECK"),m);
         }
 
 
@@ -252,7 +284,7 @@ public class UIListenerTest extends BaseNd4jTest {
     }
 
 
-    private static SameDiff getSimpleNet(){
+    private static SameDiff getSimpleNet() {
         Nd4j.getRandom().setSeed(12345);
         SameDiff sd = SameDiff.create();
         SDVariable in = sd.placeHolder("in", DataType.FLOAT, -1, 4);

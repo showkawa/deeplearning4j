@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.bagofwords.vectorizer;
 
@@ -20,9 +24,14 @@ package org.deeplearning4j.bagofwords.vectorizer;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.deeplearning4j.BaseDL4JTest;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.common.io.ClassPathResource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.ops.impl.indexaccum.custom.ArgMax;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
@@ -30,7 +39,7 @@ import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareFileSentenc
 import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
@@ -38,28 +47,26 @@ import org.nd4j.common.util.SerializationUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *@author Adam Gibson
  */
 @Slf4j
+@Tag(TagNames.FILE_IO)
+@NativeTag
 public class BagOfWordsVectorizerTest extends BaseDL4JTest {
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
-
-
-
-    @Test(timeout = 60000L)
-    public void testBagOfWordsVectorizer() throws Exception {
-        val rootDir = testDir.newFolder();
+    @Test()
+    @Timeout(60000L)
+    public void testBagOfWordsVectorizer(@TempDir Path testDir) throws Exception {
+        val rootDir = testDir.toFile();
         ClassPathResource resource = new ClassPathResource("rootdir/");
         resource.copyDirectory(rootDir);
 
@@ -68,15 +75,15 @@ public class BagOfWordsVectorizerTest extends BaseDL4JTest {
         TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
 
         BagOfWordsVectorizer vectorizer = new BagOfWordsVectorizer.Builder().setMinWordFrequency(1)
-                        .setStopWords(new ArrayList<String>()).setTokenizerFactory(tokenizerFactory).setIterator(iter)
-                        .allowParallelTokenization(false)
-                        //                .labels(labels)
-                        //                .cleanup(true)
-                        .build();
+                .setStopWords(new ArrayList<>()).setTokenizerFactory(tokenizerFactory).setIterator(iter)
+                .allowParallelTokenization(false)
+                //                .labels(labels)
+                //                .cleanup(true)
+                .build();
 
         vectorizer.fit();
         VocabWord word = vectorizer.getVocabCache().wordFor("file.");
-        assumeNotNull(word);
+        assertNotNull(word);
         assertEquals(word, vectorizer.getVocabCache().tokenFor("file."));
         assertEquals(2, vectorizer.getVocabCache().totalNumberOfDocs());
 
@@ -134,7 +141,7 @@ public class BagOfWordsVectorizerTest extends BaseDL4JTest {
         assertNotEquals(idx2, idx1);
 
         // Serialization check
-        File tempFile = createTempFile("fdsf", "fdfsdf");
+        File tempFile = createTempFile(testDir,"fdsf", "fdfsdf");
         tempFile.deleteOnExit();
 
         SerializationUtils.saveObject(vectorizer, tempFile);
@@ -146,8 +153,9 @@ public class BagOfWordsVectorizerTest extends BaseDL4JTest {
         assertEquals(array, dataSet.getFeatures());
     }
 
-    private File createTempFile(String prefix, String suffix) throws IOException {
-        return testDir.newFile(prefix + "-" + System.nanoTime() + suffix);
+    private File createTempFile(Path tempDir,String prefix, String suffix) throws IOException {
+        File newFile = Files.createTempFile(tempDir,prefix + "-" + System.nanoTime(),suffix).toFile();
+        return newFile;
     }
 
 }

@@ -1,25 +1,32 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.datavec.image.loader;
 
 import org.apache.commons.io.FilenameUtils;
 import org.datavec.api.records.reader.RecordReader;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.dataset.DataSet;
 
 import java.io.File;
@@ -28,13 +35,15 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
  */
+@NativeTag
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.LARGE_RESOURCES)
+@Tag(TagNames.LONG_TEST)
 public class LoaderTests {
 
     private static void ensureDataAvailable(){
@@ -77,7 +86,7 @@ public class LoaderTests {
         String subDir = "cifar/cifar-10-batches-bin/data_batch_1.bin";
         String path = FilenameUtils.concat(System.getProperty("user.home"), subDir);
         byte[] fullDataExpected = new byte[3073];
-        FileInputStream inExpected = new FileInputStream(new File(path));
+        FileInputStream inExpected = new FileInputStream(path);
         inExpected.read(fullDataExpected);
 
         byte[] fullDataActual = new byte[3073];
@@ -90,7 +99,7 @@ public class LoaderTests {
         subDir = "cifar/cifar-10-batches-bin/test_batch.bin";
         path = FilenameUtils.concat(System.getProperty("user.home"), subDir);
         fullDataExpected = new byte[3073];
-        inExpected = new FileInputStream(new File(path));
+        inExpected = new FileInputStream(path);
         inExpected.read(fullDataExpected);
 
         fullDataActual = new byte[3073];
@@ -178,7 +187,7 @@ public class LoaderTests {
     }
 
 
-    @Ignore // Use when confirming data is getting stored
+    @Disabled // Use when confirming data is getting stored
     @Test
     public void testProcessCifar() {
         int row = 32;
@@ -204,15 +213,15 @@ public class LoaderTests {
         int minibatch = 100;
         int nMinibatches = 50000 / minibatch;
 
-        for( int i=0; i<nMinibatches; i++ ){
+        for( int i=0; i < nMinibatches; i++) {
             DataSet ds = loader.next(minibatch);
             String s = String.valueOf(i);
-            assertNotNull(s, ds.getFeatures());
-            assertNotNull(s, ds.getLabels());
+            assertNotNull(ds.getFeatures(),s);
+            assertNotNull(ds.getLabels(),s);
 
-            assertEquals(s, minibatch, ds.getFeatures().size(0));
-            assertEquals(s, minibatch, ds.getLabels().size(0));
-            assertEquals(s, 10, ds.getLabels().size(1));
+            assertEquals(minibatch, ds.getFeatures().size(0),s);
+            assertEquals(minibatch, ds.getLabels().size(0),s);
+            assertEquals(10, ds.getLabels().size(1),s);
         }
 
     }

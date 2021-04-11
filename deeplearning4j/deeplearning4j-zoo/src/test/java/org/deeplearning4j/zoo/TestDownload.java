@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.zoo;
 
@@ -27,43 +31,44 @@ import org.deeplearning4j.zoo.model.UNet;
 import org.deeplearning4j.zoo.util.darknet.COCOLabels;
 import org.deeplearning4j.zoo.util.darknet.DarknetLabels;
 import org.deeplearning4j.zoo.util.imagenet.ImageNetLabels;
-import org.junit.*;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Tests downloads and checksum verification.
- *
- * @note This test uses a temporary directory, so local model copies won't be impacted
- * @author Justin Long (crockpotveggies)
- */
 @Slf4j
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.DL4J_OLD_API)
+@NativeTag
+@Tag(TagNames.LONG_TEST)
+@Tag(TagNames.LARGE_RESOURCES)
 public class TestDownload extends BaseDL4JTest {
+    @TempDir
+    static Path sharedTempDir;
 
     @Override
     public long getTimeoutMilliseconds() {
         return isIntegrationTests() ? 480000L : 60000L;
     }
 
-    @ClassRule
-    public static TemporaryFolder testDir = new TemporaryFolder();
-    private static File f;
 
-    @BeforeClass
+
+    @BeforeAll
     public static void before() throws Exception {
-        f = testDir.newFolder();
-        DL4JResources.setBaseDirectory(f);
+        DL4JResources.setBaseDirectory(sharedTempDir.toFile());
     }
 
-    @AfterClass
+    @AfterAll
     public static void after(){
         DL4JResources.resetBaseDirectoryLocation();
     }

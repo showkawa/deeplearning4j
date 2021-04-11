@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.nn.graph;
 
@@ -57,8 +61,12 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
-import org.junit.*;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.activations.impl.ActivationIdentity;
 import org.nd4j.linalg.api.buffer.DataType;
@@ -82,16 +90,16 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 import static org.deeplearning4j.nn.conf.layers.recurrent.Bidirectional.Mode.CONCAT;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class TestComputationGraphNetwork extends BaseDL4JTest {
-
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
 
     private static ComputationGraphConfiguration getIrisGraphConfiguration() {
         return new NeuralNetConfiguration.Builder().seed(12345)
@@ -116,17 +124,16 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
 
     private static OpExecutioner.ProfilingMode origMode;
 
-    @BeforeClass
-    public static void beforeClass(){
+ @BeforeAll    public static void beforeClass(){
         origMode = Nd4j.getExecutioner().getProfilingMode();
     }
 
-    @Before
+    @BeforeEach
     public void before(){
         Nd4j.getExecutioner().setProfilingMode(OpExecutioner.ProfilingMode.SCOPE_PANIC);
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass(){
         Nd4j.getExecutioner().setProfilingMode(origMode);
     }
@@ -285,6 +292,8 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
     }
 
     @Test
+    @Tag(TagNames.LARGE_RESOURCES)
+    @Tag(TagNames.LONG_TEST)
     public void testIrisFit() {
 
         ComputationGraphConfiguration configuration = getIrisGraphConfiguration();
@@ -318,7 +327,10 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
         assertEquals(paramsMLN, paramsGraph);
     }
 
-    @Test(timeout = 300000)
+    @Test()
+    @Timeout(300000)
+    @Tag(TagNames.LARGE_RESOURCES)
+    @Tag(TagNames.LONG_TEST)
     public void testIrisFitMultiDataSetIterator() throws Exception {
 
         RecordReader rr = new CSVRecordReader(0, ',');
@@ -587,6 +599,8 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
     }
 
     @Test
+    @Tag(TagNames.LONG_TEST)
+    @Tag(TagNames.LARGE_RESOURCES)
     public void testPreTraining() {
         ComputationGraphConfiguration conf =
                 new NeuralNetConfiguration.Builder()
@@ -620,7 +634,7 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
                                         .lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE)
                                         .build(),
                                 "layer1")
-                        .addLayer("out", new org.deeplearning4j.nn.conf.layers.OutputLayer.Builder(
+                        .addLayer("out", new OutputLayer.Builder(
                                         LossFunctions.LossFunction.MCXENT).nIn(3 + 3).nOut(3)
 
                                         .dist(new UniformDistribution(0, 1))
@@ -847,10 +861,10 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
         DataSetIterator iter = new IrisDataSetIterator(1, 1);
 
         Gradient expectedGradient = new DefaultGradient();
-        expectedGradient.setGradientFor("first_W", Nd4j.ones(4, 5));
-        expectedGradient.setGradientFor("first_b", Nd4j.ones(1, 5));
-        expectedGradient.setGradientFor("output_W", Nd4j.ones(5, 3));
-        expectedGradient.setGradientFor("output_b", Nd4j.ones(1, 3));
+        expectedGradient.setGradientFor("first_W", Nd4j.ones(4, 5).castTo(Nd4j.defaultFloatingPointType()));
+        expectedGradient.setGradientFor("first_b", Nd4j.ones(1, 5).castTo(Nd4j.defaultFloatingPointType()));
+        expectedGradient.setGradientFor("output_W", Nd4j.ones(5, 3).castTo(Nd4j.defaultFloatingPointType()));
+        expectedGradient.setGradientFor("output_b", Nd4j.ones(1, 3).castTo(Nd4j.defaultFloatingPointType()));
 
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).graphBuilder()
@@ -869,11 +883,11 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
         assertEquals(expectedGradient.getGradientFor("first_W"), actualGradient.getGradientFor("first_W"));
 
         // Update params with set
-        net.setParam("first_W", Nd4j.ones(4, 5));
-        net.setParam("first_b", Nd4j.ones(1, 5));
-        net.setParam("output_W", Nd4j.ones(5, 3));
-        net.setParam("output_b", Nd4j.ones(1, 3));
-        INDArray actualParams = net.params();
+        net.setParam("first_W", Nd4j.ones(4, 5).castTo(Nd4j.defaultFloatingPointType()));
+        net.setParam("first_b", Nd4j.ones(1, 5).castTo(Nd4j.defaultFloatingPointType()));
+        net.setParam("output_W", Nd4j.ones(5, 3).castTo(Nd4j.defaultFloatingPointType()));
+        net.setParam("output_b", Nd4j.ones(1, 3).castTo(Nd4j.defaultFloatingPointType()));
+        INDArray actualParams = net.params().castTo(Nd4j.defaultFloatingPointType());
 
         // Confirm params
         assertEquals(Nd4j.ones(1, 43), actualParams);
@@ -1016,7 +1030,7 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
                 .graphBuilder().addInputs("in")
                 .addLayer("0", new DenseLayer.Builder().nIn(4).nOut(3).weightInit(WeightInit.XAVIER)
                         .activation(Activation.TANH).build(), "in")
-                .addLayer("1", new org.deeplearning4j.nn.conf.layers.OutputLayer.Builder(
+                .addLayer("1", new OutputLayer.Builder(
                                 LossFunctions.LossFunction.MCXENT).activation(Activation.SOFTMAX).nIn(3).nOut(3)
                                 .build(),
                         "0")
@@ -1170,23 +1184,26 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
         g.calcRegularizationScore(false);
     }
 
-    @Test(expected = DL4JException.class)
+    @Test()
     public void testErrorNoOutputLayer() {
+        assertThrows(DL4JException.class,() -> {
+            ComputationGraphConfiguration c = new NeuralNetConfiguration.Builder().graphBuilder().addInputs("in")
+                    .addLayer("dense", new DenseLayer.Builder().nIn(10).nOut(10).build(), "in").setOutputs("dense")
+                    .build();
 
-        ComputationGraphConfiguration c = new NeuralNetConfiguration.Builder().graphBuilder().addInputs("in")
-                .addLayer("dense", new DenseLayer.Builder().nIn(10).nOut(10).build(), "in").setOutputs("dense")
-                .build();
+            ComputationGraph cg = new ComputationGraph(c);
+            cg.init();
 
-        ComputationGraph cg = new ComputationGraph(c);
-        cg.init();
+            INDArray f = Nd4j.create(1, 10);
+            INDArray l = Nd4j.create(1, 10);
 
-        INDArray f = Nd4j.create(1, 10);
-        INDArray l = Nd4j.create(1, 10);
+            cg.setInputs(f);
+            cg.setLabels(l);
 
-        cg.setInputs(f);
-        cg.setLabels(l);
+            cg.computeGradientAndScore();
+        });
 
-        cg.computeGradientAndScore();
+
     }
 
 
@@ -1254,6 +1271,8 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
     }
 
     @Test
+    @Tag(TagNames.LONG_TEST)
+    @Tag(TagNames.LARGE_RESOURCES)
     public void testEpochCounter() throws Exception {
 
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
@@ -1291,6 +1310,8 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
     }
 
     @Test
+    @Tag(TagNames.LONG_TEST)
+    @Tag(TagNames.LARGE_RESOURCES)
     public void testSummary() {
         int V_WIDTH = 130;
         int V_HEIGHT = 130;
@@ -1510,7 +1531,7 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
         //Hack output layer to be identity mapping
         graph.getOutputLayer(0).setParam("W", Nd4j.eye(input.length()));
         graph.getOutputLayer(0).setParam("b", Nd4j.zeros(input.length()));
-        assertEquals("Incorrect output", Nd4j.create(expected).reshape(1,expected.length), graph.outputSingle(input));
+        assertEquals(Nd4j.create(expected).reshape(1,expected.length), graph.outputSingle(input),"Incorrect output");
     }
 
     private static INDArray getInputArray4d(float[] inputArr) {
@@ -1708,8 +1729,8 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
         MultiLayerTest.CheckModelsListener listener = new MultiLayerTest.CheckModelsListener();
         net.setListeners(listener);
 
-        INDArray f = Nd4j.create(1,10);
-        INDArray l = Nd4j.create(1,10);
+        INDArray f = Nd4j.create(DataType.DOUBLE,1,10);
+        INDArray l = Nd4j.create(DataType.DOUBLE,1,10);
         DataSet ds = new DataSet(f,l);
         MultiDataSet mds = new org.nd4j.linalg.dataset.MultiDataSet(f,l);
 
@@ -1767,14 +1788,14 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
         for(String s : exp.keySet()){
             boolean allowed = ((org.deeplearning4j.nn.layers.feedforward.dense.DenseLayer)cg.getLayer(s)).isInputModificationAllowed();
 //            System.out.println(s + "\t" + allowed);
-            assertEquals(s, exp.get(s), allowed);
+            assertEquals( exp.get(s), allowed,s);
         }
     }
 
 
     @Test
     public void testCompGraphDropoutOutputLayers(){
-        //https://github.com/deeplearning4j/deeplearning4j/issues/6326
+        //https://github.com/eclipse/deeplearning4j/issues/6326
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
                 .dropOut(0.8)
                 .graphBuilder()
@@ -1812,7 +1833,7 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
 
     @Test
     public void testCompGraphDropoutOutputLayers2() {
-        //https://github.com/deeplearning4j/deeplearning4j/issues/6326
+        //https://github.com/eclipse/deeplearning4j/issues/6326
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
                 .dropOut(0.8)
                 .graphBuilder()
@@ -1971,7 +1992,7 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
 
     @Test
     public void testVerticesAndMasking7027(){
-        //https://github.com/deeplearning4j/deeplearning4j/issues/7027
+        //https://github.com/eclipse/deeplearning4j/issues/7027
         int inputSize = 300;
         int hiddenSize = 100;
         int dataSize = 10;
@@ -2012,7 +2033,7 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
     @Test
     public void testCompGraphUpdaterBlocks(){
         //Check that setting learning rate results in correct rearrangement of updater state within updater blocks
-        //https://github.com/deeplearning4j/deeplearning4j/issues/6809#issuecomment-463892644
+        //https://github.com/eclipse/deeplearning4j/issues/6809#issuecomment-463892644
 
         double lr = 1e-3;
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
@@ -2108,9 +2129,10 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
     }
 
     @Test
+    @Execution(ExecutionMode.SAME_THREAD)
+    @Tag(TagNames.NEEDS_VERIFY)
+    @Disabled
     public void testCompGraphInputReuse() {
-        Nd4j.setDefaultDataTypes(DataType.DOUBLE, DataType.DOUBLE);
-
         int inputSize = 5;
         int outputSize = 6;
         int layerSize = 3;
@@ -2125,7 +2147,8 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
                 .setOutputs("out")
                 .addLayer("0",new DenseLayer.Builder().nIn(inputSize).nOut(layerSize).build(),"in")
                 .addVertex("combine", new MergeVertex(), "0", "0", "0")
-                .addLayer("out",new OutputLayer.Builder(LossFunctions.LossFunction.XENT).nIn(3*layerSize).nOut(outputSize)
+                .addLayer("out",new OutputLayer.Builder(LossFunctions.LossFunction.XENT).nIn(3*layerSize)
+                        .nOut(outputSize)
                         .activation(Activation.SIGMOID).build(),"combine")
                 .build();
 
@@ -2134,8 +2157,8 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
 
 
         int dataSize = 11;
-        INDArray features = Nd4j.rand(new int[] {dataSize, inputSize});
-        INDArray labels = Nd4j.rand(new int[] {dataSize, outputSize});
+        INDArray features = Nd4j.rand(DataType.DOUBLE,new int[] {dataSize, inputSize});
+        INDArray labels = Nd4j.rand(DataType.DOUBLE,new int[] {dataSize, outputSize});
 
         boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.GraphConfig().net(net).inputs(new INDArray[]{features})
                 .labels(new INDArray[]{labels}));
@@ -2184,7 +2207,7 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
     }
 
     @Test
-    public void testMergeNchw() throws Exception {
+    public void testMergeNchw(@TempDir Path testDir) throws Exception {
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder()
                 .convolutionMode(ConvolutionMode.Same)
                 .graphBuilder()
@@ -2211,7 +2234,7 @@ public class TestComputationGraphNetwork extends BaseDL4JTest {
         INDArray[] in = new INDArray[]{Nd4j.rand(DataType.FLOAT, 1, 32, 32, 3)};
         INDArray out = cg.outputSingle(in);
 
-        File dir = testDir.newFolder();
+        File dir = testDir.toFile();
         File f = new File(dir, "net.zip");
         cg.save(f);
 

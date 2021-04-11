@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.api.ops.random;
 
@@ -23,6 +27,7 @@ import org.nd4j.common.base.Preconditions;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.BaseOp;
+import org.nd4j.linalg.api.ops.DynamicCustomOp;
 import org.nd4j.linalg.api.ops.OpContext;
 import org.nd4j.linalg.api.ops.RandomOp;
 import org.nd4j.linalg.api.shape.LongShapeDescriptor;
@@ -32,9 +37,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * @author raver119@gmail.com
- */
 @NoArgsConstructor
 public abstract class BaseRandomOp extends BaseOp implements RandomOp {
     protected long[] shape;
@@ -44,6 +46,10 @@ public abstract class BaseRandomOp extends BaseOp implements RandomOp {
         Preconditions.checkNotNull(i_v, "Input variable can't be null with this constructor");
         this.sameDiff = sameDiff;
         this.xVertexId = i_v.name();
+        if(i_v.getShape() != null)
+            this.shape = i_v.getShape();
+        else if(i_v.getArr().shape() != null)
+            this.shape = i_v.getArr().shape();
         sameDiff.addArgsFor(new String[]{xVertexId},this);
     }
 
@@ -70,19 +76,10 @@ public abstract class BaseRandomOp extends BaseOp implements RandomOp {
         return calculateOutputShape(null);
     }
 
-    @Override
-    public List<LongShapeDescriptor> calculateOutputShape(OpContext opContext) {
-        if(shape != null){
-            return Collections.singletonList(LongShapeDescriptor.fromShape(shape, dataType));
-        } else {
-            return Collections.singletonList(LongShapeDescriptor.fromShape(shape, Shape.pickPairwiseDataType(args()[0].dataType(), Nd4j.dataType())));
-        }
-    }
+
 
     @Override
-    public List<DataType> calculateOutputDataTypes(List<DataType> inputDataTypes){
-        Preconditions.checkState(inputDataTypes == null || inputDataTypes.isEmpty(), "Expected no input data types for %s, got %s", getClass().getName(), inputDataTypes);
-        //TODO MAKE CONFIGUREABLE - https://github.com/deeplearning4j/deeplearning4j/issues/6854
+    public List<DataType> calculateOutputDataTypes(List<DataType> inputDataTypes) {
         return Collections.singletonList(DataType.FLOAT);
     }
 

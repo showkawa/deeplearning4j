@@ -1,25 +1,33 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg;
 
 import lombok.val;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
@@ -27,21 +35,16 @@ import org.nd4j.common.util.ArrayUtil;
 
 import java.util.*;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.*;
 
-/**
- * @author raver119@gmail.com
- */
-@RunWith(Parameterized.class)
-public class ShufflesTests extends BaseNd4jTest {
+import static org.junit.jupiter.api.Assertions.*;
 
-    public ShufflesTests(Nd4jBackend backend) {
-        super(backend);
-    }
+@NativeTag
+@Tag(TagNames.RNG)
+public class ShufflesTests extends BaseNd4jTestWithBackends {
 
-    @Test
-    public void testSimpleShuffle1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSimpleShuffle1(Nd4jBackend backend) {
         INDArray array = Nd4j.zeros(10, 10);
         for (int x = 0; x < 10; x++) {
             array.getRow(x).assign(x);
@@ -62,8 +65,9 @@ public class ShufflesTests extends BaseNd4jTest {
         assertTrue(scanner.compareRow(array));
     }
 
-    @Test
-    public void testSimpleShuffle2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSimpleShuffle2(Nd4jBackend backend) {
         INDArray array = Nd4j.zeros(10, 10);
         for (int x = 0; x < 10; x++) {
             array.getColumn(x).assign(x);
@@ -77,8 +81,9 @@ public class ShufflesTests extends BaseNd4jTest {
         assertTrue(scanner.compareColumn(array));
     }
 
-    @Test
-    public void testSimpleShuffle3() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSimpleShuffle3(Nd4jBackend backend) {
         INDArray array = Nd4j.zeros(11, 10);
         for (int x = 0; x < 11; x++) {
             array.getRow(x).assign(x);
@@ -93,8 +98,9 @@ public class ShufflesTests extends BaseNd4jTest {
         assertTrue(scanner.compareRow(array));
     }
 
-    @Test
-    public void testSymmetricShuffle1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSymmetricShuffle1(Nd4jBackend backend) {
         INDArray features = Nd4j.zeros(10, 10);
         INDArray labels = Nd4j.zeros(10, 3);
         for (int x = 0; x < 10; x++) {
@@ -131,8 +137,9 @@ public class ShufflesTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testSymmetricShuffle2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSymmetricShuffle2(Nd4jBackend backend) {
         INDArray features = Nd4j.zeros(10, 10, 20);
         INDArray labels = Nd4j.zeros(10, 10, 3);
 
@@ -169,8 +176,9 @@ public class ShufflesTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testSymmetricShuffle3() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSymmetricShuffle3(Nd4jBackend backend) {
         INDArray features = Nd4j.zeros(10, 10, 20);
         INDArray featuresMask = Nd4j.zeros(10, 20);
         INDArray labels = Nd4j.zeros(10, 10, 3);
@@ -234,8 +242,9 @@ public class ShufflesTests extends BaseNd4jTest {
      * There's SMALL chance this test will randomly fail, since spread isn't too big
      * @throws Exception
      */
-    @Test
-    public void testHalfVectors1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testHalfVectors1(Nd4jBackend backend) {
         int[] array1 = ArrayUtil.buildHalfVector(new Random(12), 20);
         int[] array2 = ArrayUtil.buildHalfVector(new Random(75), 20);
 
@@ -246,17 +255,18 @@ public class ShufflesTests extends BaseNd4jTest {
 
         for (int i = 0; i < array1.length; i++) {
             if (i >= array1.length / 2) {
-                assertEquals("Failed on element [" + i + "]", -1, array1[i]);
-                assertEquals("Failed on element [" + i + "]", -1, array2[i]);
+                assertEquals(-1, array1[i],"Failed on element [" + i + "]");
+                assertEquals(-1, array2[i],"Failed on element [" + i + "]");
             } else {
-                assertNotEquals("Failed on element [" + i + "]", -1, array1[i]);
-                assertNotEquals("Failed on element [" + i + "]", -1, array2[i]);
+                assertNotEquals(-1, array1[i],"Failed on element [" + i + "]");
+                assertNotEquals(-1, array2[i],"Failed on element [" + i + "]");
             }
         }
     }
 
-    @Test
-    public void testInterleavedVector1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testInterleavedVector1(Nd4jBackend backend) {
         int[] array1 = ArrayUtil.buildInterleavedVector(new Random(12), 20);
         int[] array2 = ArrayUtil.buildInterleavedVector(new Random(75), 20);
 
@@ -267,17 +277,18 @@ public class ShufflesTests extends BaseNd4jTest {
 
         for (int i = 0; i < array1.length; i++) {
             if (i % 2 != 0) {
-                assertEquals("Failed on element [" + i + "]", -1, array1[i]);
-                assertEquals("Failed on element [" + i + "]", -1, array2[i]);
+                assertEquals( -1, array1[i],"Failed on element [" + i + "]");
+                assertEquals(-1, array2[i],"Failed on element [" + i + "]");
             } else {
-                assertNotEquals("Failed on element [" + i + "]", -1, array1[i]);
-                assertNotEquals("Failed on element [" + i + "]", -1, array2[i]);
+                assertNotEquals(-1, array1[i],"Failed on element [" + i + "]");
+                assertNotEquals( -1, array2[i],"Failed on element [" + i + "]");
             }
         }
     }
 
-    @Test
-    public void testInterleavedVector3() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testInterleavedVector3(Nd4jBackend backend) {
         for (int e = 0; e < 1000; e++) {
             int length = e + 256; //RandomUtils.nextInt(121, 2073);
             int[] array1 = ArrayUtil.buildInterleavedVector(new Random(System.currentTimeMillis()), length);

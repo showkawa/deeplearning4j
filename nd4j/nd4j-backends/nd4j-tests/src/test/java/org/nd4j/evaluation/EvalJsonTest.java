@@ -1,22 +1,31 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.evaluation;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.evaluation.classification.EvaluationBinary;
 import org.nd4j.evaluation.classification.EvaluationCalibration;
@@ -27,35 +36,32 @@ import org.nd4j.evaluation.curves.Histogram;
 import org.nd4j.evaluation.curves.PrecisionRecallCurve;
 import org.nd4j.evaluation.curves.RocCurve;
 import org.nd4j.evaluation.regression.RegressionEvaluation;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.random.impl.BernoulliDistribution;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 
-import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+@Tag(TagNames.EVAL_METRICS)
+@NativeTag
+public class EvalJsonTest extends BaseNd4jTestWithBackends {
 
-public class EvalJsonTest extends BaseNd4jTest {
-
-    public EvalJsonTest(Nd4jBackend backend) {
-        super(backend);
-    }
 
     @Override
     public char ordering() {
         return 'c';
     }
 
-    @Test
-    public void testSerdeEmpty() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSerdeEmpty(Nd4jBackend backend) {
         boolean print = false;
 
         IEvaluation[] arr = new IEvaluation[] {new Evaluation(), new EvaluationBinary(), new ROCBinary(10),
-                        new ROCMultiClass(10), new RegressionEvaluation(3), new RegressionEvaluation(),
-                        new EvaluationCalibration()};
+                new ROCMultiClass(10), new RegressionEvaluation(3), new RegressionEvaluation(),
+                new EvaluationCalibration()};
 
         for (IEvaluation e : arr) {
             String json = e.toJson();
@@ -69,8 +75,9 @@ public class EvalJsonTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testSerde() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSerde(Nd4jBackend backend) {
         boolean print = false;
         Nd4j.getRandom().setSeed(12345);
 
@@ -117,8 +124,9 @@ public class EvalJsonTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testSerdeExactRoc() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSerdeExactRoc(Nd4jBackend backend) {
         Nd4j.getRandom().setSeed(12345);
         boolean print = false;
 
@@ -164,12 +172,12 @@ public class EvalJsonTest extends BaseNd4jTest {
                 assertEquals(((ROC) e).getRocCurve(), ((ROC) fromJson).getRocCurve());
                 assertEquals(((ROC) e).getPrecisionRecallCurve(), ((ROC) fromJson).getPrecisionRecallCurve());
             } else if (e instanceof ROCBinary) {
-                org.nd4j.evaluation.classification.ROC[] rocs = ((ROCBinary) fromJson).getUnderlying();
-                org.nd4j.evaluation.classification.ROC[] origRocs = ((ROCBinary) e).getUnderlying();
+                ROC[] rocs = ((ROCBinary) fromJson).getUnderlying();
+                ROC[] origRocs = ((ROCBinary) e).getUnderlying();
                 //                for(ROC r : rocs ){
                 for (int i = 0; i < origRocs.length; i++) {
-                    org.nd4j.evaluation.classification.ROC r = rocs[i];
-                    org.nd4j.evaluation.classification.ROC origR = origRocs[i];
+                    ROC r = rocs[i];
+                    ROC origR = origRocs[i];
                     //Shouldn't have probAndLabel, but should have stored AUC and AUPRC, AND stored curves
                     assertNull(r.getProbAndLabel());
                     assertEquals(origR.calculateAUC(), origR.calculateAUC(), 1e-6);
@@ -179,11 +187,11 @@ public class EvalJsonTest extends BaseNd4jTest {
                 }
 
             } else if (e instanceof ROCMultiClass) {
-                org.nd4j.evaluation.classification.ROC[] rocs = ((ROCMultiClass) fromJson).getUnderlying();
-                org.nd4j.evaluation.classification.ROC[] origRocs = ((ROCMultiClass) e).getUnderlying();
+                ROC[] rocs = ((ROCMultiClass) fromJson).getUnderlying();
+                ROC[] origRocs = ((ROCMultiClass) e).getUnderlying();
                 for (int i = 0; i < origRocs.length; i++) {
-                    org.nd4j.evaluation.classification.ROC r = rocs[i];
-                    org.nd4j.evaluation.classification.ROC origR = origRocs[i];
+                    ROC r = rocs[i];
+                    ROC origR = origRocs[i];
                     //Shouldn't have probAndLabel, but should have stored AUC and AUPRC, AND stored curves
                     assertNull(r.getProbAndLabel());
                     assertEquals(origR.calculateAUC(), origR.calculateAUC(), 1e-6);
@@ -195,12 +203,13 @@ public class EvalJsonTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testJsonYamlCurves() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testJsonYamlCurves(Nd4jBackend backend) {
         ROC roc = new ROC(0);
 
         INDArray evalLabel =
-                        Nd4j.getExecutioner().exec(new BernoulliDistribution(Nd4j.createUninitialized(100, 1), 0.5));
+                Nd4j.getExecutioner().exec(new BernoulliDistribution(Nd4j.createUninitialized(100, 1), 0.5));
         INDArray evalProb = Nd4j.rand(100, 1);
         roc.eval(evalLabel, evalProb);
 
@@ -231,8 +240,8 @@ public class EvalJsonTest extends BaseNd4jTest {
         ec.eval(evalLabel, evalProb);
 
         Histogram[] histograms = new Histogram[] {ec.getResidualPlotAllClasses(), ec.getResidualPlot(0),
-                        ec.getResidualPlot(1), ec.getProbabilityHistogramAllClasses(), ec.getProbabilityHistogram(0),
-                        ec.getProbabilityHistogram(1)};
+                ec.getResidualPlot(1), ec.getProbabilityHistogramAllClasses(), ec.getProbabilityHistogram(0),
+                ec.getProbabilityHistogram(1)};
 
         for (Histogram h : histograms) {
             String json = h.toJson();
@@ -247,8 +256,9 @@ public class EvalJsonTest extends BaseNd4jTest {
 
     }
 
-    @Test
-    public void testJsonWithCustomThreshold() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testJsonWithCustomThreshold(Nd4jBackend backend) {
 
         //Evaluation - binary threshold
         Evaluation e = new Evaluation(0.25);

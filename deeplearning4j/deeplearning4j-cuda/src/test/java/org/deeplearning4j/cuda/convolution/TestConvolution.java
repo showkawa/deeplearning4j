@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  * See the NOTICE file distributed with this work for additional
+ *  * information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.cuda.convolution;
 
@@ -39,9 +43,10 @@ import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.common.resources.Resources;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataType;
@@ -55,19 +60,18 @@ import org.nd4j.common.primitives.Pair;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Created by Alex on 15/11/2016.
  */
 public class TestConvolution extends BaseDL4JTest {
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
 
     @Override
     public long getTimeoutMilliseconds() {
@@ -172,7 +176,7 @@ public class TestConvolution extends BaseDL4JTest {
                     INDArray outCudnn = layerCudnn.activate(in, false, LayerWorkspaceMgr.noWorkspaces());
                     INDArray outStd = layerStandard.activate(in, false, LayerWorkspaceMgr.noWorkspaces());
 
-                    assertEquals(msg, outStd, outCudnn);
+                    assertEquals(outStd, outCudnn, msg);
 
 
                     //Check backprop:
@@ -186,13 +190,13 @@ public class TestConvolution extends BaseDL4JTest {
                     INDArray epsOutStd = pStd.getSecond();
                     INDArray epsOutCudnn = pCudnn.getSecond();
 
-                    assertTrue(msg, epsOutStd.equalsWithEps(epsOutCudnn, 1e-4));
+                    assertTrue(epsOutStd.equalsWithEps(epsOutCudnn, 1e-4), msg);
 
                     if (conv) {
                         INDArray gradStd = pStd.getFirst().gradient();
                         INDArray gradCudnn = pCudnn.getFirst().gradient();
 
-                        assertTrue(msg, gradStd.equalsWithEps(gradCudnn, 1e-4));
+                        assertTrue(gradStd.equalsWithEps(gradCudnn, 1e-4), msg);
                     }
                 }
             }
@@ -201,8 +205,8 @@ public class TestConvolution extends BaseDL4JTest {
 
 
     @Test
-    public void validateXceptionImport() throws Exception {
-        File dir = testDir.newFolder();
+    public void validateXceptionImport(@TempDir Path testDir) throws Exception {
+        File dir = testDir.toFile();
         File fSource = Resources.asFile("modelimport/keras/examples/xception/xception_tf_keras_2.h5");
         File fExtracted = new File(dir, "xception_tf_keras_2.h5" );
         FileUtils.copyFile(fSource, fExtracted);
@@ -222,8 +226,8 @@ public class TestConvolution extends BaseDL4JTest {
 
         assertEquals(withCudnn.keySet(), noCudnn.keySet());
 
-        for(String s : withCudnn.keySet()){
-            assertEquals(s, withCudnn.get(s), noCudnn.get(s));
+        for(String s : withCudnn.keySet()) {
+            assertEquals(withCudnn.get(s), noCudnn.get(s), s);
         }
     }
 

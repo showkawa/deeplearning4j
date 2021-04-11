@@ -1,24 +1,28 @@
 /*
- * Copyright (c) 2015-2019 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
  */
 
 package org.deeplearning4j.regressiontest;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -50,8 +54,11 @@ import org.deeplearning4j.nn.graph.vertex.impl.MergeVertex;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInitXavier;
 import org.deeplearning4j.regressiontest.customlayer100a.CustomLayer;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.impl.ActivationIdentity;
 import org.nd4j.linalg.activations.impl.ActivationLReLU;
 import org.nd4j.linalg.activations.impl.ActivationReLU;
@@ -67,7 +74,9 @@ import org.nd4j.linalg.learning.regularization.L2Regularization;
 import org.nd4j.linalg.lossfunctions.impl.LossMAE;
 import org.nd4j.linalg.lossfunctions.impl.LossMCXENT;
 import org.nd4j.common.resources.Resources;
-
+@Disabled
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class RegressionTest100b4 extends BaseDL4JTest {
 
     @Override
@@ -130,7 +139,7 @@ public class RegressionTest100b4 extends BaseDL4JTest {
             assertEquals(dtype, net.getLayerWiseConfigurations().getDataType());
             assertEquals(dtype, net.params().dataType());
             boolean eq = outExp.equalsWithEps(outAct, 0.01);
-            assertTrue("Test for dtype: " + dtypeName + "\n" + outExp + " vs " + outAct, eq);
+            assertTrue(eq,"Test for dtype: " + dtypeName + "\n" + outExp + " vs " + outAct);
         }
     }
 
@@ -217,7 +226,7 @@ public class RegressionTest100b4 extends BaseDL4JTest {
 
 
     @Test
-    @Ignore("Failing due to new data format changes. Sept 10,2020")
+    @Disabled("Failing due to new data format changes. Sept 10,2020")
     public void testYoloHouseNumber() throws Exception {
 
         File f = Resources.asFile("regression_testing/100b4/HouseNumberDetection_100b4.bin");
@@ -253,7 +262,7 @@ public class RegressionTest100b4 extends BaseDL4JTest {
     }
 
     @Test
-    @Ignore("failing due to new input data format changes.")
+    @Disabled("failing due to new input data format changes.")
     public void testSyntheticCNN() throws Exception {
 
         File f = Resources.asFile("regression_testing/100b4/SyntheticCNN_100b4.bin");

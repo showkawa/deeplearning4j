@@ -1,14 +1,39 @@
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
+
 package org.nd4j.linalg.convolution;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.common.io.ClassPathResource;
-import org.nd4j.common.resources.Resources;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.CustomOp;
@@ -17,29 +42,28 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+@NativeTag
+@Tag(TagNames.FILE_IO)
+public class DeconvTests extends BaseNd4jTestWithBackends {
 
-public class DeconvTests extends BaseNd4jTest {
-
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
-
-    public DeconvTests(Nd4jBackend backend) {
-        super(backend);
-    }
+    @TempDir Path testDir;
 
     @Override
     public char ordering() {
         return 'c';
     }
 
-    @Test
-    public void compareKeras() throws Exception {
-        File newFolder = testDir.newFolder();
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    @Tag(TagNames.LARGE_RESOURCES)
+    public void compareKeras(Nd4jBackend backend) throws Exception {
+        File newFolder = testDir.toFile();
         new ClassPathResource("keras/deconv/").copyDirectory(newFolder);
 
         File[] files = newFolder.listFiles();

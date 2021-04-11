@@ -1,29 +1,35 @@
-/*******************************************************************************
- * Copyright (c) 2015-2019 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.api.buffer;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.indexer.*;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.concurrency.AffinityManager;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.conf.WorkspaceConfiguration;
@@ -35,22 +41,20 @@ import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.nativeblas.NativeOpsHolder;
 
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-@RunWith(Parameterized.class)
-public class DataBufferTests extends BaseNd4jTest {
+@NativeTag
+public class DataBufferTests extends BaseNd4jTestWithBackends {
 
-    public DataBufferTests(Nd4jBackend backend) {
-        super(backend);
-    }
 
-    @Test
-    @Ignore("AB 2019/06/03 - CI issue: \"CUDA stream synchronization failed\" - see issue 7657")
-    public void testNoArgCreateBufferFromArray() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testNoArgCreateBufferFromArray(Nd4jBackend backend) {
 
         //Tests here:
         //1. Create from JVM array
@@ -275,8 +279,9 @@ public class DataBufferTests extends BaseNd4jTest {
 
 
 
-    @Test
-    public void testCreateTypedBuffer() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCreateTypedBuffer(Nd4jBackend backend) {
 
         WorkspaceConfiguration initialConfig = WorkspaceConfiguration.builder().initialSize(10 * 1024L * 1024L)
                 .policyAllocation(AllocationPolicy.STRICT).policyLearning(LearningPolicy.NONE).build();
@@ -345,8 +350,9 @@ public class DataBufferTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testAsBytes() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testAsBytes(Nd4jBackend backend) {
         INDArray orig = Nd4j.linspace(DataType.INT, 0, 10, 1);
 
         for (DataType dt : new DataType[]{DataType.DOUBLE, DataType.FLOAT, DataType.HALF, DataType.BFLOAT16,
@@ -373,7 +379,8 @@ public class DataBufferTests extends BaseNd4jTest {
 
             INDArray arr2 = Nd4j.create(dt, arr.shape());
             ByteBuffer bb = arr2.data().pointer().asByteBuffer();
-            bb.position(0);
+            Buffer buffer = (Buffer) bb;
+            buffer.position(0);
             bb.put(b);
 
             Nd4j.getAffinityManager().tagLocation(arr2, AffinityManager.Location.HOST);
@@ -400,7 +407,8 @@ public class DataBufferTests extends BaseNd4jTest {
     }
 
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testEnsureLocation(){
         //https://github.com/eclipse/deeplearning4j/issues/8783
         Nd4j.create(1);

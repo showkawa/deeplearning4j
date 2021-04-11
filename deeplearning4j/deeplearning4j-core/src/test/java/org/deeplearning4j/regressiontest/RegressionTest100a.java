@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.regressiontest;
 
@@ -31,8 +35,11 @@ import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInitXavier;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.impl.ActivationIdentity;
 import org.nd4j.linalg.activations.impl.ActivationLReLU;
 import org.nd4j.linalg.activations.impl.ActivationSoftmax;
@@ -49,9 +56,12 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
+@Disabled
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class RegressionTest100a extends BaseDL4JTest {
 
     @Override
@@ -77,7 +87,7 @@ public class RegressionTest100a extends BaseDL4JTest {
             fail("Expected exception");
         } catch (Exception e){
             String msg = e.getMessage();
-            assertTrue(msg, msg.contains("custom") && msg.contains("1.0.0-beta") && msg.contains("saved again"));
+            assertTrue(msg.contains("custom") && msg.contains("1.0.0-beta") && msg.contains("saved again"), msg);
         }
     }
 
@@ -164,7 +174,7 @@ public class RegressionTest100a extends BaseDL4JTest {
 
 
     @Test
-    @Ignore("AB 2019/05/23 - Failing on linux-x86_64-cuda-9.2 - see issue #7657")
+    @Disabled("AB 2019/05/23 - Failing on linux-x86_64-cuda-9.2 - see issue #7657")
     public void testYoloHouseNumber() throws Exception {
 
         File f = Resources.asFile("regression_testing/100a/HouseNumberDetection_100a.bin");
@@ -195,7 +205,7 @@ public class RegressionTest100a extends BaseDL4JTest {
 
         //Minor bug in 1.0.0-beta and earlier: not adding epsilon value to forward pass for batch norm
         //Which means: the record output doesn't have this. To account for this, we'll manually set eps to 0.0 here
-        //https://github.com/deeplearning4j/deeplearning4j/issues/5836#issuecomment-405526228
+        //https://github.com/eclipse/deeplearning4j/issues/5836#issuecomment-405526228
         for(Layer l : net.getLayers()){
             if(l.conf().getLayer() instanceof BatchNormalization){
                 BatchNormalization bn = (BatchNormalization) l.conf().getLayer();
@@ -210,12 +220,12 @@ public class RegressionTest100a extends BaseDL4JTest {
             log.info("Expected: {}", outExp);
             log.info("Actual: {}", outAct);
         }
-        assertTrue("Output not equal", eq);
+        assertTrue(eq, "Output not equal");
     }
 
 
     @Test
-    @Ignore("Ignoring due to new set input types changes. Loading a network isn't a problem, but we need to set the input types yet.")
+    @Disabled("Ignoring due to new set input types changes. Loading a network isn't a problem, but we need to set the input types yet.")
     public void testUpsampling2d() throws Exception {
 
         File f = Resources.asFile("regression_testing/100a/upsampling/net.bin");

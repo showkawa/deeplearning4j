@@ -1,26 +1,37 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.spark.models.embeddings.word2vec;
 
+import com.sun.jna.Platform;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+
+
+import org.deeplearning4j.common.resources.DL4JResources;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.common.io.ClassPathResource;
 import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
@@ -32,29 +43,56 @@ import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreproc
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.LowCasePreProcessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.resources.Downloader;
+import org.nd4j.common.resources.strumpf.StrumpfResolver;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.io.File;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * This test is for LEGACY w2v implementation
- *
- * @author jeffreytang
- */
-@Ignore
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.SPARK)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
+@Slf4j
+@Tag(TagNames.LONG_TEST)
+@Tag(TagNames.LARGE_RESOURCES)
+@Disabled("Permissions issues on CI")
+@Tag(TagNames.NEEDS_VERIFY)
 public class Word2VecTest {
+    @BeforeAll
+    @SneakyThrows
+    public static void beforeAll() {
+        if(Platform.isWindows()) {
+            File hadoopHome = new File(System.getProperty("java.io.tmpdir"),"hadoop-tmp");
+            File binDir = new File(hadoopHome,"bin");
+            if(!binDir.exists())
+                binDir.mkdirs();
+            File outputFile = new File(binDir,"winutils.exe");
+            if(!outputFile.exists()) {
+                log.info("Fixing spark for windows");
+                Downloader.download("winutils.exe",
+                        URI.create("https://github.com/cdarlint/winutils/blob/master/hadoop-2.6.5/bin/winutils.exe?raw=true").toURL(),
+                        outputFile,"db24b404d2331a1bec7443336a5171f1",3);
+            }
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
+            System.setProperty("hadoop.home.dir", hadoopHome.getAbsolutePath());
+        }
+    }
+
 
     @Test
-    public void testConcepts() throws Exception {
+    public void testConcepts(@TempDir Path testDir) throws Exception {
         // These are all default values for word2vec
         SparkConf sparkConf = new SparkConf().setMaster("local[8]")
                 .set("spark.driver.host", "localhost")
@@ -128,7 +166,8 @@ public class Word2VecTest {
 
 
         // test serialization
-        File tempFile = testDir.newFile("temp" + System.currentTimeMillis() + ".tmp");
+
+        File tempFile =  Files.createTempFile(testDir,"temp" + System.currentTimeMillis(),"tmp").toFile();
 
         int idx1 = word2Vec.vocab().wordFor("day").getIndex();
 
@@ -154,7 +193,7 @@ public class Word2VecTest {
         assertEquals(array1, array2);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testSparkW2VonBiggerCorpus() throws Exception {
         SparkConf sparkConf = new SparkConf().setMaster("local[8]").setAppName("sparktest")
@@ -193,7 +232,7 @@ public class Word2VecTest {
     }
 
     @Test
-    @Ignore
+    @Disabled
     public void testPortugeseW2V() throws Exception {
         WordVectors word2Vec = WordVectorSerializer.loadTxtVectors(new File("/ext/Temp/para.txt"));
         word2Vec.setModelUtils(new FlatModelUtils());

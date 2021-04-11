@@ -1,37 +1,39 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.specials;
 
-import com.google.common.primitives.Doubles;
-import com.google.common.primitives.Floats;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.bytedeco.javacpp.LongPointer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.rng.Random;
-import org.nd4j.linalg.api.shape.Shape;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.nativeblas.NativeOpsHolder;
@@ -39,36 +41,30 @@ import org.nd4j.nativeblas.NativeOpsHolder;
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-/**
- * @author raver119@gmail.com
- */
 @Slf4j
-@RunWith(Parameterized.class)
-public class SortCooTests extends BaseNd4jTest {
 
-    DataType initialType;
-    DataType initialDefaultType;
+public class SortCooTests extends BaseNd4jTestWithBackends {
 
-    public SortCooTests(Nd4jBackend backend) {
-        super(backend);
-        this.initialType = Nd4j.dataType();
-        this.initialDefaultType = Nd4j.defaultFloatingPointType();
-    }
+    DataType initialType = Nd4j.dataType();
+    DataType initialDefaultType = Nd4j.defaultFloatingPointType();
 
-    @Before
+
+
+    @BeforeEach
     public void setUp() {
         Nd4j.setDefaultDataTypes(DataType.FLOAT, DataType.FLOAT);
     }
 
-    @After
+    @AfterEach
     public void setDown() {
         Nd4j.setDefaultDataTypes(initialType, Nd4j.defaultFloatingPointType());
     }
 
-    @Test
-    public void sortSparseCooIndicesSort1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void sortSparseCooIndicesSort1(Nd4jBackend backend) {
         // FIXME: we don't want this test running on cuda for now
         if (Nd4j.getExecutioner().getClass().getCanonicalName().toLowerCase().contains("cuda"))
             return;
@@ -101,8 +97,9 @@ public class SortCooTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void sortSparseCooIndicesSort2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void sortSparseCooIndicesSort2(Nd4jBackend backend) {
         // FIXME: we don't want this test running on cuda for now
         if (Nd4j.getExecutioner().getClass().getCanonicalName().toLowerCase().contains("cuda"))
             return;
@@ -148,8 +145,9 @@ public class SortCooTests extends BaseNd4jTest {
         return LongStream.range(i, i + length).map(buffer::getLong).toArray();
     }
 
-    @Test
-    public void sortSparseCooIndicesSort3() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void sortSparseCooIndicesSort3(Nd4jBackend backend) {
         // FIXME: we don't want this test running on cuda for now
         if (Nd4j.getExecutioner().getClass().getCanonicalName().toLowerCase().contains("cuda"))
             return;
@@ -186,8 +184,9 @@ public class SortCooTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void sortSparseCooIndicesSort4() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void sortSparseCooIndicesSort4(Nd4jBackend backend) {
         // FIXME: we don't want this test running on cuda for now
         if (Nd4j.getExecutioner().getClass().getCanonicalName().toLowerCase().contains("cuda"))
             return;

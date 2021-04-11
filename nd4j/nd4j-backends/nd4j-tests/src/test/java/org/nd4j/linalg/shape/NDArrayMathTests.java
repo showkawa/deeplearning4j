@@ -1,48 +1,55 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.shape;
 
 import lombok.val;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.linalg.util.NDArrayMath;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
  * @author Adam Gibson
  */
-@RunWith(Parameterized.class)
-public class NDArrayMathTests extends BaseNd4jTest {
-
-    public NDArrayMathTests(Nd4jBackend backend) {
-        super(backend);
-    }
+@NativeTag
+@Tag(TagNames.NDARRAY_INDEXING)
+public class NDArrayMathTests extends BaseNd4jTestWithBackends {
 
 
-    @Test
-    public void testVectorPerSlice() {
+
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testVectorPerSlice(Nd4jBackend backend) {
         INDArray arr = Nd4j.create(2, 2, 2, 2);
         assertEquals(4, NDArrayMath.vectorsPerSlice(arr));
 
@@ -54,35 +61,40 @@ public class NDArrayMathTests extends BaseNd4jTest {
 
     }
 
-    @Test
-    public void testMatricesPerSlice() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMatricesPerSlice(Nd4jBackend backend) {
         INDArray arr = Nd4j.create(2, 2, 2, 2);
         assertEquals(2, NDArrayMath.matricesPerSlice(arr));
     }
 
-    @Test
-    public void testLengthPerSlice() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testLengthPerSlice(Nd4jBackend backend) {
         INDArray arr = Nd4j.create(2, 2, 2, 2);
         val lengthPerSlice = NDArrayMath.lengthPerSlice(arr);
         assertEquals(8, lengthPerSlice);
     }
 
-    @Test
-    public void toffsetForSlice() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void toffsetForSlice(Nd4jBackend backend) {
         INDArray arr = Nd4j.create(3, 2, 2);
         int slice = 1;
         assertEquals(4, NDArrayMath.offsetForSlice(arr, slice));
     }
 
 
-    @Test
-    public void testMapOntoVector() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMapOntoVector(Nd4jBackend backend) {
         INDArray arr = Nd4j.create(3, 2, 2);
         assertEquals(NDArrayMath.mapIndexOntoVector(2, arr), 4);
     }
 
-    @Test
-    public void testNumVectors() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testNumVectors(Nd4jBackend backend) {
         INDArray arr = Nd4j.create(3, 2, 2);
         assertEquals(4, NDArrayMath.vectorsPerSlice(arr));
         INDArray matrix = Nd4j.create(2, 2);
@@ -90,8 +102,9 @@ public class NDArrayMathTests extends BaseNd4jTest {
 
     }
 
-    @Test
-    public void testOffsetForSlice() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testOffsetForSlice(Nd4jBackend backend) {
         INDArray arr = Nd4j.linspace(1, 16, 16, DataType.DOUBLE).reshape(2, 2, 2, 2);
         int[] dimensions = {0, 1};
         INDArray permuted = arr.permute(2, 3, 0, 1);
@@ -126,15 +139,17 @@ public class NDArrayMathTests extends BaseNd4jTest {
 
     }
 
-    @Test
-    public void testOddDimensions() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testOddDimensions(Nd4jBackend backend) {
         INDArray arr = Nd4j.create(3, 2, 2);
         val numMatrices = NDArrayMath.matricesPerSlice(arr);
         assertEquals(1, numMatrices);
     }
 
-    @Test
-    public void testTotalVectors() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testTotalVectors(Nd4jBackend backend) {
         INDArray arr2 = Nd4j.create(2, 2, 2, 2);
         assertEquals(8, NDArrayMath.numVectors(arr2));
     }

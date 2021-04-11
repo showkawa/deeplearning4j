@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.ui.storage;
 
@@ -32,29 +36,33 @@ import org.deeplearning4j.ui.model.stats.impl.java.JavaStatsReport;
 import org.deeplearning4j.ui.model.storage.InMemoryStatsStorage;
 import org.deeplearning4j.ui.model.storage.mapdb.MapDBStatsStorage;
 import org.deeplearning4j.ui.model.storage.sqlite.J7FileStatsStorage;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Disabled;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
-import static org.junit.Assert.*;
-
-/**
- * Created by Alex on 03/10/2016.
- */
+import static org.junit.jupiter.api.Assertions.*;
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.UI)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class TestStatsStorage extends BaseDL4JTest {
 
-    @Rule
-    public final TemporaryFolder testDir = new TemporaryFolder();
+
 
 
     @Test
-    @Ignore("AB 2019/05/21 - Failing on linux-x86_64-cuda-9.2 only - Issue #7657")
-    public void testStatsStorage() throws IOException {
+    @Disabled("AB 2019/05/21 - Failing on linux-x86_64-cuda-9.2 only - Issue #7657")
+    public void testStatsStorage(@TempDir Path testDir) throws IOException {
 
         for (boolean useJ7Storage : new boolean[] {false, true}) {
             for (int i = 0; i < 3; i++) {
@@ -62,12 +70,12 @@ public class TestStatsStorage extends BaseDL4JTest {
                 StatsStorage ss;
                 switch (i) {
                     case 0:
-                        File f = createTempFile("TestMapDbStatsStore", ".db");
+                        File f = createTempFile(testDir,"TestMapDbStatsStore", ".db");
                         f.delete(); //Don't want file to exist...
                         ss = new MapDBStatsStorage.Builder().file(f).build();
                         break;
                     case 1:
-                        File f2 = createTempFile("TestJ7FileStatsStore", ".db");
+                        File f2 = createTempFile(testDir,"TestJ7FileStatsStore", ".db");
                         f2.delete(); //Don't want file to exist...
                         ss = new J7FileStatsStorage(f2);
                         break;
@@ -119,7 +127,7 @@ public class TestStatsStorage extends BaseDL4JTest {
                 assertEquals(Collections.singletonList("wid0"), ss.listWorkerIDsForSession("sid0"));
                 assertEquals(Collections.singletonList("wid0"), ss.listWorkerIDsForSessionAndType("sid0", "tid0"));
                 assertEquals(Collections.singletonList(getReport(0, 0, 0, 12345, useJ7Storage)),
-                                ss.getAllUpdatesAfter("sid0", "tid0", "wid0", 0));
+                        ss.getAllUpdatesAfter("sid0", "tid0", "wid0", 0));
                 assertEquals(1, ss.getNumUpdateRecordsFor("sid0"));
                 assertEquals(1, ss.getNumUpdateRecordsFor("sid0", "tid0", "wid0"));
 
@@ -157,17 +165,17 @@ public class TestStatsStorage extends BaseDL4JTest {
 
                 ss.putUpdate(getReport(100, 200, 300, 12346, useJ7Storage));
                 assertEquals(Collections.singletonList(getReport(100, 200, 300, 12346, useJ7Storage)),
-                                ss.getLatestUpdateAllWorkers("sid100", "tid200"));
+                        ss.getLatestUpdateAllWorkers("sid100", "tid200"));
                 assertEquals(Collections.singletonList("tid200"), ss.listTypeIDsForSession("sid100"));
                 List<String> temp = ss.listWorkerIDsForSession("sid100");
                 System.out.println("temp: " + temp);
                 assertEquals(Collections.singletonList("wid300"), ss.listWorkerIDsForSession("sid100"));
                 assertEquals(Collections.singletonList("wid300"),
-                                ss.listWorkerIDsForSessionAndType("sid100", "tid200"));
+                        ss.listWorkerIDsForSessionAndType("sid100", "tid200"));
                 assertEquals(getReport(100, 200, 300, 12346, useJ7Storage),
-                                ss.getLatestUpdate("sid100", "tid200", "wid300"));
+                        ss.getLatestUpdate("sid100", "tid200", "wid300"));
                 assertEquals(getReport(100, 200, 300, 12346, useJ7Storage),
-                                ss.getUpdate("sid100", "tid200", "wid300", 12346));
+                        ss.getUpdate("sid100", "tid200", "wid300", 12346));
 
                 assertEquals(2, l.countNewSession);
                 assertEquals(3, l.countNewWorkerId);
@@ -208,16 +216,16 @@ public class TestStatsStorage extends BaseDL4JTest {
 
 
     @Test
-    @Ignore("AB 2019/05/21 - Failing on linux-x86_64-cuda-9.2 only - Issue #7657")
-    public void testFileStatsStore() throws IOException {
+    @Disabled("AB 2019/05/21 - Failing on linux-x86_64-cuda-9.2 only - Issue #7657")
+    public void testFileStatsStore(@TempDir Path testDir) throws IOException {
 
         for (boolean useJ7Storage : new boolean[] {false, true}) {
             for (int i = 0; i < 2; i++) {
                 File f;
                 if (i == 0) {
-                    f = createTempFile("TestMapDbStatsStore", ".db");
+                    f = createTempFile(testDir,"TestMapDbStatsStore", ".db");
                 } else {
-                    f = createTempFile("TestSqliteStatsStore", ".db");
+                    f = createTempFile(testDir,"TestSqliteStatsStore", ".db");
                 }
 
                 f.delete(); //Don't want file to exist...
@@ -269,7 +277,7 @@ public class TestStatsStorage extends BaseDL4JTest {
                 assertEquals(Collections.singletonList("wid0"), ss.listWorkerIDsForSession("sid0"));
                 assertEquals(Collections.singletonList("wid0"), ss.listWorkerIDsForSessionAndType("sid0", "tid0"));
                 assertEquals(Collections.singletonList(getReport(0, 0, 0, 12345, useJ7Storage)),
-                                ss.getAllUpdatesAfter("sid0", "tid0", "wid0", 0));
+                        ss.getAllUpdatesAfter("sid0", "tid0", "wid0", 0));
                 assertEquals(1, ss.getNumUpdateRecordsFor("sid0"));
                 assertEquals(1, ss.getNumUpdateRecordsFor("sid0", "tid0", "wid0"));
 
@@ -307,17 +315,17 @@ public class TestStatsStorage extends BaseDL4JTest {
 
                 ss.putUpdate(getReport(100, 200, 300, 12346, useJ7Storage));
                 assertEquals(Collections.singletonList(getReport(100, 200, 300, 12346, useJ7Storage)),
-                                ss.getLatestUpdateAllWorkers("sid100", "tid200"));
+                        ss.getLatestUpdateAllWorkers("sid100", "tid200"));
                 assertEquals(Collections.singletonList("tid200"), ss.listTypeIDsForSession("sid100"));
                 List<String> temp = ss.listWorkerIDsForSession("sid100");
                 System.out.println("temp: " + temp);
                 assertEquals(Collections.singletonList("wid300"), ss.listWorkerIDsForSession("sid100"));
                 assertEquals(Collections.singletonList("wid300"),
-                                ss.listWorkerIDsForSessionAndType("sid100", "tid200"));
+                        ss.listWorkerIDsForSessionAndType("sid100", "tid200"));
                 assertEquals(getReport(100, 200, 300, 12346, useJ7Storage),
-                                ss.getLatestUpdate("sid100", "tid200", "wid300"));
+                        ss.getLatestUpdate("sid100", "tid200", "wid300"));
                 assertEquals(getReport(100, 200, 300, 12346, useJ7Storage),
-                                ss.getUpdate("sid100", "tid200", "wid300", 12346));
+                        ss.getUpdate("sid100", "tid200", "wid300", 12346));
 
                 assertEquals(2, l.countNewSession);
                 assertEquals(3, l.countNewWorkerId);
@@ -348,11 +356,11 @@ public class TestStatsStorage extends BaseDL4JTest {
                 assertEquals(Collections.singletonList("tid200"), ss.listTypeIDsForSession("sid100"));
                 assertEquals(Collections.singletonList("wid300"), ss.listWorkerIDsForSession("sid100"));
                 assertEquals(Collections.singletonList("wid300"),
-                                ss.listWorkerIDsForSessionAndType("sid100", "tid200"));
+                        ss.listWorkerIDsForSessionAndType("sid100", "tid200"));
                 assertEquals(getReport(100, 200, 300, 12346, useJ7Storage),
-                                ss.getLatestUpdate("sid100", "tid200", "wid300"));
+                        ss.getLatestUpdate("sid100", "tid200", "wid300"));
                 assertEquals(getReport(100, 200, 300, 12346, useJ7Storage),
-                                ss.getUpdate("sid100", "tid200", "wid300", 12346));
+                        ss.getUpdate("sid100", "tid200", "wid300", 12346));
             }
         }
     }
@@ -372,7 +380,7 @@ public class TestStatsStorage extends BaseDL4JTest {
         envInfo.put("envInfo0", "value0");
         envInfo.put("envInfo1", "value1");
         rep.reportSoftwareInfo("arch", "osName", "jvmName", "jvmVersion", "1.8", "backend", "dtype", "hostname",
-                        "jvmuid", envInfo);
+                "jvmuid", envInfo);
         return rep;
     }
 
@@ -427,8 +435,11 @@ public class TestStatsStorage extends BaseDL4JTest {
         }
     }
 
-    private File createTempFile(String prefix, String suffix) throws IOException {
-        return testDir.newFile(prefix + "-" + System.nanoTime() + suffix);
+    private File createTempFile(Path testDir, String prefix, String suffix) throws IOException {
+        File newFile =  new File(testDir.toFile(),prefix + "-" + System.nanoTime() + suffix);
+        newFile.createNewFile();
+        newFile.deleteOnExit();
+        return newFile;
     }
 
 }

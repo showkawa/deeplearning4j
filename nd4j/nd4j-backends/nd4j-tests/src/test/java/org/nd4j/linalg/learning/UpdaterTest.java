@@ -1,25 +1,33 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.learning;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.rng.distribution.Distribution;
 import org.nd4j.linalg.factory.Nd4j;
@@ -31,18 +39,18 @@ import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.learning.config.Nadam;
 import org.nd4j.linalg.learning.config.Nesterovs;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@RunWith(Parameterized.class)
-public class UpdaterTest extends BaseNd4jTest {
-
-    public UpdaterTest(Nd4jBackend backend) {
-        super(backend);
-    }
+@Tag(TagNames.TRAINING)
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
+public class UpdaterTest extends BaseNd4jTestWithBackends {
 
 
-    @Test
-    public void testAdaGradLegacy() {
+
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testAdaGradLegacy(Nd4jBackend backend) {
         int rows = 1;
         int cols = 1;
 
@@ -54,8 +62,9 @@ public class UpdaterTest extends BaseNd4jTest {
         assertEquals(1e-1, w.getDouble(0), 1e-1);
     }
 
-    @Test
-    public void testNesterovs() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testNesterovs(Nd4jBackend backend) {
         int rows = 10;
         int cols = 2;
 
@@ -73,8 +82,9 @@ public class UpdaterTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testAdaGrad() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testAdaGrad(Nd4jBackend backend) {
         int rows = 10;
         int cols = 2;
 
@@ -93,8 +103,9 @@ public class UpdaterTest extends BaseNd4jTest {
 
     }
 
-    @Test
-    public void testAdaDelta() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testAdaDelta(Nd4jBackend backend) {
         int rows = 10;
         int cols = 2;
 
@@ -113,8 +124,9 @@ public class UpdaterTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testAdam() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testAdam(Nd4jBackend backend) {
         int rows = 10;
         int cols = 2;
 
@@ -133,8 +145,9 @@ public class UpdaterTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testNadam() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testNadam(Nd4jBackend backend) {
         int rows = 10;
         int cols = 2;
 
@@ -152,8 +165,9 @@ public class UpdaterTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testAdaMax() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testAdaMax(Nd4jBackend backend) {
         int rows = 10;
         int cols = 2;
 

@@ -1,26 +1,34 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.dataset;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.TestMultiDataSetIterator;
@@ -29,17 +37,12 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Most of the normalizer functionality is shared with {@link MultiNormalizerStandardize}
- * and is covered in {@link NormalizerStandardizeTest}. This test suite just verifies if it deals properly with
- * multiple inputs and multiple outputs
- *
- * @author Ede Meijer
- */
-@RunWith(Parameterized.class)
-public class MultiNormalizerStandardizeTest extends BaseNd4jTest {
+@Tag(TagNames.NDARRAY_ETL)
+@NativeTag
+@Tag(TagNames.FILE_IO)
+public class MultiNormalizerStandardizeTest extends BaseNd4jTestWithBackends {
     private static final double TOLERANCE_PERC = 0.01; // 0.01% of correct value
     private static final int INPUT1_SCALE = 1, INPUT2_SCALE = 2, OUTPUT1_SCALE = 3, OUTPUT2_SCALE = 4;
 
@@ -48,7 +51,7 @@ public class MultiNormalizerStandardizeTest extends BaseNd4jTest {
     private double meanNaturalNums;
     private double stdNaturalNums;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         SUT = new MultiNormalizerStandardize();
         SUT.fitLabel(true);
@@ -68,25 +71,25 @@ public class MultiNormalizerStandardizeTest extends BaseNd4jTest {
         stdNaturalNums = Math.sqrt((nSamples * nSamples - 1) / 12.0);
     }
 
-    public MultiNormalizerStandardizeTest(Nd4jBackend backend) {
-        super(backend);
-    }
 
-    @Test
-    public void testMultipleInputsAndOutputsWithDataSet() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMultipleInputsAndOutputsWithDataSet(Nd4jBackend backend) {
         SUT.fit(data);
         assertExpectedMeanStd();
     }
 
-    @Test
-    public void testMultipleInputsAndOutputsWithIterator() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMultipleInputsAndOutputsWithIterator(Nd4jBackend backend) {
         MultiDataSetIterator iter = new TestMultiDataSetIterator(1, data);
         SUT.fit(iter);
         assertExpectedMeanStd();
     }
 
-    @Test
-    public void testRevertFeaturesINDArray() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRevertFeaturesINDArray(Nd4jBackend backend) {
         SUT.fit(data);
 
         MultiDataSet transformed = data.copy();
@@ -101,8 +104,9 @@ public class MultiNormalizerStandardizeTest extends BaseNd4jTest {
         assertEquals(reverted, transformed.getFeatures(0));
     }
 
-    @Test
-    public void testRevertLabelsINDArray() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRevertLabelsINDArray(Nd4jBackend backend) {
         SUT.fit(data);
 
         MultiDataSet transformed = data.copy();
@@ -117,8 +121,9 @@ public class MultiNormalizerStandardizeTest extends BaseNd4jTest {
         assertEquals(reverted, transformed.getLabels(0));
     }
 
-    @Test
-    public void testRevertMultiDataSet() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRevertMultiDataSet(Nd4jBackend backend) {
         SUT.fit(data);
 
         MultiDataSet transformed = data.copy();
@@ -133,14 +138,15 @@ public class MultiNormalizerStandardizeTest extends BaseNd4jTest {
         assertTrue(diffAfterRevert < TOLERANCE_PERC);
     }
 
-    @Test
-    public void testFullyMaskedData() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testFullyMaskedData(Nd4jBackend backend) {
         MultiDataSetIterator iter = new TestMultiDataSetIterator(1,
-                        new MultiDataSet(new INDArray[] {Nd4j.create(new float[] {1}).reshape(1, 1, 1)},
-                                        new INDArray[] {Nd4j.create(new float[] {2}).reshape(1, 1, 1)}),
-                        new MultiDataSet(new INDArray[] {Nd4j.create(new float[] {2}).reshape(1, 1, 1)},
-                                        new INDArray[] {Nd4j.create(new float[] {4}).reshape(1, 1, 1)}, null,
-                                        new INDArray[] {Nd4j.create(new float[] {0}).reshape(1, 1)}));
+                new MultiDataSet(new INDArray[] {Nd4j.create(new float[] {1}).reshape(1, 1, 1)},
+                        new INDArray[] {Nd4j.create(new float[] {2}).reshape(1, 1, 1)}),
+                new MultiDataSet(new INDArray[] {Nd4j.create(new float[] {2}).reshape(1, 1, 1)},
+                        new INDArray[] {Nd4j.create(new float[] {4}).reshape(1, 1, 1)}, null,
+                        new INDArray[] {Nd4j.create(new float[] {0}).reshape(1, 1)}));
 
         SUT.fit(iter);
 

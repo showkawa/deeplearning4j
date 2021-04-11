@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.api;
 
@@ -20,9 +24,14 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.Pointer;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -33,22 +42,15 @@ import org.nd4j.nativeblas.NativeOpsHolder;
 
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Created by Alex on 30/04/2016.
- */
 @Slf4j
-public class TestNDArrayCreation extends BaseNd4jTest {
+@NativeTag
+public class TestNDArrayCreation extends BaseNd4jTestWithBackends {
 
-
-    public TestNDArrayCreation(Nd4jBackend backend) {
-        super(backend);
-    }
-
-    @Test
-    @Ignore("AB 2019/05/23 - Failing on linux-x86_64-cuda-9.2 - see issue #7657")
-    public void testBufferCreation() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testBufferCreation(Nd4jBackend backend) {
         DataBuffer dataBuffer = Nd4j.createBuffer(new float[] {1, 2});
         Pointer pointer = dataBuffer.pointer();
         FloatPointer floatPointer = new FloatPointer(pointer);
@@ -66,8 +68,9 @@ public class TestNDArrayCreation extends BaseNd4jTest {
     }
 
 
-    @Test
-    @Ignore
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testCreateNpy() throws Exception {
         INDArray arrCreate = Nd4j.createFromNpyFile(new ClassPathResource("nd4j-tests/test.npy").getFile());
         assertEquals(2, arrCreate.size(0));
@@ -79,9 +82,10 @@ public class TestNDArrayCreation extends BaseNd4jTest {
 
     }
 
-    @Test
-    @Ignore
-    public void testCreateNpz() throws Exception {
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCreateNpz(Nd4jBackend backend) throws Exception {
         Map<String, INDArray> map = Nd4j.createFromNpzFile(new ClassPathResource("nd4j-tests/test.npz").getFile());
         assertEquals(true, map.containsKey("x"));
         assertEquals(true, map.containsKey("y"));
@@ -98,9 +102,9 @@ public class TestNDArrayCreation extends BaseNd4jTest {
 
     }
 
-    @Test
-    @Ignore("AB 2019/05/23 - Failing on linux-x86_64-cuda-9.2 - see issue #7657")
-    public void testCreateNpy3() throws Exception {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCreateNpy3(Nd4jBackend backend) throws Exception {
         INDArray arrCreate = Nd4j.createFromNpyFile(new ClassPathResource("nd4j-tests/rank3.npy").getFile());
         assertEquals(8, arrCreate.length());
         assertEquals(3, arrCreate.rank());
@@ -110,9 +114,10 @@ public class TestNDArrayCreation extends BaseNd4jTest {
         assertEquals(arrCreate.data().address(), pointer.address());
     }
 
-    @Test
-    @Ignore // this is endless test
-    public void testEndlessAllocation() {
+    @Disabled // this is endless test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testEndlessAllocation(Nd4jBackend backend) {
         Nd4j.getEnvironment().setMaxSpecialMemory(1);
         while (true) {
             val arr = Nd4j.createUninitialized(DataType.FLOAT, 100000000);
@@ -120,9 +125,10 @@ public class TestNDArrayCreation extends BaseNd4jTest {
         }
     }
 
-    @Test
-    @Ignore("This test is designed to run in isolation. With parallel gc it makes no real sense since allocated amount changes at any time")
-    public void testAllocationLimits() throws Exception {
+    @Disabled("This test is designed to run in isolation. With parallel gc it makes no real sense since allocated amount changes at any time")
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testAllocationLimits(Nd4jBackend backend) throws Exception {
         Nd4j.create(1);
 
         val origDeviceLimit = Nd4j.getEnvironment().getDeviceLimit(0);

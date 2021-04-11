@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.nn.multilayer;
 
@@ -31,7 +35,10 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.nn.workspace.ArrayType;
 import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
 import org.deeplearning4j.util.TimeSeriesUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.CustomOp;
@@ -49,8 +56,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class TestVariableLengthTS extends BaseDL4JTest {
 
     @Test
@@ -120,7 +128,7 @@ public class TestVariableLengthTS extends BaseDL4JTest {
             for (String s : g1map.keySet()) {
                 INDArray g1s = g1map.get(s);
                 INDArray g2s = g2map.get(s);
-                assertEquals(s, g1s, g2s);
+                assertEquals(g1s, g2s,s);
             }
 
             //Finally: check that the values at the masked outputs don't actually make any differente to:
@@ -138,7 +146,7 @@ public class TestVariableLengthTS extends BaseDL4JTest {
                 for (String s : g2map.keySet()) {
                     INDArray g2s = g2map.get(s);
                     INDArray g2sa = g2a.getGradientFor(s);
-                    assertEquals(s, g2s, g2sa);
+                    assertEquals(g2s, g2sa,s);
                 }
             }
         }
@@ -227,7 +235,7 @@ public class TestVariableLengthTS extends BaseDL4JTest {
 //                System.out.println("Variable: " + s);
 //                System.out.println(Arrays.toString(g1s.dup().data().asFloat()));
 //                System.out.println(Arrays.toString(g2s.dup().data().asFloat()));
-                assertNotEquals(s, g1s, g2s);
+                assertNotEquals(g1s, g2s,s);
             }
 
             //Modify the values at the masked time step, and check that neither the gradients, score or activations change
@@ -327,7 +335,7 @@ public class TestVariableLengthTS extends BaseDL4JTest {
                         mln.computeGradientAndScore();
                         double score = mln.score();
 
-                        assertEquals(msg, expScore, score, 0.1);
+                        assertEquals(expScore, score, 0.1,msg);
                     }
                 }
             }

@@ -1,9 +1,33 @@
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
+
 package org.nd4j.autodiff.samediff;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.autodiff.samediff.internal.SameDiffOp;
 import org.nd4j.autodiff.samediff.internal.Variable;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.factory.Nd4jBackend;
 
@@ -12,22 +36,23 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NameScopeTests extends BaseNd4jTest {
 
-    public NameScopeTests(Nd4jBackend b){
-        super(b);
-    }
+@Tag(TagNames.SAMEDIFF)
+@NativeTag
+public class NameScopeTests extends BaseNd4jTestWithBackends {
+
 
     @Override
-    public char ordering(){
+    public char ordering() {
         return 'c';
     }
 
-    @Test
-    public void testVariableNameScopesBasic(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testVariableNameScopesBasic(Nd4jBackend backend) {
 
         SameDiff sd = SameDiff.create();
         SDVariable v = sd.var("x");
@@ -52,8 +77,9 @@ public class NameScopeTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testOpFieldsAndNames(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testOpFieldsAndNames(Nd4jBackend backend) {
 
         SameDiff sd = SameDiff.create();
         SDVariable x = sd.var("x", DataType.FLOAT, 1);
@@ -81,10 +107,10 @@ public class NameScopeTests extends BaseNd4jTest {
         assertEquals("s1/s2/z", z.name());
         assertEquals("a", a.name());
 
-        assertTrue(add.name(), add.name().startsWith("s1/"));
+        assertTrue(add.name().startsWith("s1/"),add.name());
         assertEquals("s1/addxy", addWithName.name());
 
-        assertTrue(merge.name(), merge.name().startsWith("s1/s2/"));
+        assertTrue(merge.name().startsWith("s1/s2/"),merge.name());
         assertEquals("s1/s2/mmax", mergeWithName.name());
 
         Set<String> allowedVarNames = new HashSet<>(Arrays.asList("x", "s1/y", "s1/s2/z", "a",
@@ -96,17 +122,17 @@ public class NameScopeTests extends BaseNd4jTest {
         System.out.println(ops.keySet());
 
         for(String s : ops.keySet()){
-            assertTrue(s, s.startsWith("s1") || s.startsWith("s1/s2"));
+            assertTrue(s.startsWith("s1") || s.startsWith("s1/s2"),s);
             allowedOpNames.add(s);
         }
 
         //Check fields - Variable, SDOp, etc
         for(Variable v : sd.getVariables().values()){
-            assertTrue(v.getVariable().name(), allowedVarNames.contains(v.getVariable().name()));
+            assertTrue( allowedVarNames.contains(v.getVariable().name()),v.getVariable().name());
             assertEquals(v.getName(), v.getVariable().name());
             if(v.getInputsForOp() != null){
                 for(String s : v.getInputsForOp()){
-                    assertTrue(s, allowedOpNames.contains(s));
+                    assertTrue(allowedOpNames.contains(s),s);
                 }
             }
 
@@ -130,8 +156,9 @@ public class NameScopeTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testNoNesting(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testNoNesting(Nd4jBackend backend) {
         SameDiff SD = SameDiff.create();
 
         SDVariable a = SD.constant(4);
@@ -144,11 +171,12 @@ public class NameScopeTests extends BaseNd4jTest {
 
         scope.close();
 
-        assertTrue("Var with name test/argmax exists", SD.variableMap().containsKey("test/argmax"));
+        assertTrue(SD.variableMap().containsKey("test/argmax"),"Var with name test/argmax exists");
     }
 
-    @Test
-    public void testNoTesting2(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testNoTesting2(Nd4jBackend backend) {
         SameDiff SD = SameDiff.create();
 
         SDVariable a = SD.constant(4);
@@ -162,6 +190,6 @@ public class NameScopeTests extends BaseNd4jTest {
 
         scope.close();
 
-        assertTrue("Var with name test/switch:1 exists", SD.variableMap().containsKey("test/switch:1"));
+        assertTrue( SD.variableMap().containsKey("test/switch:1"),"Var with name test/switch:1 exists");
     }
 }

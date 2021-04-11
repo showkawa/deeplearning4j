@@ -1,33 +1,43 @@
-/*******************************************************************************
- * Copyright (c) 2015-2019 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.autodiff.ui;
 
 import com.google.flatbuffers.Table;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.autodiff.samediff.VariableType;
 import org.nd4j.autodiff.samediff.internal.SameDiffOp;
 import org.nd4j.autodiff.samediff.internal.Variable;
 import org.nd4j.autodiff.samediff.serde.FlatBuffersMapper;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.graph.FlatArray;
 import org.nd4j.graph.UIAddName;
 import org.nd4j.graph.UIEvent;
@@ -36,7 +46,7 @@ import org.nd4j.graph.UIInfoType;
 import org.nd4j.graph.UIOp;
 import org.nd4j.graph.UIVariable;
 import org.nd4j.graph.ui.LogFileWriter;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -45,20 +55,21 @@ import org.nd4j.common.primitives.Pair;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-public class FileReadWriteTests extends BaseNd4jTest {
+@Tag(TagNames.FILE_IO)
+@NativeTag
+public class FileReadWriteTests extends BaseNd4jTestWithBackends {
 
-    public FileReadWriteTests(Nd4jBackend b){
-        super(b);
-    }
+    @TempDir Path testDir;
 
     @Override
     public char ordering(){
@@ -66,23 +77,23 @@ public class FileReadWriteTests extends BaseNd4jTest {
     }
 
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
 
-    @Before
+    @BeforeEach
     public void before() {
         Nd4j.create(1);
         Nd4j.setDefaultDataTypes(DataType.DOUBLE, DataType.DOUBLE);
         Nd4j.getRandom().setSeed(123);
     }
 
-    @Test
-    public void testSimple() throws IOException {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSimple(Nd4jBackend backend) throws IOException {
         SameDiff sd = SameDiff.create();
         SDVariable v = sd.var("variable", DataType.DOUBLE, 3, 4);
         SDVariable sum = v.sum();
 
-        File f = testDir.newFile();
+        File f = testDir.resolve("new-dir-1").toFile();
+        f.mkdirs();
         if (f.exists())
             f.delete();
         System.out.println(f.getAbsolutePath());
@@ -159,7 +170,7 @@ public class FileReadWriteTests extends BaseNd4jTest {
 
         //Append a number of events
         w.registerEventName("accuracy");
-        for( int iter=0; iter<3; iter++) {
+        for( int iter = 0; iter < 3; iter++) {
             long t = System.currentTimeMillis();
             w.writeScalarEvent("accuracy", LogFileWriter.EventSubtype.EVALUATION, t, iter, 0, 0.5 + 0.1 * iter);
         }
@@ -171,18 +182,20 @@ public class FileReadWriteTests extends BaseNd4jTest {
         UIAddName addName = (UIAddName) events.get(0).getRight();
         assertEquals("accuracy", addName.name());
 
-        for( int i=1; i<4; i++ ){
+        for( int i = 1; i < 4; i++ ){
             FlatArray fa = (FlatArray) events.get(i).getRight();
             INDArray arr = Nd4j.createFromFlatArray(fa);
 
-            INDArray exp = Nd4j.scalar(0.5 + (i-1) * 0.1);
+            INDArray exp = Nd4j.scalar(0.5 + (i - 1) * 0.1);
             assertEquals(exp, arr);
         }
     }
 
-    @Test
-    public void testNullBinLabels() throws Exception{
-        File dir = testDir.newFolder();
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testNullBinLabels(Nd4jBackend backend) throws Exception{
+        File dir = testDir.resolve("new-dir").toFile();
+        dir.mkdirs();
         File f = new File(dir, "temp.bin");
         LogFileWriter w = new LogFileWriter(f);
 

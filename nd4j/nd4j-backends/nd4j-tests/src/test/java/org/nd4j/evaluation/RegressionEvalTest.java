@@ -1,25 +1,34 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.evaluation;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.evaluation.regression.RegressionEvaluation;
 import org.nd4j.evaluation.regression.RegressionEvaluation.Metric;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.iter.NdIndexIterator;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -31,36 +40,38 @@ import org.nd4j.linalg.indexing.NDArrayIndex;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.nd4j.linalg.indexing.NDArrayIndex.all;
 import static org.nd4j.linalg.indexing.NDArrayIndex.interval;
 
-/**
- * @author Alex Black
- */
-public class RegressionEvalTest  extends BaseNd4jTest {
+@Tag(TagNames.EVAL_METRICS)
+@NativeTag
+public class RegressionEvalTest  extends BaseNd4jTestWithBackends {
 
-    public RegressionEvalTest(Nd4jBackend backend) {
-        super(backend);
-    }
 
     @Override
     public char ordering() {
         return 'c';
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testEvalParameters() {
-        int specCols = 5;
-        INDArray labels = Nd4j.ones(3);
-        INDArray preds = Nd4j.ones(6);
-        RegressionEvaluation eval = new RegressionEvaluation(specCols);
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testEvalParameters(Nd4jBackend backend) {
+        assertThrows(IllegalStateException.class,() -> {
+            int specCols = 5;
+            INDArray labels = Nd4j.ones(3);
+            INDArray preds = Nd4j.ones(6);
+            RegressionEvaluation eval = new RegressionEvaluation(specCols);
 
-        eval.eval(labels, preds);
+            eval.eval(labels, preds);
+        });
+
     }
 
-    @Test
-    public void testPerfectPredictions() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPerfectPredictions(Nd4jBackend backend) {
 
         int nCols = 5;
         int nTestArrays = 100;
@@ -68,7 +79,7 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         RegressionEvaluation eval = new RegressionEvaluation(nCols);
 
         for (int i = 0; i < nTestArrays; i++) {
-            INDArray rand = Nd4j.rand(valuesPerTestArray, nCols);
+            INDArray rand = Nd4j.rand(DataType.DOUBLE,valuesPerTestArray, nCols);
             eval.eval(rand, rand);
         }
 
@@ -86,8 +97,9 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testKnownValues() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testKnownValues(Nd4jBackend backend) {
 
         DataType dtypeBefore = Nd4j.defaultFloatingPointType();
         RegressionEvaluation first = null;
@@ -142,8 +154,9 @@ public class RegressionEvalTest  extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testRegressionEvaluationMerging() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRegressionEvaluationMerging(Nd4jBackend backend) {
         Nd4j.getRandom().setSeed(12345);
 
         int nRows = 20;
@@ -159,8 +172,8 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         for (int i = 0; i < nEvalInstances; i++) {
             list.add(new RegressionEvaluation(nCols));
             for (int j = 0; j < numMinibatches; j++) {
-                INDArray p = Nd4j.rand(nRows, nCols);
-                INDArray act = Nd4j.rand(nRows, nCols);
+                INDArray p = Nd4j.rand(DataType.DOUBLE,nRows, nCols);
+                INDArray act = Nd4j.rand(DataType.DOUBLE,nRows, nCols);
 
                 single.eval(act, p);
 
@@ -183,8 +196,9 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testRegressionEvalPerOutputMasking() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRegressionEvalPerOutputMasking(Nd4jBackend backend) {
 
         INDArray l = Nd4j.create(new double[][] {{1, 2, 3}, {10, 20, 30}, {-5, -10, -20}});
 
@@ -210,7 +224,8 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         }
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testRegressionEvalTimeSeriesSplit(){
 
         INDArray out1 = Nd4j.rand(new int[]{3, 5, 20});
@@ -232,8 +247,9 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         assertEquals(e1, e2);
     }
 
-    @Test
-    public void testRegressionEval3d() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRegressionEval3d(Nd4jBackend backend) {
         INDArray prediction = Nd4j.rand(DataType.FLOAT, 2, 5, 10);
         INDArray label = Nd4j.rand(DataType.FLOAT, 2, 5, 10);
 
@@ -260,12 +276,13 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         for (Metric m : Metric.values()) {
             double d1 = e3d.scoreForMetric(m);
             double d2 = e2d.scoreForMetric(m);
-            assertEquals(m.toString(), d2, d1, 1e-6);
+            assertEquals(d2, d1, 1e-6,m.toString());
         }
     }
 
-    @Test
-    public void testRegressionEval4d() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRegressionEval4d(Nd4jBackend backend) {
         INDArray prediction = Nd4j.rand(DataType.FLOAT, 2, 3, 10, 10);
         INDArray label = Nd4j.rand(DataType.FLOAT, 2, 3, 10, 10);
 
@@ -292,12 +309,13 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         for (Metric m : Metric.values()) {
             double d1 = e4d.scoreForMetric(m);
             double d2 = e2d.scoreForMetric(m);
-            assertEquals(m.toString(), d2, d1, 1e-5);
+            assertEquals(d2, d1, 1e-5,m.toString());
         }
     }
 
-    @Test
-    public void testRegressionEval3dMasking() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRegressionEval3dMasking(Nd4jBackend backend) {
         INDArray prediction = Nd4j.rand(DataType.FLOAT, 2, 3, 10);
         INDArray label = Nd4j.rand(DataType.FLOAT, 2, 3, 10);
 
@@ -351,12 +369,13 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         for(Metric m : Metric.values()){
             double d1 = e4d_m2.scoreForMetric(m);
             double d2 = e2d_m2.scoreForMetric(m);
-            assertEquals(m.toString(), d2, d1, 1e-5);
+            assertEquals(d2, d1, 1e-5,m.toString());
         }
     }
 
-    @Test
-    public void testRegressionEval4dMasking() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRegressionEval4dMasking(Nd4jBackend backend) {
         INDArray prediction = Nd4j.rand(DataType.FLOAT, 2, 3, 10, 10);
         INDArray label = Nd4j.rand(DataType.FLOAT, 2, 3, 10, 10);
 
@@ -364,7 +383,7 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         List<INDArray> rowsL = new ArrayList<>();
 
         //Check per-example masking:
-        INDArray mask1dPerEx = Nd4j.createFromArray(1, 0);
+        INDArray mask1dPerEx = Nd4j.createFromArray(1, 0).castTo(DataType.FLOAT);
 
         NdIndexIterator iter = new NdIndexIterator(2, 10, 10);
         while (iter.hasNext()) {
@@ -386,11 +405,11 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         for(Metric m : Metric.values()){
             double d1 = e4d_m1.scoreForMetric(m);
             double d2 = e2d_m1.scoreForMetric(m);
-            assertEquals(m.toString(), d2, d1, 1e-5);
+            assertEquals(d2, d1, 1e-5,m.toString());
         }
 
         //Check per-output masking:
-        INDArray perOutMask = Nd4j.randomBernoulli(0.5, label.shape());
+        INDArray perOutMask = Nd4j.randomBernoulli(0.5, label.shape()).castTo(DataType.FLOAT);
         rowsP.clear();
         rowsL.clear();
         List<INDArray> rowsM = new ArrayList<>();
@@ -413,7 +432,7 @@ public class RegressionEvalTest  extends BaseNd4jTest {
         for(Metric m : Metric.values()){
             double d1 = e4d_m2.scoreForMetric(m);
             double d2 = e2d_m2.scoreForMetric(m);
-            assertEquals(m.toString(), d2, d1, 1e-5);
+            assertEquals(d2, d1, 1e-5,m.toString());
         }
     }
 }

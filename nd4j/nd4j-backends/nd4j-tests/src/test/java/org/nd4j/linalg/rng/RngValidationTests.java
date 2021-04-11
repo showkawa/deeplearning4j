@@ -1,32 +1,43 @@
-/*******************************************************************************
- * Copyright (c) 2015-2019 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.rng;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.nd4j.OpValidationSuite;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.common.base.Preconditions;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.common.util.ArrayUtil;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.CustomOp;
@@ -59,11 +70,11 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-public class RngValidationTests extends BaseNd4jTest {
+@NativeTag
+@Tag(TagNames.RNG)
+@Execution(ExecutionMode.SAME_THREAD)
+public class RngValidationTests extends BaseNd4jTestWithBackends {
 
-    public RngValidationTests(Nd4jBackend b){
-        super(b);
-    }
 
     @Override
     public char ordering(){
@@ -119,10 +130,11 @@ public class RngValidationTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void validateRngDistributions(){
-        OpValidationSuite.ignoreFailing();      //https://github.com/deeplearning4j/deeplearning4j/issues/6958 - 2018-01-09
-
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    @Disabled
+    @Tag(TagNames.NEEDS_VERIFY)
+    public void validateRngDistributions(Nd4jBackend backend){
         List<TestCase> testCases = new ArrayList<>();
         for(DataType type : new DataType[]{DataType.DOUBLE, DataType.FLOAT, DataType.HALF}) {
             //Legacy (non-custom) RNG ops:
@@ -150,8 +162,8 @@ public class RngValidationTests extends BaseNd4jTest {
             testCases.add(TestCase.builder().opType("binomial").dataType(type).shape(100,10000).minValue(0).maxValue(20).minValueInclusive(true).maxValueInclusive(true).arg("n", 20).arg("p",0.2)
                     .expectedMean(20*0.2).expectedStd(Math.sqrt(20*0.2*(1-0.2)) /*var = np(1-p)*/).meanRelativeErrorTolerance(0.001).stdRelativeErrorTolerance(0.01).build());
 
-                //truncated normal clips at (mean-2*std, mean+2*std). Mean for equal 2 sided clipping about mean is same as original mean. Variance is difficult to calculate...
-                //Assume variance is similar to non-truncated normal (should be a bit less in practice) but use large relative error here
+            //truncated normal clips at (mean-2*std, mean+2*std). Mean for equal 2 sided clipping about mean is same as original mean. Variance is difficult to calculate...
+            //Assume variance is similar to non-truncated normal (should be a bit less in practice) but use large relative error here
             testCases.add(TestCase.builder().opType("truncated_normal").dataType(type).shape(new long[0]).minValue(-2.0).maxValue(2.0).minValueInclusive(true).maxValueInclusive(true).arg("mean", 0.0).arg("std", 1.0).build());       //Don't check mean/std for 1 element
             testCases.add(TestCase.builder().opType("truncated_normal").dataType(type).shape(1000).minValue(-2.0).maxValue(2.0).minValueInclusive(true).maxValueInclusive(true).arg("mean", 0.0).arg("std", 1.0)
                     .expectedMean(0.0).expectedStd(1.0).stdRelativeErrorTolerance(0.2).meanMinAbsErrorTolerance(0.1).build());
@@ -257,7 +269,7 @@ public class RngValidationTests extends BaseNd4jTest {
 
 
         int count = 1;
-        for(TestCase tc : testCases){
+        for(TestCase tc : testCases) {
             log.info("Starting test case: {} of {}", count, testCases.size());
             log.info("{}", tc);
 
@@ -277,8 +289,8 @@ public class RngValidationTests extends BaseNd4jTest {
             //Check for NaNs, Infs, etc
             int countNaN = Nd4j.getExecutioner().exec(new MatchConditionTransform(z, Nd4j.create(DataType.BOOL, z.shape()), Conditions.isNan())).castTo(DataType.INT).sumNumber().intValue();
             int countInf = Nd4j.getExecutioner().exec(new MatchConditionTransform(z, Nd4j.create(DataType.BOOL, z.shape()), Conditions.isInfinite())).castTo(DataType.INT).sumNumber().intValue();
-            assertEquals("NaN - expected 0 values", 0, countNaN);
-            assertEquals("Infinite - expected 0 values", 0, countInf);
+            assertEquals(0, countNaN,"NaN - expected 0 values");
+            assertEquals( 0, countInf,"Infinite - expected 0 values");
 
             //Check min/max values
             double min = z.minNumber().doubleValue();
@@ -307,7 +319,7 @@ public class RngValidationTests extends BaseNd4jTest {
             assertEquals(z, z2);
 
             //Check mean, stdev
-            if(tc.getExpectedMean() != null){
+            if(tc.getExpectedMean() != null) {
                 double mean = z.meanNumber().doubleValue();
                 double re = relError(tc.getExpectedMean(), mean);
                 double ae = Math.abs(tc.getExpectedMean() - mean);
@@ -346,16 +358,16 @@ public class RngValidationTests extends BaseNd4jTest {
     }
 
     private static double minValue(DataType dataType){
-       switch (dataType){
-           case DOUBLE:
-               return -Double.MAX_VALUE;
-           case FLOAT:
-               return -Float.MAX_VALUE;
-           case HALF:
-               return -65504.0;
-           default:
-               throw new RuntimeException("Dtype not supported: " + dataType);
-       }
+        switch (dataType){
+            case DOUBLE:
+                return -Double.MAX_VALUE;
+            case FLOAT:
+                return -Float.MAX_VALUE;
+            case HALF:
+                return -65504.0;
+            default:
+                throw new RuntimeException("Dtype not supported: " + dataType);
+        }
     }
 
     private static double maxValue(DataType dataType){

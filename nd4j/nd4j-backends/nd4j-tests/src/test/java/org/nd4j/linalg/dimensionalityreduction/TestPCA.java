@@ -1,121 +1,126 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.dimensionalityreduction;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.linalg.string.NDArrayStrings;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Created by rcorbish
- */
-@RunWith(Parameterized.class)
-public class TestPCA extends BaseNd4jTest {
+@Tag(TagNames.NDARRAY_ETL)
+@NativeTag
+public class TestPCA extends BaseNd4jTestWithBackends {
 
-
-    public TestPCA(Nd4jBackend backend) {
-        super(backend);
-    }
-
-    @Test
-    public void testFactorDims() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testFactorDims(Nd4jBackend backend) {
         int m = 13;
         int n = 4;
 
         double f[] = new double[] {7, 1, 11, 11, 7, 11, 3, 1, 2, 21, 1, 11, 10, 26, 29, 56, 31, 52, 55, 71, 31, 54, 47,
-                        40, 66, 68, 6, 15, 8, 8, 6, 9, 17, 22, 18, 4, 23, 9, 8, 60, 52, 20, 47, 33, 22, 6, 44, 22, 26,
-                        34, 12, 12};
+                40, 66, 68, 6, 15, 8, 8, 6, 9, 17, 22, 18, 4, 23, 9, 8, 60, 52, 20, 47, 33, 22, 6, 44, 22, 26,
+                34, 12, 12};
 
         INDArray A = Nd4j.create(f, new int[] {m, n}, 'f');
 
         INDArray A1 = A.dup('f');
-        INDArray Factor = org.nd4j.linalg.dimensionalityreduction.PCA.pca_factor(A1, 3, true);
+        INDArray Factor = PCA.pca_factor(A1, 3, true);
         A1 = A.subiRowVector(A.mean(0));
 
         INDArray Reduced = A1.mmul(Factor);
         INDArray Reconstructed = Reduced.mmul(Factor.transpose());
         INDArray Diff = Reconstructed.sub(A1);
         for (int i = 0; i < m * n; i++) {
-            assertEquals("Reconstructed matrix is very different from the original.", 0.0, Diff.getDouble(i), 1.0);
+            assertEquals(0.0, Diff.getDouble(i), 1.0,"Reconstructed matrix is very different from the original.");
         }
     }
 
-    @Test
-    public void testFactorSVDTransposed() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testFactorSVDTransposed(Nd4jBackend backend) {
         int m = 4;
         int n = 13;
 
         double f[] = new double[] {7, 1, 11, 11, 7, 11, 3, 1, 2, 21, 1, 11, 10, 26, 29, 56, 31, 52, 55, 71, 31, 54, 47,
-                        40, 66, 68, 6, 15, 8, 8, 6, 9, 17, 22, 18, 4, 23, 9, 8, 60, 52, 20, 47, 33, 22, 6, 44, 22, 26,
-                        34, 12, 12};
+                40, 66, 68, 6, 15, 8, 8, 6, 9, 17, 22, 18, 4, 23, 9, 8, 60, 52, 20, 47, 33, 22, 6, 44, 22, 26,
+                34, 12, 12};
 
         INDArray A = Nd4j.create(f, new long[] {m, n}, 'f');
 
         INDArray A1 = A.dup('f');
-        INDArray factor = org.nd4j.linalg.dimensionalityreduction.PCA.pca_factor(A1, 3, true);
+        INDArray factor = PCA.pca_factor(A1, 3, true);
         A1 = A.subiRowVector(A.mean(0));
 
         INDArray reduced = A1.mmul(factor);
         INDArray reconstructed = reduced.mmul(factor.transpose());
         INDArray diff = reconstructed.sub(A1);
         for (int i = 0; i < m * n; i++) {
-            assertEquals("Reconstructed matrix is very different from the original.", 0.0, diff.getDouble(i), 1.0);
+            assertEquals(0.0, diff.getDouble(i), 1.0,"Reconstructed matrix is very different from the original.");
         }
     }
 
-    @Test
-    public void testFactorVariance() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testFactorVariance(Nd4jBackend backend) {
         int m = 13;
         int n = 4;
 
         double f[] = new double[] {7, 1, 11, 11, 7, 11, 3, 1, 2, 21, 1, 11, 10, 26, 29, 56, 31, 52, 55, 71, 31, 54, 47,
-                        40, 66, 68, 6, 15, 8, 8, 6, 9, 17, 22, 18, 4, 23, 9, 8, 60, 52, 20, 47, 33, 22, 6, 44, 22, 26,
-                        34, 12, 12};
+                40, 66, 68, 6, 15, 8, 8, 6, 9, 17, 22, 18, 4, 23, 9, 8, 60, 52, 20, 47, 33, 22, 6, 44, 22, 26,
+                34, 12, 12};
 
         INDArray A = Nd4j.create(f, new int[] {m, n}, 'f');
 
         INDArray A1 = A.dup('f');
-        INDArray Factor1 = org.nd4j.linalg.dimensionalityreduction.PCA.pca_factor(A1, 0.95, true);
+        INDArray Factor1 = PCA.pca_factor(A1, 0.95, true);
         A1 = A.subiRowVector(A.mean(0));
         INDArray Reduced1 = A1.mmul(Factor1);
         INDArray Reconstructed1 = Reduced1.mmul(Factor1.transpose());
         INDArray Diff1 = Reconstructed1.sub(A1);
         for (int i = 0; i < m * n; i++) {
-            assertEquals("Reconstructed matrix is very different from the original.", 0.0, Diff1.getDouble(i), 0.1);
+            assertEquals( 0.0, Diff1.getDouble(i), 0.1,"Reconstructed matrix is very different from the original.");
         }
         INDArray A2 = A.dup('f');
-        INDArray Factor2 = org.nd4j.linalg.dimensionalityreduction.PCA.pca_factor(A2, 0.50, true);
-        assertTrue("Variance differences should change factor sizes.", Factor1.columns() > Factor2.columns());
+        INDArray Factor2 = PCA.pca_factor(A2, 0.50, true);
+        assertTrue(Factor1.columns() > Factor2.columns(),"Variance differences should change factor sizes.");
     }
 
 
     /**
      * Test new PCA routines, added by Luke Czapla
      */
-    @Test
-    public void testPCA() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPCA(Nd4jBackend backend) {
         INDArray m = Nd4j.randn(10000, 16);
         // 10000 random correlated samples of 16 features to analyze
         m.getColumn(0).muli(4.84);
@@ -144,10 +149,9 @@ public class TestPCA extends BaseNd4jTest {
         PCA myPCA = new PCA(m);
         INDArray reduced70 = myPCA.reducedBasis(0.70);
         INDArray reduced99 = myPCA.reducedBasis(0.99);
-        assertTrue("Major variance differences should change number of basis vectors",
-                        reduced99.columns() > reduced70.columns());
+        assertTrue(  reduced99.columns() > reduced70.columns(),"Major variance differences should change number of basis vectors");
         INDArray reduced100 = myPCA.reducedBasis(1.0);
-        assertTrue("100% variance coverage should include all eigenvectors", reduced100.columns() == m.columns());
+        assertTrue(reduced100.columns() == m.columns(),"100% variance coverage should include all eigenvectors");
         NDArrayStrings ns = new NDArrayStrings(5);
 //        System.out.println("Eigenvectors:\n" + ns.format(myPCA.getEigenvectors()));
 //        System.out.println("Eigenvalues:\n" + ns.format(myPCA.getEigenvalues()));
@@ -158,22 +162,21 @@ public class TestPCA extends BaseNd4jTest {
             variance += myPCA.estimateVariance(m.getRow(i), reduced70.columns());
         variance /= 1000.0;
         System.out.println("Fraction of variance using 70% variance with " + reduced70.columns() + " columns: " + variance);
-        assertTrue("Variance does not cover intended 70% variance", variance > 0.70);
+        assertTrue(variance > 0.70,"Variance does not cover intended 70% variance");
         // create "dummy" data with the same exact trends
         INDArray testSample = myPCA.generateGaussianSamples(10000);
         PCA analyzePCA = new PCA(testSample);
-        assertTrue("Means do not agree accurately enough",
-                        myPCA.getMean().equalsWithEps(analyzePCA.getMean(), 0.2 * myPCA.getMean().columns()));
-        assertTrue("Covariance is not reproduced accurately enough", myPCA.getCovarianceMatrix().equalsWithEps(
-                        analyzePCA.getCovarianceMatrix(), 1.0 * analyzePCA.getCovarianceMatrix().length()));
-        assertTrue("Eigenvalues are not close enough", myPCA.getEigenvalues().equalsWithEps(analyzePCA.getEigenvalues(),
-                        0.5 * myPCA.getEigenvalues().columns()));
-        assertTrue("Eigenvectors are not close enough", myPCA.getEigenvectors()
-                        .equalsWithEps(analyzePCA.getEigenvectors(), 0.1 * analyzePCA.getEigenvectors().length()));
+        assertTrue( myPCA.getMean().equalsWithEps(analyzePCA.getMean(), 0.2 * myPCA.getMean().columns()),"Means do not agree accurately enough");
+        assertTrue(myPCA.getCovarianceMatrix().equalsWithEps(
+                analyzePCA.getCovarianceMatrix(), 1.0 * analyzePCA.getCovarianceMatrix().length()),"Covariance is not reproduced accurately enough");
+        assertTrue( myPCA.getEigenvalues().equalsWithEps(analyzePCA.getEigenvalues(),
+                0.5 * myPCA.getEigenvalues().columns()),"Eigenvalues are not close enough");
+        assertTrue(myPCA.getEigenvectors()
+                .equalsWithEps(analyzePCA.getEigenvectors(), 0.1 * analyzePCA.getEigenvectors().length()),"Eigenvectors are not close enough");
 //        System.out.println("Original cov:\n" + ns.format(myPCA.getCovarianceMatrix()) + "\nDummy cov:\n"
 //                        + ns.format(analyzePCA.getCovarianceMatrix()));
         INDArray testSample2 = analyzePCA.convertBackToFeatures(analyzePCA.convertToComponents(testSample));
-        assertTrue("Transformation does not work.", testSample.equalsWithEps(testSample2, 1e-5 * testSample.length()));
+        assertTrue( testSample.equalsWithEps(testSample2, 1e-5 * testSample.length()),"Transformation does not work.");
     }
 
 

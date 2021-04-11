@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.gradientcheck;
 
@@ -25,7 +29,10 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.variational.*;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.activations.impl.ActivationTanH;
 import org.nd4j.linalg.api.buffer.DataType;
@@ -39,11 +46,13 @@ import org.nd4j.linalg.lossfunctions.impl.LossMSE;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * @author Alex Black
- */
+@Tag(TagNames.NDARRAY_ETL)
+@Tag(TagNames.TRAINING)
+@Tag(TagNames.DL4J_OLD_API)
+@NativeTag
+
 public class VaeGradientCheckTests extends BaseDL4JTest {
 
     private static final boolean PRINT_RESULTS = false;
@@ -134,7 +143,7 @@ public class VaeGradientCheckTests extends BaseDL4JTest {
             boolean gradOK = GradientCheckUtil.checkGradients(mln, DEFAULT_EPS, DEFAULT_MAX_REL_ERROR,
                     DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE, input,
                     labels);
-            assertTrue(msg, gradOK);
+            assertTrue(gradOK, msg);
             TestUtils.testModelSerialization(mln);
         }
     }
@@ -206,7 +215,7 @@ public class VaeGradientCheckTests extends BaseDL4JTest {
                     DEFAULT_MAX_REL_ERROR, DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS,
                     RETURN_ON_FIRST_FAILURE, input, 12345);
 
-            assertTrue(msg, gradOK);
+            assertTrue(gradOK, msg);
             TestUtils.testModelSerialization(mln);
         }
     }
@@ -294,7 +303,7 @@ public class VaeGradientCheckTests extends BaseDL4JTest {
                     DEFAULT_MAX_REL_ERROR, DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE,
                     data, 12345);
 
-            assertTrue(msg, gradOK);
+            assertTrue(gradOK, msg);
             TestUtils.testModelSerialization(mln);
         }
     }
@@ -336,7 +345,7 @@ public class VaeGradientCheckTests extends BaseDL4JTest {
                     DEFAULT_MAX_REL_ERROR, DEFAULT_MIN_ABS_ERROR, PRINT_RESULTS, RETURN_ON_FIRST_FAILURE,
                     features, 12345);
 
-            assertTrue(msg, gradOK);
+            assertTrue(gradOK, msg);
             TestUtils.testModelSerialization(mln);
         }
     }

@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.parameterserver.node;
 
@@ -28,25 +32,15 @@ import org.nd4j.parameterserver.ParameterServerListener;
 import org.nd4j.parameterserver.ParameterServerSubscriber;
 import org.nd4j.parameterserver.status.play.InMemoryStatusStorage;
 import org.nd4j.parameterserver.status.play.StatusServer;
-import play.server.Server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Integrated node for running
- * the parameter server.
- * This includes the status server,
- * media driver, and parameter server subscriber
- *
- * @author Adam Gibson
- */
 @Slf4j
 @NoArgsConstructor
 @Data
 public class ParameterServerNode implements AutoCloseable {
-    private Server server;
     private ParameterServerSubscriber[] subscriber;
     private MediaDriver mediaDriver;
     private Aeron aeron;
@@ -95,7 +89,6 @@ public class ParameterServerNode implements AutoCloseable {
      * @param args the arguments for the {@link ParameterServerSubscriber}
      */
     public void runMain(String[] args) {
-        server = StatusServer.startServer(new InMemoryStatusStorage(), statusPort);
         if (mediaDriver == null)
             mediaDriver = MediaDriver.launchEmbedded();
         log.info("Started media driver with aeron directory " + mediaDriver.aeronDirectoryName());
@@ -173,8 +166,7 @@ public class ParameterServerNode implements AutoCloseable {
                 }
             }
         }
-        if (server != null)
-            server.stop();
+
         if (mediaDriver != null)
             CloseHelper.quietClose(mediaDriver);
         if (aeron != null)
@@ -188,7 +180,7 @@ public class ParameterServerNode implements AutoCloseable {
         return new Aeron.Context()
                         .availableImageHandler(AeronUtil::printAvailableImage)
                         .unavailableImageHandler(AeronUtil::printUnavailableImage)
-                        .aeronDirectoryName(mediaDriver.aeronDirectoryName()).keepAliveInterval(1000)
+                        .aeronDirectoryName(mediaDriver.aeronDirectoryName()).keepAliveIntervalNs(100000)
                         .errorHandler(e -> log.error(e.toString(), e));
     }
 

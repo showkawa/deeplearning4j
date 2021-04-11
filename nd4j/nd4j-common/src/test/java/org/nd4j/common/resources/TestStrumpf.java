@@ -1,11 +1,33 @@
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
+
 package org.nd4j.common.resources;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Disabled;
+
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.common.config.ND4JSystemProperties;
 import org.nd4j.common.resources.Resources;
 import org.nd4j.common.resources.strumpf.StrumpfResolver;
@@ -15,16 +37,16 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+@Disabled
 public class TestStrumpf {
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
 
-    @Test
+
+/*    @Test
     public void testResolvingReference() throws Exception {
 
         File f = Resources.asFile("big/raw_sentences.txt");
@@ -37,7 +59,7 @@ public class TestStrumpf {
                 System.out.println("LINE " + i + ": " + iter.next());
             }
         }
-    }
+    }*/
 
     @Test
     public void testResolvingActual() throws Exception {
@@ -59,9 +81,9 @@ public class TestStrumpf {
     }
 
     @Test
-    public void testResolveLocal() throws Exception {
+    public void testResolveLocal(@TempDir Path testDir) throws Exception {
 
-        File dir = testDir.newFolder();
+        File dir = testDir.toFile();
 
         String content = "test file content";
         String path = "myDir/myTestFile.txt";

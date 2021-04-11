@@ -1,28 +1,31 @@
-/* ******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- * Copyright (c) 2019-2020 Konduit K.K.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.common.tests;
 
 import ch.qos.logback.classic.LoggerContext;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacpp.Pointer;
-import org.junit.*;
-import org.junit.rules.TestName;
-import org.junit.rules.Timeout;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import org.nd4j.common.base.Preconditions;
 import org.nd4j.common.config.ND4JSystemProperties;
 import org.nd4j.linalg.api.buffer.DataType;
@@ -38,15 +41,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 
 @Slf4j
 public abstract class BaseND4JTest {
 
-    @Rule
-    public TestName name = new TestName();
-    @Rule
-    public Timeout timeout = Timeout.millis(getTimeoutMilliseconds());
 
     protected long startTime;
     protected int threadCountBefore;
@@ -108,13 +108,13 @@ public abstract class BaseND4JTest {
      * This can be used to dynamically skip integration tests when the integration test profile is not enabled.
      * Note that the integration test profile is not enabled by default - "integration-tests" profile
      */
-    public void skipUnlessIntegrationTests(){
-        assumeTrue("Skipping integration test - integration profile is not enabled", isIntegrationTests());
+    public void skipUnlessIntegrationTests() {
+        assumeTrue( isIntegrationTests(),"Skipping integration test - integration profile is not enabled");
     }
 
-    @Before
-    public void beforeTest(){
-        log.info("{}.{}", getClass().getSimpleName(), name.getMethodName());
+    @BeforeEach
+    public void beforeTest(TestInfo testInfo) {
+        log.info("{}.{}", getClass().getSimpleName(), testInfo.getTestMethod().get().getName());
         //Suppress ND4J initialization - don't need this logged for every test...
         System.setProperty(ND4JSystemProperties.LOG_INITIALIZATION, "false");
         System.setProperty(ND4JSystemProperties.ND4J_IGNORE_AVX, "true");
@@ -133,8 +133,8 @@ public abstract class BaseND4JTest {
         threadCountBefore = ManagementFactory.getThreadMXBean().getThreadCount();
     }
 
-    @After
-    public void afterTest(){
+    @AfterEach
+    public void afterTest(TestInfo testInfo) {
         //Attempt to keep workspaces isolated between tests
         Nd4j.getWorkspaceManager().destroyAllWorkspacesForCurrentThread();
         MemoryWorkspace currWS = Nd4j.getMemoryManager().getCurrentWorkspace();
@@ -167,7 +167,7 @@ public abstract class BaseND4JTest {
         int threadsAfter = ManagementFactory.getThreadMXBean().getThreadCount();
 
         long duration = System.currentTimeMillis() - startTime;
-        sb.append(getClass().getSimpleName()).append(".").append(name.getMethodName())
+        sb.append(getClass().getSimpleName()).append(".").append( testInfo.getTestMethod().get().getName())
                 .append(": ").append(duration).append(" ms")
                 .append(", threadCount: (").append(threadCountBefore).append("->").append(threadsAfter).append(")")
                 .append(", jvmTotal=").append(jvmTotal)

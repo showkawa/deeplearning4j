@@ -1,28 +1,31 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.parameterserver.distributed;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.nd4j.common.tests.BaseND4JTest;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.parameterserver.distributed.conf.VoidConfiguration;
 import org.nd4j.parameterserver.distributed.enums.NodeRole;
@@ -45,28 +48,23 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * This set of tests doesn't has any assertions within.
- * All we care about here - performance and availability
- *
- * Tests for all environments are paired: one test for blocking messages, other one for non-blocking messages.
- *
- * @author raver119@gmail.com
- */
 @Slf4j
-@Ignore
+@Disabled
 @Deprecated
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class VoidParameterServerStressTest extends BaseND4JTest {
     private static final int NUM_WORDS = 100000;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
 
     }
@@ -75,7 +73,7 @@ public class VoidParameterServerStressTest extends BaseND4JTest {
      * This test measures performance of blocking messages processing, VectorRequestMessage in this case
      */
     @Test
-    @Ignore
+    @Disabled
     public void testPerformanceStandalone1() {
         VoidConfiguration voidConfiguration =
                         VoidConfiguration.builder().networkMask("192.168.0.0/16").numberOfShards(1).build();
@@ -136,7 +134,7 @@ public class VoidParameterServerStressTest extends BaseND4JTest {
      * This test measures performance of non-blocking messages processing, SkipGramRequestMessage in this case
      */
     @Test
-    @Ignore
+    @Disabled
     public void testPerformanceStandalone2() {
         VoidConfiguration voidConfiguration =
                         VoidConfiguration.builder().networkMask("192.168.0.0/16").numberOfShards(1).build();
@@ -197,7 +195,7 @@ public class VoidParameterServerStressTest extends BaseND4JTest {
 
 
     @Test
-    @Ignore
+    @Disabled
     public void testPerformanceMulticast1() throws Exception {
         VoidConfiguration voidConfiguration =
                         VoidConfiguration.builder().networkMask("192.168.0.0/16").numberOfShards(1).build();
@@ -292,7 +290,8 @@ public class VoidParameterServerStressTest extends BaseND4JTest {
     /**
      * This is one of the MOST IMPORTANT tests
      */
-    @Test(timeout = 60000L)
+    @Test()
+    @Timeout(60000L)
     public void testPerformanceUnicast1() {
         List<String> list = new ArrayList<>();
         for (int t = 0; t < 1; t++) {
@@ -390,7 +389,7 @@ public class VoidParameterServerStressTest extends BaseND4JTest {
      * Here we send non-blocking messages
      */
     @Test
-    @Ignore
+    @Disabled
     public void testPerformanceUnicast2() {
         List<String> list = new ArrayList<>();
         for (int t = 0; t < 5; t++) {
@@ -492,7 +491,8 @@ public class VoidParameterServerStressTest extends BaseND4JTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 60000L)
+    @Test()
+    @Timeout(60000L)
     public void testPerformanceUnicast3() throws Exception {
         VoidConfiguration voidConfiguration = VoidConfiguration.builder().numberOfShards(1)
                         .shardAddresses(Arrays.asList("127.0.0.1:49823")).build();
@@ -538,7 +538,8 @@ public class VoidParameterServerStressTest extends BaseND4JTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 60000L)
+    @Test()
+    @Timeout(60000L)
     public void testPerformanceUnicast4() throws Exception {
         VoidConfiguration voidConfiguration = VoidConfiguration.builder().numberOfShards(1)
                         .shardAddresses(Arrays.asList("127.0.0.1:49823")).build();

@@ -1,21 +1,28 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.spark;
 
+import com.sun.jna.Platform;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -26,8 +33,10 @@ import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
 import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.nd4j.common.resources.Downloader;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -35,15 +44,14 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
+import java.io.File;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-
-/**
- * Created by agibsonccc on 1/23/15.
- */
+@Slf4j
 public abstract class BaseSparkTest extends BaseDL4JTest implements Serializable {
     protected transient JavaSparkContext sc;
     protected transient INDArray labels;
@@ -59,8 +67,27 @@ public abstract class BaseSparkTest extends BaseDL4JTest implements Serializable
     public long getTimeoutMilliseconds() {
         return 120000L;
     }
+    @BeforeAll
+    @SneakyThrows
+    public static void beforeAll() {
+        if(Platform.isWindows()) {
+            File hadoopHome = new File(System.getProperty("java.io.tmpdir"),"hadoop-tmp");
+            File binDir = new File(hadoopHome,"bin");
+            if(!binDir.exists())
+                binDir.mkdirs();
+            File outputFile = new File(binDir,"winutils.exe");
+            if(!outputFile.exists()) {
+                log.info("Fixing spark for windows");
+                Downloader.download("winutils.exe",
+                        URI.create("https://github.com/cdarlint/winutils/blob/master/hadoop-2.6.5/bin/winutils.exe?raw=true").toURL(),
+                        outputFile,"db24b404d2331a1bec7443336a5171f1",3);
+            }
 
-    @Before
+            System.setProperty("hadoop.home.dir", hadoopHome.getAbsolutePath());
+        }
+    }
+
+    @BeforeEach
     public void before() {
 
         sc = getContext();
@@ -75,10 +102,12 @@ public abstract class BaseSparkTest extends BaseDL4JTest implements Serializable
             labels.putScalar(new int[] {i, x1}, 1.0);
         }
 
+
+
         sparkData = getBasicSparkDataSet(nRows, input, labels);
     }
 
-    @After
+    @AfterEach
     public void after() {
         if(sc != null) {
             sc.close();
@@ -121,7 +150,7 @@ public abstract class BaseSparkTest extends BaseDL4JTest implements Serializable
 
     protected SparkDl4jMultiLayer getBasicNetwork() {
         return new SparkDl4jMultiLayer(sc, getBasicConf(),
-                        new ParameterAveragingTrainingMaster(true, numExecutors(), 1, 10, 1, 0));
+                new ParameterAveragingTrainingMaster(true, numExecutors(), 1, 10, 1, 0));
     }
 
     protected int numExecutors() {
@@ -131,12 +160,12 @@ public abstract class BaseSparkTest extends BaseDL4JTest implements Serializable
     protected MultiLayerConfiguration getBasicConf() {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(123)
                 .updater(new Nesterovs(0.1, 0.9)).list()
-                        .layer(0, new org.deeplearning4j.nn.conf.layers.DenseLayer.Builder().nIn(nIn).nOut(3)
-                                        .activation(Activation.TANH).build())
-                        .layer(1, new org.deeplearning4j.nn.conf.layers.OutputLayer.Builder(
-                                        LossFunctions.LossFunction.MCXENT).nIn(3).nOut(nOut)
-                                                        .activation(Activation.SOFTMAX).build())
-                        .build();
+                .layer(0, new org.deeplearning4j.nn.conf.layers.DenseLayer.Builder().nIn(nIn).nOut(3)
+                        .activation(Activation.TANH).build())
+                .layer(1, new org.deeplearning4j.nn.conf.layers.OutputLayer.Builder(
+                        LossFunctions.LossFunction.MCXENT).nIn(3).nOut(nOut)
+                        .activation(Activation.SOFTMAX).build())
+                .build();
 
         return conf;
     }

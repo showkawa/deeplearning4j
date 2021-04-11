@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.optimizer.listener;
 
@@ -23,8 +27,11 @@ import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.listeners.FailureTestingListener;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.learning.config.Adam;
@@ -32,17 +39,20 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 import java.net.InetAddress;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * WARNING: DO NOT ENABLE (UN-IGNORE) THESE TESTS.
  * They should be run manually, not as part of standard unit test run.
  */
-@Ignore
+@Disabled
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
+@Tag(TagNames.MANUAL)
 public class TestFailureListener extends BaseDL4JTest {
 
-    @Ignore
+    @Disabled
     @Test
     public void testFailureIter5() throws Exception {
 
@@ -64,7 +74,7 @@ public class TestFailureListener extends BaseDL4JTest {
         net.fit(iter);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testFailureRandom_OR(){
 
@@ -92,7 +102,7 @@ public class TestFailureListener extends BaseDL4JTest {
         net.fit(iter);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testFailureRandom_AND() throws Exception {
 

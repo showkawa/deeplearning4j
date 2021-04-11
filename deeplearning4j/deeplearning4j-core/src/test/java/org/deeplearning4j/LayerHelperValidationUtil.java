@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2019 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j;
 
@@ -39,7 +43,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 public class LayerHelperValidationUtil {
@@ -141,7 +145,7 @@ public class LayerHelperValidationUtil {
                         System.out.println(p1);
                         System.out.println(p2);
                     }
-                    assertTrue(s + " - param changed during forward pass: " + p, maxRE < t.getMaxRelError());
+                    assertTrue(maxRE < t.getMaxRelError(),s + " - param changed during forward pass: " + p);
                 }
 
                 for( int i=0; i<ff1.size(); i++ ){
@@ -159,7 +163,7 @@ public class LayerHelperValidationUtil {
                         double d2 = arr2.dup('c').getDouble(idx);
                         System.out.println("Different values at index " + idx + ": " + d1 + ", " + d2 + " - RE = " + maxRE);
                     }
-                    assertTrue(s + layerName + " activations - max RE: " + maxRE, maxRE < t.getMaxRelError());
+                    assertTrue(maxRE < t.getMaxRelError(), s + layerName + " activations - max RE: " + maxRE);
                     log.info("Forward pass, max relative error: " + layerName + " - " + maxRE);
                 }
 
@@ -176,7 +180,7 @@ public class LayerHelperValidationUtil {
                 log.info(s + "Output, max relative error: " + maxRE);
 
                 assertEquals(net1NoHelper.params(), net2With.params());  //Check that forward pass does not modify params
-                assertTrue(s + "Max RE: " + maxRE, maxRE < t.getMaxRelError());
+                assertTrue(maxRE < t.getMaxRelError(), s + "Max RE: " + maxRE);
             }
         }
 
@@ -197,7 +201,7 @@ public class LayerHelperValidationUtil {
 
             double re = relError(s1, s2);
             String s = "Relative error: " + re;
-            assertTrue(s, re < t.getMaxRelError());
+            assertTrue(re < t.getMaxRelError(), s);
         }
 
         if(t.isTestBackward()) {
@@ -239,8 +243,8 @@ public class LayerHelperValidationUtil {
                 } else {
                     System.out.println("OK: " + p);
                 }
-                assertTrue(t.getTestName() + " - Gradients are not equal: " + p + " - highest relative error = " + maxRE + " > max relative error = " + t.getMaxRelError(),
-                        maxRE < t.getMaxRelError());
+                assertTrue(maxRE < t.getMaxRelError(),
+                        t.getTestName() + " - Gradients are not equal: " + p + " - highest relative error = " + maxRE + " > max relative error = " + t.getMaxRelError());
             }
         }
 
@@ -279,7 +283,7 @@ public class LayerHelperValidationUtil {
                     double d2 = listNew.get(j);
                     double re = relError(d1, d2);
                     String msg = "Scores at iteration " + j + " - relError = " + re + ", score1 = " + d1 + ", score2 = " + d2;
-                    assertTrue(msg, re < t.getMaxRelError());
+                    assertTrue(re < t.getMaxRelError(), msg);
                     System.out.println("j=" + j + ", d1 = " + d1 + ", d2 = " + d2);
                 }
             }
@@ -311,7 +315,7 @@ public class LayerHelperValidationUtil {
             try {
                 if (keepAndAssertPresent) {
                     Object o = f.get(l);
-                    assertNotNull("Expect helper to be present for layer: " + l.getClass(), o);
+                    assertNotNull(o,"Expect helper to be present for layer: " + l.getClass());
                 } else {
                     f.set(l, null);
                     Integer i = map.get(l.getClass());

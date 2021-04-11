@@ -1,29 +1,37 @@
-/*******************************************************************************
- * Copyright (c) 2015-2019 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.autodiff.samediff;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.autodiff.samediff.transform.GraphTransformUtil;
 import org.nd4j.autodiff.samediff.transform.OpPredicate;
 import org.nd4j.autodiff.samediff.transform.SubGraph;
 import org.nd4j.autodiff.samediff.transform.SubGraphPredicate;
 import org.nd4j.autodiff.samediff.transform.SubGraphProcessor;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.transforms.pairwise.arithmetic.AddOp;
@@ -33,24 +41,23 @@ import org.nd4j.linalg.factory.Nd4jBackend;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
-public class GraphTransformUtilTests extends BaseNd4jTest {
+@Tag(TagNames.SAMEDIFF)
+public class GraphTransformUtilTests extends BaseNd4jTestWithBackends {
 
-    public GraphTransformUtilTests(Nd4jBackend b){
-        super(b);
-    }
 
     @Override
     public char ordering(){
         return 'c';
     }
 
-    @Test
-    public void testBasic(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testBasic(Nd4jBackend backend) {
 
         SameDiff sd = SameDiff.create();
         SDVariable ph1 = sd.placeHolder("ph1", DataType.FLOAT, -1, 32);
@@ -88,8 +95,9 @@ public class GraphTransformUtilTests extends BaseNd4jTest {
         assertEquals(0, sg2.getChildNodes().size());
     }
 
-    @Test
-    public void testSubgraphReplace1(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSubgraphReplace1(Nd4jBackend backend){
 
         SameDiff sd = SameDiff.create();
         SDVariable ph1 = sd.placeHolder("ph1", DataType.FLOAT, -1, 4);

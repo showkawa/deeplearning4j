@@ -1,51 +1,58 @@
-/* ******************************************************************************
- * Copyright (c) 2015-2019 Skymind, Inc.
- * Copyright (c) 2019 Konduit K.K.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.ui;
 
-import lombok.extern.slf4j.Slf4j;
 import org.deeplearning4j.BaseDL4JTest;
 import org.deeplearning4j.ui.api.UIServer;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.graph.ui.LogFileWriter;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 
-@Ignore
-@Slf4j
+@Disabled
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.UI)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class TestSameDiffUI extends BaseDL4JTest {
+    private static Logger log = LoggerFactory.getLogger(TestSameDiffUI.class.getName());
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
-
-
-    @Ignore
+    @Disabled
     @Test
-    public void testSameDiff() throws Exception {
-        File dir = testDir.newFolder();
+    public void testSameDiff(@TempDir Path testDir) throws Exception {
+        File dir = testDir.toFile();
         File f = new File(dir, "ui_data.bin");
         log.info("File path: {}", f.getAbsolutePath());
 
@@ -68,8 +75,8 @@ public class TestSameDiffUI extends BaseDL4JTest {
         lfw.registerEventName("accuracy");
         lfw.registerEventName("precision");
         long t = System.currentTimeMillis();
-        for( int iter=0; iter<50; iter++) {
-            double d = Math.cos(0.1*iter);
+        for( int iter = 0; iter < 50; iter++) {
+            double d = Math.cos(0.1 * iter);
             d *= d;
             lfw.writeScalarEvent("accuracy", LogFileWriter.EventSubtype.EVALUATION, t + iter, iter, 0, d);
 
@@ -81,7 +88,7 @@ public class TestSameDiffUI extends BaseDL4JTest {
         lfw.registerEventName("histogramDiscrete");
         lfw.registerEventName("histogramEqualSpacing");
         lfw.registerEventName("histogramCustomBins");
-        for( int i=0; i<3; i++ ){
+        for(int i = 0; i < 3; i++) {
             INDArray discreteY = Nd4j.createFromArray(0, 1, 2);
             lfw.writeHistogramEventDiscrete("histogramDiscrete", LogFileWriter.EventSubtype.TUNING_METRIC,  t+i, i, 0, Arrays.asList("zero", "one", "two"), discreteY);
 

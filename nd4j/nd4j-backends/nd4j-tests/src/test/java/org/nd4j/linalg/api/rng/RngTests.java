@@ -1,42 +1,49 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.api.rng;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Adam Gibson
  */
-@RunWith(Parameterized.class)
-public class RngTests extends BaseNd4jTest {
-    public RngTests(Nd4jBackend backend) {
-        super(backend);
-    }
+@NativeTag
+@Tag(TagNames.RNG)
+public class RngTests extends BaseNd4jTestWithBackends {
 
-    @Test
-    public void testRngConstitency() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRngConstitency(Nd4jBackend backend) {
         Nd4j.getRandom().setSeed(123);
         INDArray arr = Nd4j.rand(1, 5);
         Nd4j.getRandom().setSeed(123);
@@ -44,8 +51,9 @@ public class RngTests extends BaseNd4jTest {
         assertEquals(arr, arr2);
     }
 
-    @Test
-    public void testRandomWithOrder() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRandomWithOrder(Nd4jBackend backend) {
 
         Nd4j.getRandom().setSeed(12345);
 
@@ -100,8 +108,9 @@ public class RngTests extends BaseNd4jTest {
 
     }
 
-    @Test
-    public void testRandomBinomial() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRandomBinomial(Nd4jBackend backend) {
         Nd4j.getRandom().setSeed(12345);
         //silly tests. Just increasing the usage for randomBinomial to stop compiler warnings.
         INDArray x = Nd4j.randomBinomial(10, 0.5, 3,3);

@@ -1,33 +1,39 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.workspace;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.memory.MemoryWorkspace;
 import org.nd4j.linalg.api.memory.abstracts.Nd4jWorkspace;
@@ -46,28 +52,24 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * @author raver119@gmail.com
- */
+import static org.junit.jupiter.api.Assertions.*;
+
 @Slf4j
-@RunWith(Parameterized.class)
-public class SpecialWorkspaceTests extends BaseNd4jTest {
-    private DataType initialType;
+@Tag(TagNames.WORKSPACES)
+@NativeTag
+public class SpecialWorkspaceTests extends BaseNd4jTestWithBackends {
+    private DataType initialType = Nd4j.dataType();
 
-    public SpecialWorkspaceTests(Nd4jBackend backend) {
-        super(backend);
-        this.initialType = Nd4j.dataType();
-    }
-
-    @After
+    @AfterEach
     public void shutUp() {
         Nd4j.getMemoryManager().setCurrentWorkspace(null);
         Nd4j.getWorkspaceManager().destroyAllWorkspacesForCurrentThread();
-        Nd4j.setDataType(this.initialType);
     }
 
-    @Test
-    public void testVariableTimeSeries1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    @Execution(ExecutionMode.SAME_THREAD)
+    public void testVariableTimeSeries1(Nd4jBackend backend) {
         WorkspaceConfiguration configuration = WorkspaceConfiguration
                 .builder()
                 .initialSize(0)
@@ -79,28 +81,28 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
                 .build();
 
         try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(configuration, "WS1")) {
-            Nd4j.create(500);
-            Nd4j.create(500);
+            Nd4j.create(DataType.DOUBLE,500);
+            Nd4j.create(DataType.DOUBLE,500);
         }
 
         Nd4jWorkspace workspace = (Nd4jWorkspace) Nd4j.getWorkspaceManager().getWorkspaceForCurrentThread("WS1");
 
         assertEquals(0, workspace.getStepNumber());
 
-        long requiredMemory = 1000 * Nd4j.sizeOfDataType();
+        long requiredMemory = 1000 * DataType.DOUBLE.width();
         long shiftedSize = ((long) (requiredMemory * 1.3)) + (8 - (((long) (requiredMemory * 1.3)) % 8));
         assertEquals(requiredMemory, workspace.getSpilledSize());
         assertEquals(shiftedSize, workspace.getInitialBlockSize());
         assertEquals(workspace.getInitialBlockSize() * 4, workspace.getCurrentSize());
 
         try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace("WS1")) {
-            Nd4j.create(2000);
+            Nd4j.create(DataType.DOUBLE,2000);
         }
 
         assertEquals(0, workspace.getStepNumber());
 
-        assertEquals(1000 * Nd4j.sizeOfDataType(), workspace.getSpilledSize());
-        assertEquals(2000 * Nd4j.sizeOfDataType(), workspace.getPinnedSize());
+        assertEquals(1000 * DataType.DOUBLE.width(), workspace.getSpilledSize());
+        assertEquals(2000 * DataType.DOUBLE.width(), workspace.getPinnedSize());
 
         assertEquals(0, workspace.getDeviceOffset());
 
@@ -115,18 +117,18 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         for (int e = 0; e < 4; e++) {
             for (int i = 0; i < 4; i++) {
                 try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(configuration, "WS1")) {
-                    Nd4j.create(500);
-                    Nd4j.create(500);
+                    Nd4j.create(DataType.DOUBLE,500);
+                    Nd4j.create(DataType.DOUBLE,500);
                 }
 
-                assertEquals("Failed on iteration " + i, (i + 1) * workspace.getInitialBlockSize(),
-                                workspace.getDeviceOffset());
+                assertEquals((i + 1) * workspace.getInitialBlockSize(),
+                        workspace.getDeviceOffset(),"Failed on iteration " + i);
             }
 
             if (e >= 2) {
-                assertEquals("Failed on iteration " + e, 0, workspace.getNumberOfPinnedAllocations());
+                assertEquals(0, workspace.getNumberOfPinnedAllocations(),"Failed on iteration " + e);
             } else {
-                assertEquals("Failed on iteration " + e, 1, workspace.getNumberOfPinnedAllocations());
+                assertEquals(1, workspace.getNumberOfPinnedAllocations(),"Failed on iteration " + e);
             }
         }
 
@@ -143,9 +145,9 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         // we just do huge loop now, with pinned stuff in it
         for (int i = 0; i < 100; i++) {
             try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(configuration, "WS1")) {
-                Nd4j.create(500);
-                Nd4j.create(500);
-                Nd4j.create(500);
+                Nd4j.create(DataType.DOUBLE,500);
+                Nd4j.create(DataType.DOUBLE,500);
+                Nd4j.create(DataType.DOUBLE,500);
 
                 assertEquals(1500 * Nd4j.sizeOfDataType(), workspace.getThisCycleAllocations());
             }
@@ -159,8 +161,8 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         // and we do another clean loo, without pinned stuff in it, to ensure all pinned allocates are gone
         for (int i = 0; i < 100; i++) {
             try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(configuration, "WS1")) {
-                Nd4j.create(500);
-                Nd4j.create(500);
+                Nd4j.create(DataType.DOUBLE,500);
+                Nd4j.create(DataType.DOUBLE,500);
             }
         }
 
@@ -173,24 +175,24 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         Nd4j.getWorkspaceManager().printAllocationStatisticsForCurrentThread();
     }
 
-    @Test
-    public void testVariableTimeSeries2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testVariableTimeSeries2(Nd4jBackend backend) {
         WorkspaceConfiguration configuration = WorkspaceConfiguration.builder().initialSize(0).overallocationLimit(3.0)
-                        .policyAllocation(AllocationPolicy.OVERALLOCATE).policySpill(SpillPolicy.REALLOCATE)
-                        .policyLearning(LearningPolicy.FIRST_LOOP).policyReset(ResetPolicy.ENDOFBUFFER_REACHED).build();
+                .policyAllocation(AllocationPolicy.OVERALLOCATE).policySpill(SpillPolicy.REALLOCATE)
+                .policyLearning(LearningPolicy.FIRST_LOOP).policyReset(ResetPolicy.ENDOFBUFFER_REACHED).build();
 
         Nd4jWorkspace workspace =
-                        (Nd4jWorkspace) Nd4j.getWorkspaceManager().getWorkspaceForCurrentThread(configuration, "WS1");
+                (Nd4jWorkspace) Nd4j.getWorkspaceManager().getWorkspaceForCurrentThread(configuration, "WS1");
 //        workspace.enableDebug(true);
 
         try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(configuration, "WS1")) {
-            Nd4j.create(500);
-            Nd4j.create(500);
+            Nd4j.create(DataType.DOUBLE,500);
+            Nd4j.create(DataType.DOUBLE,500);
         }
 
         assertEquals(0, workspace.getStepNumber());
-
-        long requiredMemory = 1000 * Nd4j.sizeOfDataType();
+        long requiredMemory = 1000 * DataType.DOUBLE.width();
         long shiftedSize = ((long) (requiredMemory * 1.3)) + (8 - (((long) (requiredMemory * 1.3)) % 8));
         assertEquals(requiredMemory, workspace.getSpilledSize());
         assertEquals(shiftedSize, workspace.getInitialBlockSize());
@@ -198,9 +200,9 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
 
         for (int i = 0; i < 100; i++) {
             try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(configuration, "WS1")) {
-                Nd4j.create(500);
-                Nd4j.create(500);
-                Nd4j.create(500);
+                Nd4j.create(DataType.DOUBLE,500);
+                Nd4j.create(DataType.DOUBLE,500);
+                Nd4j.create(DataType.DOUBLE,500);
             }
         }
 
@@ -214,8 +216,9 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         assertEquals(0, workspace.getPinnedSize());
     }
 
-    @Test
-    public void testViewDetach_1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testViewDetach_1(Nd4jBackend backend) {
         WorkspaceConfiguration configuration = WorkspaceConfiguration.builder().initialSize(10000000).overallocationLimit(3.0)
                 .policyAllocation(AllocationPolicy.OVERALLOCATE).policySpill(SpillPolicy.REALLOCATE)
                 .policyLearning(LearningPolicy.FIRST_LOOP).policyReset(ResetPolicy.BLOCK_LEFT).build();
@@ -223,11 +226,11 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         Nd4jWorkspace workspace =
                 (Nd4jWorkspace) Nd4j.getWorkspaceManager().getWorkspaceForCurrentThread(configuration, "WS109");
 
-        INDArray row = Nd4j.linspace(1, 10, 10);
-        INDArray exp = Nd4j.create(10).assign(2.0);
+        INDArray row = Nd4j.linspace(1, 10, 10).castTo(DataType.DOUBLE);
+        INDArray exp = Nd4j.create(DataType.DOUBLE,10).assign(2.0);
         INDArray result = null;
         try (MemoryWorkspace ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(configuration, "WS109")) {
-            INDArray matrix = Nd4j.create(10, 10);
+            INDArray matrix = Nd4j.create(DataType.DOUBLE,10, 10);
             for (int e = 0; e < matrix.rows(); e++)
                 matrix.getRow(e).assign(row);
 
@@ -243,13 +246,14 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         assertEquals(exp, result);
     }
 
-    @Test
-    public void testAlignment_1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testAlignment_1(Nd4jBackend backend) {
         WorkspaceConfiguration initialConfig = WorkspaceConfiguration.builder().initialSize(10 * 1024L * 1024L)
                 .policyAllocation(AllocationPolicy.STRICT).policyLearning(LearningPolicy.NONE).build();
         MemoryWorkspace workspace = Nd4j.getWorkspaceManager().getAndActivateWorkspace(initialConfig, "WS132143452343");
 
-        for( int j=0; j<100; j++ ){
+        for( int j = 0; j < 100; j++) {
 
             try(MemoryWorkspace ws = workspace.notifyScopeEntered()) {
 
@@ -264,8 +268,9 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testNoOpExecution_1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testNoOpExecution_1(Nd4jBackend backend) {
         val configuration = WorkspaceConfiguration.builder().initialSize(10000000).overallocationLimit(3.0)
                 .policyAllocation(AllocationPolicy.OVERALLOCATE).policySpill(SpillPolicy.REALLOCATE)
                 .policyLearning(LearningPolicy.FIRST_LOOP).policyReset(ResetPolicy.BLOCK_LEFT).build();
@@ -301,7 +306,8 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         log.info("{} ns", ((timeEnd - timeStart) / (double) iterations));
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testWorkspaceOrder_1(){
         WorkspaceConfiguration conf = WorkspaceConfiguration.builder()
                 .initialSize(1_000_000)
@@ -336,7 +342,8 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         assertEquals(exp, res);
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testMmapedWorkspaceLimits_1() throws Exception {
         if (!Nd4j.getEnvironment().isCPU())
             return;
@@ -360,7 +367,8 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         }
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testMmapedWorkspace_Path_Limits_1() throws Exception {
         if (!Nd4j.getEnvironment().isCPU())
             return;
@@ -384,7 +392,8 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         }
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testDeleteMappedFile_1() throws Exception {
         if (!Nd4j.getEnvironment().isCPU())
             return;
@@ -406,28 +415,33 @@ public class SpecialWorkspaceTests extends BaseNd4jTest {
         Files.delete(tmpFile);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testDeleteMappedFile_2() throws Exception {
-        if (!Nd4j.getEnvironment().isCPU())
-            throw new IllegalArgumentException("Don't try to run on CUDA");
+        assertThrows(IllegalArgumentException.class,() -> {
+            if (!Nd4j.getEnvironment().isCPU())
+                throw new IllegalArgumentException("Don't try to run on CUDA");
 
-        val tmpFile = Files.createTempFile("some", "file");
-        val mmap = WorkspaceConfiguration.builder()
-                .initialSize(200 * 1024L * 1024L) // 200mbs
-                .tempFilePath(tmpFile.toAbsolutePath().toString())
-                .policyLocation(LocationPolicy.MMAP)
-                .build();
+            val tmpFile = Files.createTempFile("some", "file");
+            val mmap = WorkspaceConfiguration.builder()
+                    .initialSize(200 * 1024L * 1024L) // 200mbs
+                    .tempFilePath(tmpFile.toAbsolutePath().toString())
+                    .policyLocation(LocationPolicy.MMAP)
+                    .build();
 
-        try (val ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(mmap, "M2")) {
-            val x = Nd4j.rand(DataType.FLOAT, 1024);
-        }
+            try (val ws = Nd4j.getWorkspaceManager().getAndActivateWorkspace(mmap, "M2")) {
+                val x = Nd4j.rand(DataType.FLOAT, 1024);
+            }
 
-        Nd4j.getWorkspaceManager().destroyAllWorkspacesForCurrentThread();
+            Nd4j.getWorkspaceManager().destroyAllWorkspacesForCurrentThread();
 
-        Files.delete(tmpFile);
+            Files.delete(tmpFile);
+        });
+
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testMigrateToWorkspace(){
         val src = Nd4j.createFromArray (1L,2L);
         val wsConf = new WorkspaceConfiguration().builder().build();

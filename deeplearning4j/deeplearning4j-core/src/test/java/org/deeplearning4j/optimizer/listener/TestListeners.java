@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.optimizer.listener;
 
@@ -40,9 +44,10 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.optimize.listeners.TimeIterationListener;
 import org.deeplearning4j.optimize.listeners.CheckpointListener;
 import org.deeplearning4j.optimize.solvers.BaseOptimizer;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -53,22 +58,17 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Created by Alex on 01/01/2017.
- */
 @Slf4j
 public class TestListeners extends BaseDL4JTest {
-
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
 
     @Override
     public long getTimeoutMilliseconds() {
@@ -90,7 +90,7 @@ public class TestListeners extends BaseDL4JTest {
 
         for (Layer l : net.getLayers()) {
             Collection<TrainingListener> layerListeners = l.getListeners();
-            assertEquals(l.getClass().toString(), 2, layerListeners.size());
+            assertEquals(2, layerListeners.size(),l.getClass().toString());
             TrainingListener[] lArr = layerListeners.toArray(new TrainingListener[2]);
             assertTrue(lArr[0] instanceof ScoreIterationListener);
             assertTrue(lArr[1] instanceof TestRoutingListener);
@@ -167,7 +167,7 @@ public class TestListeners extends BaseDL4JTest {
 
 
     @Test
-    public void testListenerSerialization() throws Exception {
+    public void testListenerSerialization(@TempDir Path tempDir) throws Exception {
         //Note: not all listeners are (or should be) serializable. But some should be - for Spark etc
 
         List<TrainingListener> listeners = new ArrayList<>();
@@ -175,7 +175,7 @@ public class TestListeners extends BaseDL4JTest {
         listeners.add(new PerformanceListener(1, true, true));
         listeners.add(new TimeIterationListener(10000));
         listeners.add(new ComposableIterationListener(new ScoreIterationListener(), new PerformanceListener(1, true, true)));
-        listeners.add(new CheckpointListener.Builder(tempDir.newFolder()).keepAll().saveEveryNIterations(3).build());   //Doesn't usually need to be serialized, but no reason it can't be...
+        listeners.add(new CheckpointListener.Builder(tempDir.toFile()).keepAll().saveEveryNIterations(3).build());   //Doesn't usually need to be serialized, but no reason it can't be...
 
 
         DataSetIterator iter = new IrisDataSetIterator(10, 150);

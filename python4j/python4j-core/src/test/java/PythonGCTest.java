@@ -1,30 +1,41 @@
-/*******************************************************************************
- * Copyright (c) 2020 Konduit K.K.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
+import org.junit.jupiter.api.Tag;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.python4j.Python;
 import org.nd4j.python4j.PythonGC;
 import org.nd4j.python4j.PythonGIL;
 import org.nd4j.python4j.PythonObject;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 @NotThreadSafe
+@Tag(TagNames.FILE_IO)
+@NativeTag
 public class PythonGCTest {
 
     @Test
@@ -41,7 +52,7 @@ public class PythonGCTest {
             PythonObject pyObjCount2 = Python.len(getObjects.call());
             long objCount2 =  pyObjCount2.toLong();
             long diff = objCount2 - objCount1;
-            Assert.assertTrue(diff > 2);
+            assertTrue(diff > 2);
             try(PythonGC gc = PythonGC.watch()){
                 PythonObject pyList2 = Python.list();
                 pyList2.attr("append").call("a");
@@ -51,7 +62,7 @@ public class PythonGCTest {
             PythonObject pyObjCount3 = Python.len(getObjects.call());
             long objCount3 =  pyObjCount3.toLong();
             diff = objCount3 - objCount2;
-            Assert.assertTrue(diff <= 2);// 2 objects created during function call
+            assertTrue(diff <= 2);// 2 objects created during function call
         }
 
     }

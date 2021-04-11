@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.text.documentiterator;
 
@@ -21,34 +25,34 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.deeplearning4j.BaseDL4JTest;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+
+
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.common.io.ClassPathResource;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Created by fartovii on 09.11.15.
- */
 @Slf4j
-@Ignore
+@Tag(TagNames.FILE_IO)
+@NativeTag
 public class FileDocumentIteratorTest extends BaseDL4JTest {
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
 
-    @Before
+
+    @BeforeEach
     public void setUp() throws Exception {
 
     }
@@ -106,9 +110,10 @@ public class FileDocumentIteratorTest extends BaseDL4JTest {
         assertEquals(48, cnt);
     }
 
-    @Test(timeout = 5000L)
-    public void testEmptyDocument() throws Exception {
-        File f = testDir.newFile();
+    @Test()
+    @Timeout(5000)
+    public void testEmptyDocument(@TempDir Path testDir) throws Exception {
+        File f = Files.createTempFile(testDir,"newfile","bin").toFile();
         assertTrue(f.exists());
         assertEquals(0, f.length());
 
@@ -120,9 +125,10 @@ public class FileDocumentIteratorTest extends BaseDL4JTest {
         }
     }
 
-    @Test(timeout = 5000L)
-    public void testEmptyDocument2() throws Exception {
-        File dir = testDir.newFolder();
+    @Test()
+    @Timeout(5000)
+    public void testEmptyDocument2(@TempDir Path testDir) throws Exception {
+        File dir = testDir.toFile();
         File f1 = new File(dir, "1.txt");
         FileUtils.writeStringToFile(f1, "line 1\nline2", StandardCharsets.UTF_8);
         File f2 = new File(dir, "2.txt");

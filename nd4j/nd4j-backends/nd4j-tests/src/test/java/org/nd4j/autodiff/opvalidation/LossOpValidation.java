@@ -1,29 +1,36 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.autodiff.opvalidation;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.OpValidationSuite;
 import org.nd4j.autodiff.loss.LossReduce;
 import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.autodiff.samediff.SameDiff;
 import org.nd4j.autodiff.validation.OpValidation;
 import org.nd4j.autodiff.validation.TestCase;
+import org.nd4j.common.tests.tags.NativeTag;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.CustomOp;
@@ -35,24 +42,24 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
+@NativeTag
 public class LossOpValidation extends BaseOpValidation {
-    public LossOpValidation(Nd4jBackend backend) {
-        super(backend);
-    }
+
 
     @Override
     public long getTimeoutMilliseconds() {
-        return 90000L;
+        return Long.MAX_VALUE;
     }
 
     // All tested Loss Ops have backprop at the moment 2019/01/30
     public static final Set<String> NO_BP_YET = new HashSet<>();
 
-    @Test
-    public void testLoss2d() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testLoss2d(Nd4jBackend backend) {
         final List<String> oneDimensionalOutputFns = Arrays.asList("cosine", "mpwse", "softmaxxent", "softmaxxent_smooth", "mpwse", "sparsesoftmax");
 
         Nd4j.getRandom().setSeed(12345);
@@ -60,12 +67,12 @@ public class LossOpValidation extends BaseOpValidation {
         List<String> failed = new ArrayList<>();
 
         int totalRun = 0;
-        for (String fn : new String[]{
+        for (String fn : new String[] {
                 "log_poisson", "log_poisson_full",
                 "absdiff", "cosine", "hinge", "huber", "log", "mse",
                 "sigmoidxent", "sigmoidxent_smooth", "softmaxxent", "softmaxxent_smooth", "mpwse",
                 "sparsesoftmax"
-                }) {
+        }) {
 
 
             for(String weights : new String[]{"none", "scalar", "perExample", "perOutput"}) {
@@ -359,11 +366,12 @@ public class LossOpValidation extends BaseOpValidation {
             }
         }
 
-        assertEquals(failed.size() + " of " + totalRun + " failed: " + failed.toString(), 0, failed.size());
+        assertEquals(0, failed.size(),failed.size() + " of " + totalRun + " failed: " + failed.toString());
     }
 
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testCosineDistance(){
         INDArray arr = Nd4j.create(new double[][]{{-0.3, -0.2, -0.1}, {0, 0.1, 0.2}});
         INDArray label = Nd4j.create(new double[][]{{1.0, 2.0, 3.0}, {-1.0, 2.0, 1.0}});
@@ -377,11 +385,12 @@ public class LossOpValidation extends BaseOpValidation {
                 .build();
         Nd4j.getExecutioner().exec(op);
 
-        INDArray exp = Nd4j.scalar(0.6);    //https://github.com/deeplearning4j/deeplearning4j/issues/6532
+        INDArray exp = Nd4j.scalar(0.6);    //https://github.com/eclipse/deeplearning4j/issues/6532
         assertEquals(exp, out);
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testL2Loss(){
 
         for( int rank=0; rank<=3; rank++ ){
@@ -423,8 +432,9 @@ public class LossOpValidation extends BaseOpValidation {
         }
     }
 
-    @Test
-    public void testNonZeroResult() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testNonZeroResult(Nd4jBackend backend) {
         INDArray predictions = Nd4j.rand(DataType.DOUBLE, 10, 5);
         INDArray w = Nd4j.scalar(1.0);
         INDArray label = Nd4j.rand(DataType.DOUBLE, 10, 5);
@@ -457,7 +467,7 @@ public class LossOpValidation extends BaseOpValidation {
                         .build();
                 Nd4j.getExecutioner().exec(op);
 
-                assertNotEquals(lossOp + " returns zero result. Reduction Mode " + reductionMode, out, zero);
+                assertNotEquals(out, zero,lossOp + " returns zero result. Reduction Mode " + reductionMode);
             }
         }
 
@@ -476,12 +486,13 @@ public class LossOpValidation extends BaseOpValidation {
                         .build();
                 Nd4j.getExecutioner().exec(op);
 
-                assertNotEquals(lossOp + "_grad returns zero result. Reduction Mode " + reductionMode, outBP, zeroBp);
+                assertNotEquals(outBP, zeroBp,lossOp + "_grad returns zero result. Reduction Mode " + reductionMode);
             }
         }
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void TestStdLossMixedDataType(){
         // Default Data Type in this test suite is Double.
         // This test used to throw an Exception that we have mixed data types.

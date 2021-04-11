@@ -1,18 +1,22 @@
-/* ******************************************************************************
- * Copyright (c) 2020 Konduit K.K.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 package org.deeplearning4j.nn.misc;
 
 import org.deeplearning4j.BaseDL4JTest;
@@ -24,15 +28,21 @@ import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Adam;
 
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertTrue;
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.WORKSPACES)
 public class CloseNetworkTests extends BaseDL4JTest {
 
     public static MultiLayerNetwork getTestNet() {
@@ -88,14 +98,14 @@ public class CloseNetworkTests extends BaseDL4JTest {
                     net.output(f);
                 } catch (IllegalStateException e) {
                     String msg = e.getMessage();
-                    assertTrue(msg, msg.contains("released"));
+                    assertTrue(msg.contains("released"),msg);
                 }
 
                 try {
                     net.fit(f, l);
                 } catch (IllegalStateException e) {
                     String msg = e.getMessage();
-                    assertTrue(msg, msg.contains("released"));
+                    assertTrue(msg.contains("released"),msg);
                 }
             }
         }
@@ -136,14 +146,14 @@ public class CloseNetworkTests extends BaseDL4JTest {
                     net.output(f);
                 } catch (IllegalStateException e) {
                     String msg = e.getMessage();
-                    assertTrue(msg, msg.contains("released"));
+                    assertTrue( msg.contains("released"),msg);
                 }
 
                 try {
                     net.fit(new INDArray[]{f}, new INDArray[]{l});
                 } catch (IllegalStateException e) {
                     String msg = e.getMessage();
-                    assertTrue(msg, msg.contains("released"));
+                    assertTrue(msg.contains("released"),msg);
                 }
             }
         }

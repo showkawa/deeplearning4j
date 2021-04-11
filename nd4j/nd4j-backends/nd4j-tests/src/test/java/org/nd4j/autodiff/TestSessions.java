@@ -1,22 +1,30 @@
-/*******************************************************************************
- * Copyright (c) 2015-2019 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.autodiff;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.autodiff.listeners.At;
 import org.nd4j.autodiff.listeners.Operation;
 import org.nd4j.autodiff.samediff.SDVariable;
@@ -25,13 +33,16 @@ import org.nd4j.autodiff.samediff.internal.AbstractSession;
 import org.nd4j.autodiff.samediff.internal.FrameIter;
 import org.nd4j.autodiff.samediff.internal.InferenceSession;
 import org.nd4j.autodiff.samediff.internal.memory.NoOpMemoryMgr;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.imports.graphmapper.tf.TFGraphMapper;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.common.io.ClassPathResource;
+import org.nd4j.samediff.frameworkimport.tensorflow.importer.TensorflowFrameworkImporter;
 
 import java.io.File;
 import java.util.Arrays;
@@ -39,21 +50,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class TestSessions extends BaseNd4jTest {
-
-    public TestSessions(Nd4jBackend b){
-        super(b);
-    }
+@NativeTag
+@Tag(TagNames.SAMEDIFF)
+public class TestSessions extends BaseNd4jTestWithBackends {
 
     @Override
-    public char ordering(){
+    public char ordering() {
         return 'c';
     }
 
-    @Test
-    public void testInferenceSessionBasic(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testInferenceSessionBasic(Nd4jBackend backend) {
         //So far: trivial test to check execution order
 
         SameDiff sd = SameDiff.create();
@@ -77,15 +87,16 @@ public class TestSessions extends BaseNd4jTest {
         m.put("y", y);
 
         Map<String,INDArray> outMap = is.output(Collections.singletonList("out"), m, null,
-                Collections.<String>emptyList(), null, At.defaultAt(Operation.TRAINING));
+                Collections.emptyList(), null, At.defaultAt(Operation.TRAINING));
 
         assertEquals(1, outMap.size());
         assertEquals(outExp, outMap.get("out"));
     }
 
 
-    @Test
-    public void testInferenceSessionBasic2(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testInferenceSessionBasic2(Nd4jBackend backend) {
         //So far: trivial test to check execution order
 
         SameDiff sd = SameDiff.create();
@@ -114,14 +125,15 @@ public class TestSessions extends BaseNd4jTest {
         m.put("y", y);
 
         Map<String,INDArray> outMap = is.output(Collections.singletonList("d"), m, null,
-                Collections.<String>emptyList(), null, At.defaultAt(Operation.TRAINING));
+                Collections.emptyList(), null, At.defaultAt(Operation.TRAINING));
 
         assertEquals(1, outMap.size());
         assertEquals(dExp, outMap.get("d"));
     }
 
-    @Test
-    public void testMergeSimple(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMergeSimple(Nd4jBackend backend) {
         //This isn't really a sensible graph, as merge op behaviour is undefined when multiple inputs are available...
 
         SameDiff sd = SameDiff.create();
@@ -148,7 +160,7 @@ public class TestSessions extends BaseNd4jTest {
 //        String outName = merge.name();
         String outName = outVar.name();
         Map<String,INDArray> outMap = is.output(Collections.singletonList(outName), m, null,
-                Collections.<String>emptyList(), null, At.defaultAt(Operation.TRAINING));
+                Collections.emptyList(), null, At.defaultAt(Operation.TRAINING));
 
         assertEquals(1, outMap.size());
         INDArray out = outMap.get(outName);
@@ -156,8 +168,9 @@ public class TestSessions extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testSwitchSimple(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSwitchSimple(Nd4jBackend backend) {
 
         SameDiff sd = SameDiff.create();
         SDVariable x = sd.placeHolder("x", DataType.FLOAT, 3,3);
@@ -183,7 +196,7 @@ public class TestSessions extends BaseNd4jTest {
         String n = merge.name();
 
 //        System.out.println("----------------------------------");
-        Map<String,INDArray> outMap = is.output(Collections.singletonList(n), m, null, Collections.<String>emptyList(),
+        Map<String,INDArray> outMap = is.output(Collections.singletonList(n), m, null, Collections.emptyList(),
                 null, At.defaultAt(Operation.TRAINING));
         assertEquals(1, outMap.size());
         assertEquals(expTrue, outMap.get(n));
@@ -193,13 +206,19 @@ public class TestSessions extends BaseNd4jTest {
         //Check false case:
         bArr.assign(0);
         is = new InferenceSession(sd);
-        outMap = is.output(Collections.singletonList(n), m, null, Collections.<String>emptyList(), null, At.defaultAt(Operation.TRAINING));
+        outMap = is.output(Collections.singletonList(n), m, null, Collections.emptyList(), null,
+                At.defaultAt(Operation.TRAINING));
         assertEquals(1, outMap.size());
         assertEquals(expFalse, outMap.get(n));
     }
 
-    @Test(timeout = 20000L)
-    public void testSwitchWhile() throws Exception{
+    @Timeout(20000L)
+    @Tag(TagNames.FILE_IO)
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    @Tag(TagNames.LONG_TEST)
+    @Tag(TagNames.LARGE_RESOURCES)
+    public void testSwitchWhile(Nd4jBackend backend) throws Exception{
 
         /*
         Test case:
@@ -214,7 +233,8 @@ public class TestSessions extends BaseNd4jTest {
 
         for( int numIter : new int[]{1,3}) {
             File f = new ClassPathResource("tf_graphs/examples/while1/iter_" + numIter + "/frozen_model.pb").getFile();
-            SameDiff sd = TFGraphMapper.importGraph(f);
+            TensorflowFrameworkImporter tensorflowFrameworkImporter = new TensorflowFrameworkImporter();
+            SameDiff sd = tensorflowFrameworkImporter.runImport(f.getAbsolutePath(),Collections.emptyMap());
 
 //            System.out.println(sd.summary());
             sd.summary();
@@ -227,7 +247,7 @@ public class TestSessions extends BaseNd4jTest {
             String n2 = "while/Exit_1";
 
             Map<String, INDArray> m = is.output(Arrays.asList(n, n2), Collections.emptyMap(), null,
-                    Collections.<String>emptyList(), null, At.defaultAt(Operation.TRAINING));
+                    Collections.emptyList(), null, At.defaultAt(Operation.TRAINING));
             assertEquals(2, m.size());
 
             INDArray exp = Nd4j.scalar((float)numIter);
@@ -238,7 +258,7 @@ public class TestSessions extends BaseNd4jTest {
             Map<AbstractSession.VarId,INDArray> outputs = is.getNodeOutputs();
             //Some sanity checks on the internal state:
             //Check 1: "while/Less" should be executed numIter+1 times... i.e., numIter times through the loop, plus once to exit
-            for( int i=0; i<numIter+1; i++ ){
+            for( int i = 0; i < numIter + 1; i++ ){
                 AbstractSession.VarId expVarId = new AbstractSession.VarId("while/Less","while/while_context", i, new FrameIter(AbstractSession.OUTER_FRAME, 0, null));
                 INDArray expLessVal = Nd4j.scalar(i != numIter);
                 assertTrue(outputs.containsKey(expVarId));
@@ -248,7 +268,7 @@ public class TestSessions extends BaseNd4jTest {
             assertFalse(outputs.containsKey(expVarId));
 
             //Check 2: Add should be executed numIter times...
-            for( int i=0; i<numIter; i++ ){
+            for( int i = 0; i < numIter; i++) {
                 expVarId = new AbstractSession.VarId("while/add","while/while_context", i, new FrameIter(AbstractSession.OUTER_FRAME, 0, null));
                 INDArray expAddVal = Nd4j.scalar((float)(i+1));  //Starts at 0, so post exec it's 1 higher than iter number
                 assertTrue(outputs.containsKey(expVarId));

@@ -1,26 +1,28 @@
-/* ******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- * Copyright (c) 2019 Konduit K.K.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.ui;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.deeplearning4j.BaseDL4JTest;
 import org.deeplearning4j.core.storage.StatsStorage;
@@ -42,32 +44,38 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.ui.api.UIServer;
 import org.deeplearning4j.ui.model.stats.StatsListener;
 import org.deeplearning4j.ui.model.storage.InMemoryStatsStorage;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.common.function.Function;
 import org.nd4j.linalg.learning.config.Sgd;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Created by Alex on 08/10/2016.
- */
-@Slf4j
-@Ignore
+@Disabled
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.UI)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class TestVertxUI extends BaseDL4JTest {
+    private static Logger log = LoggerFactory.getLogger(TestVertxUI.class.getName());
 
-    @Before
+
+    @BeforeEach
     public void setUp() throws Exception {
         UIServer.stopInstance();
     }
@@ -307,23 +315,26 @@ public class TestVertxUI extends BaseDL4JTest {
         uiServer.stop();
     }
 
-    @Test (expected = DL4JException.class)
+    @Test ()
     public void testUIStartPortAlreadyBound() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        //Create HttpServer that binds the same port
-        int port = VertxUIServer.DEFAULT_UI_PORT;
-        Vertx vertx = Vertx.vertx();
-        vertx.createHttpServer()
-                .requestHandler(event -> {})
-                .listen(port, result -> latch.countDown());
-        latch.await();
+        assertThrows(DL4JException.class,() -> {
+            CountDownLatch latch = new CountDownLatch(1);
+            //Create HttpServer that binds the same port
+            int port = VertxUIServer.DEFAULT_UI_PORT;
+            Vertx vertx = Vertx.vertx();
+            vertx.createHttpServer()
+                    .requestHandler(event -> {})
+                    .listen(port, result -> latch.countDown());
+            latch.await();
 
-        try {
-            //DL4JException signals that the port cannot be bound, UI server cannot start
-            UIServer.getInstance();
-        } finally {
-            vertx.close();
-        }
+            try {
+                //DL4JException signals that the port cannot be bound, UI server cannot start
+                UIServer.getInstance();
+            } finally {
+                vertx.close();
+            }
+        });
+
     }
 
     @Test

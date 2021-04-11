@@ -1,37 +1,63 @@
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
+
 package org.nd4j.linalg.dataset.api.preprocessor;
 
-import org.junit.Test;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+@Tag(TagNames.NDARRAY_ETL)
+@NativeTag
+public class RGBtoGrayscaleDataSetPreProcessorTest extends BaseNd4jTestWithBackends {
 
-public class RGBtoGrayscaleDataSetPreProcessorTest extends BaseNd4jTest {
-
-    public RGBtoGrayscaleDataSetPreProcessorTest(Nd4jBackend backend) {
-        super(backend);
-    }
 
     @Override
     public char ordering() {
         return 'c';
     }
 
-    @Test(expected = NullPointerException.class)
-    public void when_dataSetIsNull_expect_NullPointerException() {
-        // Assemble
-        RGBtoGrayscaleDataSetPreProcessor sut = new RGBtoGrayscaleDataSetPreProcessor();
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void when_dataSetIsNull_expect_NullPointerException(Nd4jBackend backend) {
+        assertThrows(NullPointerException.class,() -> {
+            // Assemble
+            RGBtoGrayscaleDataSetPreProcessor sut = new RGBtoGrayscaleDataSetPreProcessor();
 
-        // Act
-        sut.preProcess(null);
+            // Act
+            sut.preProcess(null);
+        });
+
     }
 
-    @Test
-    public void when_dataSetIsEmpty_expect_EmptyDataSet() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void when_dataSetIsEmpty_expect_EmptyDataSet(Nd4jBackend backend) {
         // Assemble
         RGBtoGrayscaleDataSetPreProcessor sut = new RGBtoGrayscaleDataSetPreProcessor();
         DataSet ds = new DataSet(null, null);
@@ -43,8 +69,9 @@ public class RGBtoGrayscaleDataSetPreProcessorTest extends BaseNd4jTest {
         assertTrue(ds.isEmpty());
     }
 
-    @Test
-    public void when_colorsAreConverted_expect_grayScaleResult() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void when_colorsAreConverted_expect_grayScaleResult(Nd4jBackend backend) {
         // Assign
         int numChannels = 3;
         int height = 1;

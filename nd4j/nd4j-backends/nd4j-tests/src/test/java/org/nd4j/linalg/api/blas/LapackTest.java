@@ -1,44 +1,43 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.api.blas;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * @author rcorbish
- */
-@RunWith(Parameterized.class)
-public class LapackTest extends BaseNd4jTest {
-    public LapackTest(Nd4jBackend backend) {
-        super(backend);
-    }
+@NativeTag
+public class LapackTest extends BaseNd4jTestWithBackends {
 
 
-    @Test
-    public void testQRSquare() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testQRSquare(Nd4jBackend backend) {
         INDArray A = Nd4j.create(new double[] {1, 2, 3, 4, 5, 6, 7, 8, 9});
         A = A.reshape('c', 3, 3);
         INDArray O = Nd4j.create(A.dataType(), A.shape());
@@ -55,8 +54,9 @@ public class LapackTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testQRRect() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testQRRect(Nd4jBackend backend) {
         INDArray A = Nd4j.create(new double[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
         A = A.reshape('f', 4, 3);
         INDArray O = Nd4j.create(A.dataType(), A.shape());
@@ -73,8 +73,9 @@ public class LapackTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testCholeskyL() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCholeskyL(Nd4jBackend backend) {
         INDArray A = Nd4j.create(new double[] {2, -1, 1, -1, 2, -1, 1, -1, 2,});
         A = A.reshape('c', 3, 3);
         INDArray O = Nd4j.create(A.dataType(), A.shape());
@@ -90,8 +91,9 @@ public class LapackTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testCholeskyU() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCholeskyU(Nd4jBackend backend) {
         INDArray A = Nd4j.create(new double[] {3, -1, 2, -1, 3, -1, 2, -1, 3,});
         A = A.reshape('f', 3, 3);
         INDArray O = Nd4j.create(A.dataType(), A.shape());

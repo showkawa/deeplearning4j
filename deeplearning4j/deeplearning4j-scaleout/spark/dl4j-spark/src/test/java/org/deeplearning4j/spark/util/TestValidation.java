@@ -1,51 +1,64 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.spark.util;
 
+import com.sun.jna.Platform;
 import org.apache.commons.io.FileUtils;
 import org.deeplearning4j.spark.BaseSparkTest;
 import org.deeplearning4j.spark.util.data.SparkDataValidation;
 import org.deeplearning4j.spark.util.data.ValidationResult;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.MultiDataSet;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.SPARK)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class TestValidation extends BaseSparkTest {
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
-
     @Test
-    public void testDataSetValidation() throws Exception {
+    public void testDataSetValidation(@TempDir Path folder) throws Exception {
+        if(Platform.isWindows()) {
+            //Spark tests don't run on windows
+            return;
+        }
+        File f = folder.toFile();
 
-        File f = folder.newFolder();
-
-        for( int i=0; i<3; i++ ) {
+        for( int i = 0; i < 3; i++ ) {
             DataSet ds = new DataSet(Nd4j.create(1,10), Nd4j.create(1,10));
             ds.save(new File(f, i + ".bin"));
         }
@@ -105,11 +118,14 @@ public class TestValidation extends BaseSparkTest {
     }
 
     @Test
-    public void testMultiDataSetValidation() throws Exception {
+    public void testMultiDataSetValidation(@TempDir Path folder) throws Exception {
+        if(Platform.isWindows()) {
+            //Spark tests don't run on windows
+            return;
+        }
+        File f = folder.toFile();
 
-        File f = folder.newFolder();
-
-        for( int i=0; i<3; i++ ) {
+        for( int i = 0; i < 3; i++ ) {
             MultiDataSet ds = new MultiDataSet(Nd4j.create(1,10), Nd4j.create(1,10));
             ds.save(new File(f, i + ".bin"));
         }

@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.graph.graph;
 
@@ -23,20 +27,25 @@ import org.deeplearning4j.graph.data.GraphLoader;
 import org.deeplearning4j.graph.iterator.RandomWalkIterator;
 import org.deeplearning4j.graph.iterator.WeightedRandomWalkIterator;
 import org.deeplearning4j.graph.vertexfactory.VertexFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.nd4j.common.io.ClassPathResource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-
+@NativeTag
+@Tag(TagNames.FILE_IO)
 public class TestGraph extends BaseDL4JTest {
 
-    @Test(timeout = 10000L)
+    @Test()
+    @Timeout(10000)
     public void testSimpleGraph() {
 
         Graph<String, String> graph = new Graph<>(10, false, new VFactory());
@@ -90,7 +99,8 @@ public class TestGraph extends BaseDL4JTest {
     }
 
 
-    @Test(timeout = 10000L)
+    @Test()
+    @Timeout(10000)
     public void testRandomWalkIterator() {
         Graph<String, String> graph = new Graph<>(10, false, new VFactory());
         assertEquals(10, graph.numVertices());
@@ -120,8 +130,8 @@ public class TestGraph extends BaseDL4JTest {
                 int left = (previous - 1 + 10) % 10;
                 int right = (previous + 1) % 10;
                 int current = sequence.next().vertexID();
-                assertTrue("expected: " + left + " or " + right + ", got " + current,
-                                current == left || current == right);
+                assertTrue(current == left || current == right,
+                        "expected: " + left + " or " + right + ", got " + current);
                 seqCount++;
                 previous = current;
             }
@@ -133,7 +143,8 @@ public class TestGraph extends BaseDL4JTest {
         assertEquals(10, startIdxSet.size());
     }
 
-    @Test(timeout = 10000L)
+    @Test()
+    @Timeout(10000)
     public void testWeightedRandomWalkIterator() throws Exception {
 
         //Load a directed, weighted graph from file

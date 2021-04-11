@@ -1,29 +1,36 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.nativ;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.autodiff.functions.DifferentialFunction;
 import org.nd4j.autodiff.samediff.serde.FlatBuffersMapper;
+import org.nd4j.common.tests.tags.NativeTag;
 import org.nd4j.imports.NoOpNameFoundException;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ops.BaseBroadcastOp;
 import org.nd4j.linalg.api.ops.BaseIndexAccumulation;
 import org.nd4j.linalg.api.ops.BaseReduceFloatOp;
@@ -48,17 +55,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-/**
- * This unit contains tests for c++ --- java ops mapping
- *
- * @author raver119@gmail.com
- */
 @Slf4j
-public class OpsMappingTests extends BaseNd4jTest {
+@NativeTag
+public class OpsMappingTests extends BaseNd4jTestWithBackends {
 
-    public OpsMappingTests(Nd4jBackend b){
-        super(b);
-    }
 
     @Override
     public char ordering(){
@@ -70,8 +70,9 @@ public class OpsMappingTests extends BaseNd4jTest {
         return 360000L;     //Can be very slow on some CI machines (PPC)
     }
 
-    @Test
-    public void testLegacyOpsMapping() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testLegacyOpsMapping(Nd4jBackend backend) {
         Nd4j.create(1);
 
         val str = NativeOpsHolder.getInstance().getDeviceNativeOps().getAllOperations().replaceAll("simdOps::","").replaceAll("randomOps::","");
@@ -114,7 +115,7 @@ public class OpsMappingTests extends BaseNd4jTest {
     protected boolean opMapped(List<Operation> haystack, Operation needle) {
         for (val c: haystack) {
             if (needle.getFirst().longValue() == -1L) {
-                if (c.getSecond().toLowerCase().equals(needle.getSecond().toLowerCase()))
+                if (c.getSecond().equalsIgnoreCase(needle.getSecond()))
                     return true;
             } else {
                 if (c.getFirst().longValue() == needle.getFirst().longValue())

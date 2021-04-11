@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.exceptions;
 
@@ -26,16 +30,21 @@ import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.*;
 import org.deeplearning4j.nn.conf.preprocessor.CnnToFeedForwardPreProcessor;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.factory.Nd4j;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
-/**
- * A set of tests to ensure that useful exceptions are thrown on invalid network configurations
- */
 @Slf4j
+@NativeTag
+@Tag(TagNames.EVAL_METRICS)
+@Tag(TagNames.TRAINING)
+@Tag(TagNames.DL4J_OLD_API)
 public class TestInvalidConfigurations extends BaseDL4JTest {
 
     public static MultiLayerNetwork getDensePlusOutput(int nIn, int nOut) {
@@ -354,64 +363,100 @@ public class TestInvalidConfigurations extends BaseDL4JTest {
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test()
     public void testCnnInvalidKernel() {
-        new ConvolutionLayer.Builder().kernelSize(3, 0).build();
+        assertThrows(IllegalStateException.class, () -> {
+            new ConvolutionLayer.Builder().kernelSize(3, 0).build();
+
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testCnnInvalidKernel2() {
-        new ConvolutionLayer.Builder().kernelSize(2, 2, 2).build();
+        assertThrows(IllegalArgumentException.class, () -> {
+            new ConvolutionLayer.Builder().kernelSize(2, 2, 2).build();
+
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test()
     public void testCnnInvalidStride() {
-        new ConvolutionLayer.Builder().kernelSize(3, 3).stride(0, 1).build();
+        assertThrows(IllegalStateException.class,() -> {
+            new ConvolutionLayer.Builder().kernelSize(3, 3).stride(0, 1).build();
+
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testCnnInvalidStride2() {
-        new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1).build();
+        assertThrows(IllegalArgumentException.class,() -> {
+            new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1).build();
+
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testCnnInvalidPadding() {
-        new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(-1, 0).build();
+        assertThrows(IllegalArgumentException.class,() -> {
+            new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(-1, 0).build();
+
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testCnnInvalidPadding2() {
-        new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(0, 0, 0).build();
+        assertThrows(IllegalArgumentException.class,() -> {
+            new ConvolutionLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(0, 0, 0).build();
+
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test()
     public void testSubsamplingInvalidKernel() {
-        new SubsamplingLayer.Builder().kernelSize(3, 0).build();
+        assertThrows(IllegalStateException.class,() -> {
+            new SubsamplingLayer.Builder().kernelSize(3, 0).build();
+
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testSubsamplingInvalidKernel2() {
-        new SubsamplingLayer.Builder().kernelSize(2).build();
+        assertThrows(IllegalArgumentException.class,() -> {
+            new SubsamplingLayer.Builder().kernelSize(2).build();
+
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test()
     public void testSubsamplingInvalidStride() {
-        new SubsamplingLayer.Builder().kernelSize(3, 3).stride(0, 1).build();
+        assertThrows(IllegalStateException.class,() -> {
+            new SubsamplingLayer.Builder().kernelSize(3, 3).stride(0, 1).build();
+
+        });
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test()
     public void testSubsamplingInvalidStride2() {
-        new SubsamplingLayer.Builder().kernelSize(3, 3).stride(1, 1, 1).build();
+        assertThrows(RuntimeException.class,() -> {
+            new SubsamplingLayer.Builder().kernelSize(3, 3).stride(1, 1, 1).build();
+
+        });
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testSubsamplingInvalidPadding() {
-        new SubsamplingLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(-1, 0).build();
+        assertThrows(IllegalArgumentException.class,() -> {
+            new SubsamplingLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(-1, 0).build();
+
+        });
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test()
     public void testSubsamplingInvalidPadding2() {
-        new SubsamplingLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(0).build();
+        assertThrows(RuntimeException.class,() -> {
+            new SubsamplingLayer.Builder().kernelSize(3, 3).stride(1, 1).padding(0).build();
+
+        });
     }
 
 }

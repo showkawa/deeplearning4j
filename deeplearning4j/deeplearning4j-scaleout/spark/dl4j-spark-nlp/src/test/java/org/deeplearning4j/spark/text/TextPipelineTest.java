@@ -1,21 +1,27 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.spark.text;
 
+import com.sun.jna.Platform;
+import lombok.SneakyThrows;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -30,9 +36,10 @@ import org.deeplearning4j.spark.models.embeddings.word2vec.Word2Vec;
 import org.deeplearning4j.spark.text.functions.CountCumSum;
 import org.deeplearning4j.spark.text.functions.TextPipeline;
 import org.deeplearning4j.text.stopwords.StopWords;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import org.nd4j.common.resources.Downloader;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.common.primitives.Counter;
 import org.nd4j.common.primitives.Pair;
@@ -40,15 +47,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
+import java.io.File;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Jeffrey Tang
  */
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.SPARK)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class TextPipelineTest extends BaseSparkTest {
 
     private List<String> sentenceList;
@@ -62,7 +75,27 @@ public class TextPipelineTest extends BaseSparkTest {
         return sc.parallelize(sentenceList, 2);
     }
 
-    @Before
+    @BeforeAll
+    @SneakyThrows
+    public static void beforeAll() {
+        if(Platform.isWindows()) {
+            File hadoopHome = new File(System.getProperty("java.io.tmpdir"),"hadoop-tmp");
+            File binDir = new File(hadoopHome,"bin");
+            if(!binDir.exists())
+                binDir.mkdirs();
+            File outputFile = new File(binDir,"winutils.exe");
+            if(!outputFile.exists()) {
+                log.info("Fixing spark for windows");
+                Downloader.download("winutils.exe",
+                        URI.create("https://github.com/cdarlint/winutils/blob/master/hadoop-2.6.5/bin/winutils.exe?raw=true").toURL(),
+                        outputFile,"db24b404d2331a1bec7443336a5171f1",3);
+            }
+
+            System.setProperty("hadoop.home.dir", hadoopHome.getAbsolutePath());
+        }
+    }
+
+    @BeforeEach
     public void before() throws Exception {
         conf = new SparkConf().setMaster("local[4]").setAppName("sparktest").set("spark.driver.host", "localhost");
 
@@ -326,7 +359,7 @@ public class TextPipelineTest extends BaseSparkTest {
         sc.stop();
     }
 
-    @Test @Ignore   //AB 2020/04/20 https://github.com/eclipse/deeplearning4j/issues/8849
+    @Test @Disabled   //AB 2020/04/20 https://github.com/eclipse/deeplearning4j/issues/8849
     public void testCountCumSum() throws Exception {
         JavaSparkContext sc = getContext();
         JavaRDD<String> corpusRDD = getCorpusRDD(sc);
@@ -351,7 +384,7 @@ public class TextPipelineTest extends BaseSparkTest {
      *
      * @throws Exception
      */
-    @Test @Ignore   //AB 2020/04/19 https://github.com/eclipse/deeplearning4j/issues/8849
+    @Test @Disabled   //AB 2020/04/19 https://github.com/eclipse/deeplearning4j/issues/8849
     public void testZipFunction1() throws Exception {
         JavaSparkContext sc = getContext();
         JavaRDD<String> corpusRDD = getCorpusRDD(sc);
@@ -389,7 +422,7 @@ public class TextPipelineTest extends BaseSparkTest {
         sc.stop();
     }
 
-    @Test @Ignore   //AB 2020/04/19 https://github.com/eclipse/deeplearning4j/issues/8849
+    @Test @Disabled   //AB 2020/04/19 https://github.com/eclipse/deeplearning4j/issues/8849
     public void testZipFunction2() throws Exception {
         JavaSparkContext sc = getContext();
         JavaRDD<String> corpusRDD = getCorpusRDD(sc);

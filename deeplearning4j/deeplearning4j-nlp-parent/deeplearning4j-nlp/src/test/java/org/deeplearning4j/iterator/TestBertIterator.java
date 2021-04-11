@@ -1,29 +1,38 @@
-/*******************************************************************************
- * Copyright (c) 2015-2019 Skymind, Inc.
- * Copyright (c) 2019 Konduit K.K.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.iterator;
 
+import com.sun.jna.Platform;
 import lombok.Getter;
 import org.deeplearning4j.BaseDL4JTest;
 import org.deeplearning4j.iterator.bert.BertMaskedLMMasker;
 import org.deeplearning4j.iterator.provider.CollectionLabeledPairSentenceProvider;
 import org.deeplearning4j.iterator.provider.CollectionLabeledSentenceProvider;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.BertWordPieceTokenizerFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
@@ -39,9 +48,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
+@Tag(TagNames.FILE_IO)
+@NativeTag
+@Tag(TagNames.LARGE_RESOURCES)
+@Tag(TagNames.LONG_TEST)
 public class TestBertIterator extends BaseDL4JTest {
 
     private static File pathToVocab = Resources.asFile("other/vocab.txt");
@@ -51,12 +64,12 @@ public class TestBertIterator extends BaseDL4JTest {
     private static String sentenceA = "Goodnight noises everywhere";
     private static String sentenceB = "Goodnight moon";
 
-    public TestBertIterator() throws IOException {
-    }
 
-    @Test(timeout = 20000L)
+    @Test()
     public void testBertSequenceClassification() throws Exception {
-
+        if(Platform.isWindows()) {
+            return;
+        }
         int minibatchSize = 2;
         TestSentenceHelper testHelper = new TestSentenceHelper();
         BertIterator b = BertIterator.builder()
@@ -126,7 +139,8 @@ public class TestBertIterator extends BaseDL4JTest {
         assertEquals(segmentId, b.featurizeSentences(testHelper.getSentences()).getFirst()[1]);
     }
 
-    @Test(timeout = 20000L)
+    @Test()
+    @Timeout(20000)
     public void testBertUnsupervised() throws Exception {
         int minibatchSize = 2;
         TestSentenceHelper testHelper = new TestSentenceHelper();
@@ -157,7 +171,8 @@ public class TestBertIterator extends BaseDL4JTest {
         assertTrue(b.hasNext());
     }
 
-    @Test(timeout = 20000L)
+    @Test()
+    @Timeout(20000)
     public void testLengthHandling() throws Exception {
         int minibatchSize = 2;
         TestSentenceHelper testHelper = new TestSentenceHelper();
@@ -226,7 +241,8 @@ public class TestBertIterator extends BaseDL4JTest {
         assertArrayEquals(expShape, mds.getFeaturesMaskArray(0).shape());
     }
 
-    @Test(timeout = 20000L)
+    @Test()
+    @Timeout(20000)
     public void testMinibatchPadding() throws Exception {
         Nd4j.setDefaultDataTypes(DataType.FLOAT, DataType.FLOAT);
         int minibatchSize = 3;
@@ -305,6 +321,9 @@ public class TestBertIterator extends BaseDL4JTest {
      */
     @Test
     public void testSentencePairsSingle() throws IOException {
+        if(Platform.isWindows()) {
+            return;
+        }
         boolean prependAppend;
         int numOfSentences;
 
@@ -364,7 +383,9 @@ public class TestBertIterator extends BaseDL4JTest {
     */
     @Test
     public void testSentencePairsUnequalLengths() throws IOException {
-
+        if(Platform.isWindows()) {
+            return;
+        }
         int minibatchSize = 4;
         int numOfSentencesinIter = 3;
 
@@ -453,6 +474,9 @@ public class TestBertIterator extends BaseDL4JTest {
 
     @Test
     public void testSentencePairFeaturizer() throws IOException {
+        if(Platform.isWindows()) {
+            return;
+        }
         int minibatchSize = 2;
         TestSentencePairsHelper testPairHelper = new TestSentencePairsHelper(minibatchSize);
         BertIterator b = BertIterator.builder()

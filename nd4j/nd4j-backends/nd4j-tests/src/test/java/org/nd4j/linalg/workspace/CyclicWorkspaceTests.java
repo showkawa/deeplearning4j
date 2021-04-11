@@ -1,28 +1,37 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.workspace;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.memory.conf.WorkspaceConfiguration;
 import org.nd4j.linalg.api.memory.enums.AllocationPolicy;
 import org.nd4j.linalg.api.memory.enums.LearningPolicy;
@@ -32,14 +41,13 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 
 @Slf4j
-@RunWith(Parameterized.class)
-public class CyclicWorkspaceTests extends BaseNd4jTest {
-    public CyclicWorkspaceTests(Nd4jBackend backend) {
-        super(backend);
-    }
+@Tag(TagNames.WORKSPACES)
+@NativeTag
+public class CyclicWorkspaceTests extends BaseNd4jTestWithBackends {
 
-    @Test
-    public void testBasicMechanics_1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testBasicMechanics_1(Nd4jBackend backend) {
         val fShape = new long[]{128, 784};
         val lShape = new long[] {128, 10};
         val prefetchSize = 24;
@@ -58,9 +66,12 @@ public class CyclicWorkspaceTests extends BaseNd4jTest {
         }
     }
 
-    @Test
-    @Ignore
-    public void testGc() {
+    @SneakyThrows
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    @Tag(TagNames.LONG_TEST)
+    @Tag(TagNames.LARGE_RESOURCES)
+    public void testGc(Nd4jBackend backend) {
         val indArray = Nd4j.create(4, 4);
         indArray.putRow(0, Nd4j.create(new float[]{0, 2, -2, 0}));
         indArray.putRow(1, Nd4j.create(new float[]{0, 1, -1, 0}));
@@ -69,7 +80,7 @@ public class CyclicWorkspaceTests extends BaseNd4jTest {
 
         for (int i = 0; i < 100000000; i++) {
             indArray.getRow(i % 3);
-            //Thread.sleep(1);
+            Thread.sleep(1);
         }
     }
 

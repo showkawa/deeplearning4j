@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.optimizer.listener;
 
@@ -25,23 +29,29 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.listeners.Checkpoint;
 import org.deeplearning4j.optimize.listeners.CheckpointListener;
 import org.deeplearning4j.util.ModelSerializer;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.common.primitives.Pair;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
-
+import static org.junit.jupiter.api.Assertions.*;
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class TestCheckpointListener extends BaseDL4JTest {
 
     @Override
@@ -49,8 +59,6 @@ public class TestCheckpointListener extends BaseDL4JTest {
         return 90000L;
     }
 
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
 
     private static Pair<MultiLayerNetwork,DataSetIterator> getNetAndData(){
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
@@ -68,8 +76,8 @@ public class TestCheckpointListener extends BaseDL4JTest {
     }
 
     @Test
-    public void testCheckpointListenerEvery2Epochs() throws Exception {
-        File f = tempDir.newFolder();
+    public void testCheckpointListenerEvery2Epochs(@TempDir Path tempDir) throws Exception {
+        File f = tempDir.toFile();
         Pair<MultiLayerNetwork, DataSetIterator> p = getNetAndData();
         MultiLayerNetwork net = p.getFirst();
         DataSetIterator iter = p.getSecond();
@@ -117,8 +125,8 @@ public class TestCheckpointListener extends BaseDL4JTest {
     }
 
     @Test
-    public void testCheckpointListenerEvery5Iter() throws Exception {
-        File f = tempDir.newFolder();
+    public void testCheckpointListenerEvery5Iter(@TempDir Path tempDir) throws Exception {
+        File f = tempDir.toFile();
         Pair<MultiLayerNetwork, DataSetIterator> p = getNetAndData();
         MultiLayerNetwork net = p.getFirst();
         DataSetIterator iter = p.getSecond();
@@ -155,7 +163,7 @@ public class TestCheckpointListener extends BaseDL4JTest {
             count++;
         }
 
-        assertEquals(ns.toString(), 3, ns.size());
+        assertEquals( 3, ns.size(),ns.toString());
         assertTrue(ns.contains(25));
         assertTrue(ns.contains(30));
         assertTrue(ns.contains(35));
@@ -174,8 +182,8 @@ public class TestCheckpointListener extends BaseDL4JTest {
     }
 
     @Test
-    public void testCheckpointListenerEveryTimeUnit() throws Exception {
-        File f = tempDir.newFolder();
+    public void testCheckpointListenerEveryTimeUnit(@TempDir Path tempDir) throws Exception {
+        File f = tempDir.toFile();
         Pair<MultiLayerNetwork, DataSetIterator> p = getNetAndData();
         MultiLayerNetwork net = p.getFirst();
         DataSetIterator iter = p.getSecond();
@@ -212,14 +220,14 @@ public class TestCheckpointListener extends BaseDL4JTest {
         }
 
         assertEquals(2, l.availableCheckpoints().size());
-        assertEquals(ns.toString(), 2, ns.size());
+        assertEquals(2, ns.size(),ns.toString());
         System.out.println(ns);
         assertTrue(ns.containsAll(Arrays.asList(2,4)));
     }
 
     @Test
-    public void testCheckpointListenerKeepLast3AndEvery3() throws Exception {
-        File f = tempDir.newFolder();
+    public void testCheckpointListenerKeepLast3AndEvery3(@TempDir Path tempDir) throws Exception {
+        File f = tempDir.toFile();
         Pair<MultiLayerNetwork, DataSetIterator> p = getNetAndData();
         MultiLayerNetwork net = p.getFirst();
         DataSetIterator iter = p.getSecond();
@@ -257,15 +265,15 @@ public class TestCheckpointListener extends BaseDL4JTest {
             count++;
         }
 
-        assertEquals(ns.toString(), 5, ns.size());
-        assertTrue(ns.toString(), ns.containsAll(Arrays.asList(5, 11, 15, 17, 19)));
+        assertEquals(5, ns.size(),ns.toString());
+        assertTrue(ns.containsAll(Arrays.asList(5, 11, 15, 17, 19)),ns.toString());
 
         assertEquals(5, l.availableCheckpoints().size());
     }
 
     @Test
-    public void testDeleteExisting() throws Exception {
-        File f = tempDir.newFolder();
+    public void testDeleteExisting(@TempDir Path tempDir) throws Exception {
+        File f = tempDir.toFile();
         Pair<MultiLayerNetwork, DataSetIterator> p = getNetAndData();
         MultiLayerNetwork net = p.getFirst();
         DataSetIterator iter = p.getSecond();

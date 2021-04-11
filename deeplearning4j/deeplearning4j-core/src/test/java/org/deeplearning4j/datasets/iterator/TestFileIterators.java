@@ -1,27 +1,36 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.datasets.iterator;
 
 import org.deeplearning4j.BaseDL4JTest;
 import org.deeplearning4j.datasets.iterator.file.FileDataSetIterator;
 import org.deeplearning4j.datasets.iterator.file.FileMultiDataSetIterator;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.MultiDataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -29,23 +38,24 @@ import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled
+@NativeTag
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.NDARRAY_ETL)
 public class TestFileIterators extends BaseDL4JTest {
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
 
-    @Rule
-    public TemporaryFolder folder2 = new TemporaryFolder();
 
     @Test
-    public void testFileDataSetIterator() throws Exception {
-        folder.create();
-        File f = folder.newFolder();
+    public void testFileDataSetIterator(@TempDir Path folder, @TempDir Path testDir2) throws Exception {
+
+        File f = folder.toFile();
 
         DataSet d1 = new DataSet(Nd4j.linspace(1, 10, 10).reshape(10,1),
                 Nd4j.linspace(101, 110, 10).reshape(10,1));
@@ -73,10 +83,13 @@ public class TestFileIterators extends BaseDL4JTest {
         assertEquals(exp, act);
 
         //Test multiple directories
-        folder2.create();
-        File f2a = folder2.newFolder();
-        File f2b = folder2.newFolder();
-        File f2c = folder2.newFolder();
+
+        File f2a = new File(testDir2.toFile(),"folder1");
+        f2a.mkdirs();
+        File f2b =  new File(testDir2.toFile(),"folder2");
+        f2b.mkdirs();
+        File f2c =  new File(testDir2.toFile(),"folder3");
+        f2c.mkdirs();
         d1.save(new File(f2a, "d1.bin"));
         d2.save(new File(f2a, "d2.bin"));
         d3.save(new File(f2b, "d3.bin"));
@@ -130,7 +143,9 @@ public class TestFileIterators extends BaseDL4JTest {
 
 
         //Test batch size != saved size
-        f = folder.newFolder();
+        File f4 = new File(folder.toFile(),"newFolder");
+        f4.mkdirs();
+        f = f4;
         d1.save(new File(f, "d1.bin"));
         d2.save(new File(f, "d2.bin"));
         d3.save(new File(f, "d3.bin"));
@@ -155,9 +170,8 @@ public class TestFileIterators extends BaseDL4JTest {
     }
 
     @Test
-    public void testFileMultiDataSetIterator() throws Exception {
-        folder.create();
-        File f = folder.newFolder();
+    public void testFileMultiDataSetIterator(@TempDir Path folder) throws Exception {
+        File f = folder.toFile();
 
         MultiDataSet d1 = new org.nd4j.linalg.dataset.MultiDataSet(Nd4j.linspace(1, 10, 10).reshape(10,1),
                 Nd4j.linspace(101, 110, 10).reshape(10,1));
@@ -185,10 +199,11 @@ public class TestFileIterators extends BaseDL4JTest {
         assertEquals(exp, act);
 
         //Test multiple directories
-        folder2.create();
-        File f2a = folder2.newFolder();
-        File f2b = folder2.newFolder();
-        File f2c = folder2.newFolder();
+        File newDir = new File(folder.toFile(),"folder2");
+        newDir.mkdirs();
+        File f2a = new File(newDir,"folder-1");
+        File f2b = new File(newDir,"folder-2");
+        File f2c = new File(newDir,"folder-3");
         d1.save(new File(f2a, "d1.bin"));
         d2.save(new File(f2a, "d2.bin"));
         d3.save(new File(f2b, "d3.bin"));
@@ -239,7 +254,8 @@ public class TestFileIterators extends BaseDL4JTest {
 
 
         //Test batch size != saved size
-        f = folder.newFolder();
+        f = new File(folder.toFile(),"newolder");
+        f.mkdirs();
         d1.save(new File(f, "d1.bin"));
         d2.save(new File(f, "d2.bin"));
         d3.save(new File(f, "d3.bin"));

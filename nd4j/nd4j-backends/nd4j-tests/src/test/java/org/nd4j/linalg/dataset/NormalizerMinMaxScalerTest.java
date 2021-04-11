@@ -1,26 +1,34 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.dataset;
 
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.TestDataSetIterator;
@@ -30,21 +38,18 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
-/**
- * Created by susaneraly on 5/25/16.
- */
-@RunWith(Parameterized.class)
-public class NormalizerMinMaxScalerTest extends BaseNd4jTest {
+@Tag(TagNames.NDARRAY_ETL)
+@NativeTag
+@Tag(TagNames.FILE_IO)
+public class NormalizerMinMaxScalerTest extends BaseNd4jTestWithBackends {
 
-    public NormalizerMinMaxScalerTest(Nd4jBackend backend) {
-        super(backend);
-    }
 
-    @Test
-    public void testBruteForce() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testBruteForce(Nd4jBackend backend) {
         //X_std = (X - X.min(axis=0)) / (X.max(axis=0) - X.min(axis=0))
         //X_scaled = X_std * (max - min) + min
         // Dataset features are scaled consecutive natural numbers
@@ -96,8 +101,9 @@ public class NormalizerMinMaxScalerTest extends BaseNd4jTest {
 
     }
 
-    @Test
-    public void testRevert() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRevert(Nd4jBackend backend) {
         double tolerancePerc = 1; // 1% of correct value
         int nSamples = 500;
         int nFeatures = 3;
@@ -114,15 +120,16 @@ public class NormalizerMinMaxScalerTest extends BaseNd4jTest {
         myNormalizer.transform(transformed);
         myNormalizer.revert(transformed);
         INDArray delta = Transforms.abs(transformed.getFeatures().sub(sampleDataSet.getFeatures()))
-                        .div(sampleDataSet.getFeatures());
+                .div(sampleDataSet.getFeatures());
         double maxdeltaPerc = delta.max(0, 1).mul(100).getDouble(0);
         System.out.println("Delta: " + maxdeltaPerc);
         assertTrue(maxdeltaPerc < tolerancePerc);
 
     }
 
-    @Test
-    public void testGivenMaxMin() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGivenMaxMin(Nd4jBackend backend) {
         double tolerancePerc = 1; // 1% of correct value
         int nSamples = 500;
         int nFeatures = 3;
@@ -142,14 +149,15 @@ public class NormalizerMinMaxScalerTest extends BaseNd4jTest {
 
         myNormalizer.revert(transformed);
         INDArray delta = Transforms.abs(transformed.getFeatures().sub(sampleDataSet.getFeatures()))
-                        .div(sampleDataSet.getFeatures());
+                .div(sampleDataSet.getFeatures());
         double maxdeltaPerc = delta.max(0, 1).mul(100).getDouble(0);
         System.out.println("Delta: " + maxdeltaPerc);
         assertTrue(maxdeltaPerc < tolerancePerc);
     }
 
-    @Test
-    public void testGivenMaxMinConstant() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGivenMaxMinConstant(Nd4jBackend backend) {
         double tolerancePerc = 1; // 1% of correct value
         int nSamples = 500;
         int nFeatures = 3;
@@ -173,8 +181,9 @@ public class NormalizerMinMaxScalerTest extends BaseNd4jTest {
         assertTrue(maxdeltaPerc < tolerancePerc);
     }
 
-    @Test
-    public void testConstant() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testConstant(Nd4jBackend backend) {
         double tolerancePerc = 0.01; // 0.01% of correct value
         int nSamples = 500;
         int nFeatures = 3;

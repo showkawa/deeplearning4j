@@ -1,10 +1,33 @@
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
+
 package org.nd4j.linalg.ops;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.autodiff.functions.DifferentialFunction;
 import org.nd4j.autodiff.samediff.SDVariable;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ops.NoOp;
 import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.linalg.lossfunctions.ILossFunction;
@@ -18,14 +41,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Ignore //AB 2019/08/23 Ignored for now
-public class OpConstructorTests extends BaseNd4jTest {
-
-    public OpConstructorTests(Nd4jBackend backend) {
-        super(backend);
-    }
+public class OpConstructorTests extends BaseNd4jTestWithBackends {
 
     //Ignore individual classes
     protected Set<Class<?>> exclude = new HashSet<>(
@@ -39,8 +57,11 @@ public class OpConstructorTests extends BaseNd4jTest {
             "org\\.nd4j\\.linalg\\.api\\.ops\\.impl\\.controlflow\\..*"
     };
 
-    @Test
-    public void checkForINDArrayConstructors() throws Exception {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    @Disabled("Need to check")
+    @Tag(TagNames.NEEDS_VERIFY)
+    public void checkForINDArrayConstructors(Nd4jBackend backend) throws Exception {
         /*
         Check that all op classes have at least one INDArray or INDArray[] constructor, so they can actually
         be used outside of SameDiff
@@ -89,17 +110,12 @@ public class OpConstructorTests extends BaseNd4jTest {
         }
 
         if(!classes.isEmpty()){
-            Collections.sort(classes, new Comparator<Class<?>>() {
-                @Override
-                public int compare(Class<?> o1, Class<?> o2) {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
+            Collections.sort(classes, Comparator.comparing(Class::getName));
             for(Class<?> c : classes){
                 System.out.println("No INDArray constructor: " + c.getName());
             }
         }
-        assertEquals("Found " + classes.size() + " (non-ignored) op classes with no INDArray/INDArray[] constructors", 0, classes.size());
+        assertEquals(0, classes.size(),"Found " + classes.size() + " (non-ignored) op classes with no INDArray/INDArray[] constructors");
 
     }
 

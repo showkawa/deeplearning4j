@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2019 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.models.embeddings.loader;
 
@@ -30,10 +34,14 @@ import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -42,22 +50,24 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
+@Tag(TagNames.FILE_IO)
+@NativeTag
 public class WordVectorSerializerTest extends BaseDL4JTest {
     private AbstractCache<VocabWord> cache;
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
 
-    @Before
+
+    @BeforeEach
     public void setUp() throws Exception {
         cache = new AbstractCache.Builder<VocabWord>().build();
 
@@ -249,7 +259,7 @@ public class WordVectorSerializerTest extends BaseDL4JTest {
     }
 
     @Test
-    public void weightLookupTable_Correct_WhenDeserialized() throws Exception {
+    public void weightLookupTable_Correct_WhenDeserialized(@TempDir Path testDir) throws Exception {
 
         INDArray syn0 = Nd4j.rand(DataType.FLOAT, 10, 2),
                 syn1 = Nd4j.rand(DataType.FLOAT, 10, 2),
@@ -265,7 +275,7 @@ public class WordVectorSerializerTest extends BaseDL4JTest {
         lookupTable.setSyn1(syn1);
         lookupTable.setSyn1Neg(syn1Neg);
 
-        File dir = testDir.newFolder();
+        File dir = testDir.toFile();
         File file = new File(dir, "lookupTable.txt");
 
         WeightLookupTable<VocabWord> deser = null;
@@ -298,12 +308,12 @@ public class WordVectorSerializerTest extends BaseDL4JTest {
     }
 
     @Test
-    public void FastText_Correct_WhenDeserialized() throws IOException {
+    public void FastText_Correct_WhenDeserialized(@TempDir Path testDir) throws IOException {
 
         FastText fastText =
                 FastText.builder().cbow(true).build();
 
-        File dir = testDir.newFolder();
+        File dir = testDir.toFile();
         WordVectorSerializer.writeWordVectors(fastText, new File(dir, "some.data"));
 
         FastText deser = null;

@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.parameterserver.background;
 
@@ -22,24 +26,24 @@ import io.aeron.driver.ThreadingMode;
 import lombok.extern.slf4j.Slf4j;
 import org.agrona.CloseHelper;
 import org.agrona.concurrent.BusySpinIdleStrategy;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.nd4j.common.tests.BaseND4JTest;
 import org.nd4j.aeron.ipc.AeronUtil;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.parameterserver.client.ParameterServerClient;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Created by agibsonccc on 10/5/16.
- */
 @Slf4j
+@Disabled
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class RemoteParameterServerClientTests extends BaseND4JTest {
     private int parameterLength = 1000;
     private Aeron.Context ctx;
@@ -48,10 +52,10 @@ public class RemoteParameterServerClientTests extends BaseND4JTest {
     private AtomicInteger slaveStatus = new AtomicInteger(0);
     private Aeron aeron;
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         final MediaDriver.Context ctx =
-                        new MediaDriver.Context().threadingMode(ThreadingMode.DEDICATED).dirsDeleteOnStart(true)
+                        new MediaDriver.Context().threadingMode(ThreadingMode.DEDICATED).dirDeleteOnStart(true)
                                         .termBufferSparseFile(false).conductorIdleStrategy(new BusySpinIdleStrategy())
                                         .receiverIdleStrategy(new BusySpinIdleStrategy())
                                         .senderIdleStrategy(new BusySpinIdleStrategy());
@@ -85,13 +89,15 @@ public class RemoteParameterServerClientTests extends BaseND4JTest {
     }
 
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         CloseHelper.close(mediaDriver);
         CloseHelper.close(aeron);
     }
 
-    @Test(timeout = 60000L) @Ignore //AB 20200425 https://github.com/eclipse/deeplearning4j/issues/8882
+    @Test()
+    @Timeout(60000L)
+    @Disabled //AB 20200425 https://github.com/eclipse/deeplearning4j/issues/8882
     public void remoteTests() throws Exception {
         if (masterStatus.get() != 0 || slaveStatus.get() != 0)
             throw new IllegalStateException("Master or slave failed to start. Exiting");
@@ -149,10 +155,10 @@ public class RemoteParameterServerClientTests extends BaseND4JTest {
 
     private Aeron.Context getContext() {
         if (ctx == null)
-            ctx = new Aeron.Context().publicationConnectionTimeout(-1)
+            ctx = new Aeron.Context().driverTimeoutMs(Long.MAX_VALUE)
                             .availableImageHandler(AeronUtil::printAvailableImage)
                             .unavailableImageHandler(AeronUtil::printUnavailableImage)
-                            .aeronDirectoryName(mediaDriver.aeronDirectoryName()).keepAliveInterval(1000)
+                            .aeronDirectoryName(mediaDriver.aeronDirectoryName()).keepAliveIntervalNs(1000)
                             .errorHandler(e -> log.error(e.toString(), e));
         return ctx;
     }

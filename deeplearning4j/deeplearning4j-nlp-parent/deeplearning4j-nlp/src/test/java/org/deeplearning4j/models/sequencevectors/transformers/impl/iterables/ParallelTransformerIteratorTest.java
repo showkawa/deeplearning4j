@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.models.sequencevectors.transformers.impl.iterables;
 
@@ -29,30 +33,31 @@ import org.deeplearning4j.text.sentenceiterator.MutipleEpochsSentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.nd4j.common.resources.Resources;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-/**
- * @author raver119@gmail.com
- */
 @Slf4j
+@Tag(TagNames.FILE_IO)
+@NativeTag
 public class ParallelTransformerIteratorTest extends BaseDL4JTest {
     private TokenizerFactory factory = new DefaultTokenizerFactory();
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
 
     }
 
-    @Test(timeout = 300000)
+    @Test()
+    @Timeout(30000)
     public void hasNext() throws Exception {
         SentenceIterator iterator = new BasicLineIterator(Resources.asFile("big/raw_sentences.txt"));
 
@@ -64,8 +69,8 @@ public class ParallelTransformerIteratorTest extends BaseDL4JTest {
         Sequence<VocabWord> sequence = null;
         while (iter.hasNext()) {
             sequence = iter.next();
-            assertNotEquals("Failed on [" + cnt + "] iteration", null, sequence);
-            assertNotEquals("Failed on [" + cnt + "] iteration", 0, sequence.size());
+            assertNotEquals( null, sequence,"Failed on [" + cnt + "] iteration");
+            assertNotEquals(0, sequence.size(),"Failed on [" + cnt + "] iteration");
             cnt++;
         }
 
@@ -74,7 +79,8 @@ public class ParallelTransformerIteratorTest extends BaseDL4JTest {
         assertEquals(97162, cnt);
     }
 
-    @Test(timeout = 300000)
+    @Test()
+    @Timeout(30000)
     public void testSpeedComparison1() throws Exception {
         SentenceIterator iterator = new MutipleEpochsSentenceIterator(
                         new BasicLineIterator(Resources.asFile("big/raw_sentences.txt")), 25);
@@ -87,8 +93,8 @@ public class ParallelTransformerIteratorTest extends BaseDL4JTest {
         long time1 = System.currentTimeMillis();
         while (iter.hasNext()) {
             Sequence<VocabWord> sequence = iter.next();
-            assertNotEquals("Failed on [" + cnt + "] iteration", null, sequence);
-            assertNotEquals("Failed on [" + cnt + "] iteration", 0, sequence.size());
+            assertNotEquals(null, sequence,"Failed on [" + cnt + "] iteration");
+            assertNotEquals( 0, sequence.size(),"Failed on [" + cnt + "] iteration");
             cnt++;
         }
         long time2 = System.currentTimeMillis();
@@ -104,8 +110,8 @@ public class ParallelTransformerIteratorTest extends BaseDL4JTest {
         time1 = System.currentTimeMillis();
         while (iter.hasNext()) {
             Sequence<VocabWord> sequence = iter.next();
-            assertNotEquals("Failed on [" + cnt + "] iteration", null, sequence);
-            assertNotEquals("Failed on [" + cnt + "] iteration", 0, sequence.size());
+            assertNotEquals(null, sequence,"Failed on [" + cnt + "] iteration");
+            assertNotEquals(0, sequence.size(),"Failed on [" + cnt + "] iteration");
             cnt++;
         }
         time2 = System.currentTimeMillis();
@@ -128,8 +134,8 @@ public class ParallelTransformerIteratorTest extends BaseDL4JTest {
         time1 = System.currentTimeMillis();
         while (iter.hasNext()) {
             Sequence<VocabWord> sequence = iter.next();
-            assertNotEquals("Failed on [" + cnt + "] iteration", null, sequence);
-            assertNotEquals("Failed on [" + cnt + "] iteration", 0, sequence.size());
+            assertNotEquals(null, sequence, "Failed on [" + cnt + "] iteration");
+            assertNotEquals(0, sequence.size(),"Failed on [" + cnt + "] iteration");
             cnt++;
         }
         time2 = System.currentTimeMillis();
@@ -146,8 +152,8 @@ public class ParallelTransformerIteratorTest extends BaseDL4JTest {
         time1 = System.currentTimeMillis();
         while (iter.hasNext()) {
             Sequence<VocabWord> sequence = iter.next();
-            assertNotEquals("Failed on [" + cnt + "] iteration", null, sequence);
-            assertNotEquals("Failed on [" + cnt + "] iteration", 0, sequence.size());
+            assertNotEquals(null, sequence, "Failed on [" + cnt + "] iteration");
+            assertNotEquals(0, sequence.size(),"Failed on [" + cnt + "] iteration");
             cnt++;
         }
         time2 = System.currentTimeMillis();

@@ -1,3 +1,23 @@
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
+
 package org.deeplearning4j.util;
 
 import org.apache.commons.io.FileUtils;
@@ -9,9 +29,13 @@ import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.common.validation.ValidationResult;
 
@@ -31,17 +55,17 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.*;
 
+import static org.junit.jupiter.api.Assertions.*;
+@NativeTag
+@Tag(TagNames.FILE_IO)
 public class ModelValidatorTests extends BaseDL4JTest {
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
+
 
     @Test
-    public void testMultiLayerNetworkValidation() throws Exception {
-        File f = testDir.newFolder();
+    public void testMultiLayerNetworkValidation(@TempDir Path testDir) throws Exception {
+        File f = testDir.toFile();
 
         //Test non-existent file
         File f0 = new File(f, "doesntExist.bin");
@@ -71,7 +95,7 @@ public class ModelValidatorTests extends BaseDL4JTest {
         ValidationResult vr2 = DL4JModelValidator.validateMultiLayerNetwork(f2);
         assertFalse(vr2.isValid());
         String s = vr2.getIssues().get(0);
-        assertTrue(s, s.contains("zip") && s.contains("corrupt"));
+        assertTrue(s.contains("zip") && s.contains("corrupt"), s);
         assertEquals("MultiLayerNetwork", vr2.getFormatType());
         assertEquals(MultiLayerNetwork.class, vr2.getFormatClass());
         assertNotNull(vr2.getException());
@@ -88,7 +112,7 @@ public class ModelValidatorTests extends BaseDL4JTest {
         assertFalse(vr3.isValid());
         s = vr3.getIssues().get(0);
         assertEquals(1, vr3.getIssues().size());
-        assertTrue(s, s.contains("missing") && s.contains("configuration"));
+        assertTrue(s.contains("missing") && s.contains("configuration"), s);
         assertEquals("MultiLayerNetwork", vr3.getFormatType());
         assertEquals(MultiLayerNetwork.class, vr3.getFormatClass());
         assertNull(vr3.getException());
@@ -106,7 +130,7 @@ public class ModelValidatorTests extends BaseDL4JTest {
         assertFalse(vr4.isValid());
         s = vr4.getIssues().get(0);
         assertEquals(1, vr4.getIssues().size());
-        assertTrue(s, s.contains("missing") && s.contains("coefficients"));
+        assertTrue(s.contains("missing") && s.contains("coefficients"), s);
         assertEquals("MultiLayerNetwork", vr4.getFormatType());
         assertEquals(MultiLayerNetwork.class, vr4.getFormatClass());
         assertNull(vr4.getException());
@@ -149,7 +173,7 @@ public class ModelValidatorTests extends BaseDL4JTest {
         assertFalse(vr6.isValid());
         s = vr6.getIssues().get(0);
         assertEquals(1, vr6.getIssues().size());
-        assertTrue(s, s.contains("JSON") && s.contains("valid") && s.contains("MultiLayerConfiguration"));
+        assertTrue(s.contains("JSON") && s.contains("valid") && s.contains("MultiLayerConfiguration"), s);
         assertEquals("MultiLayerNetwork", vr6.getFormatType());
         assertEquals(MultiLayerNetwork.class, vr6.getFormatClass());
         assertNotNull(vr6.getException());
@@ -158,8 +182,8 @@ public class ModelValidatorTests extends BaseDL4JTest {
 
 
     @Test
-    public void testComputationGraphNetworkValidation() throws Exception {
-        File f = testDir.newFolder();
+    public void testComputationGraphNetworkValidation(@TempDir Path testDir) throws Exception {
+        File f = testDir.toFile();
 
         //Test non-existent file
         File f0 = new File(f, "doesntExist.bin");
@@ -189,7 +213,7 @@ public class ModelValidatorTests extends BaseDL4JTest {
         ValidationResult vr2 = DL4JModelValidator.validateComputationGraph(f2);
         assertFalse(vr2.isValid());
         String s = vr2.getIssues().get(0);
-        assertTrue(s, s.contains("zip") && s.contains("corrupt"));
+        assertTrue(s.contains("zip") && s.contains("corrupt"), s);
         assertEquals("ComputationGraph", vr2.getFormatType());
         assertEquals(ComputationGraph.class, vr2.getFormatClass());
         assertNotNull(vr2.getException());
@@ -206,7 +230,7 @@ public class ModelValidatorTests extends BaseDL4JTest {
         assertFalse(vr3.isValid());
         s = vr3.getIssues().get(0);
         assertEquals(1, vr3.getIssues().size());
-        assertTrue(s, s.contains("missing") && s.contains("configuration"));
+        assertTrue(s.contains("missing") && s.contains("configuration"), s);
         assertEquals("ComputationGraph", vr3.getFormatType());
         assertEquals(ComputationGraph.class, vr3.getFormatClass());
         assertNull(vr3.getException());
@@ -224,7 +248,7 @@ public class ModelValidatorTests extends BaseDL4JTest {
         assertFalse(vr4.isValid());
         s = vr4.getIssues().get(0);
         assertEquals(1, vr4.getIssues().size());
-        assertTrue(s, s.contains("missing") && s.contains("coefficients"));
+        assertTrue(s.contains("missing") && s.contains("coefficients"), s);
         assertEquals("ComputationGraph", vr4.getFormatType());
         assertEquals(ComputationGraph.class, vr4.getFormatClass());
         assertNull(vr4.getException());
@@ -267,7 +291,7 @@ public class ModelValidatorTests extends BaseDL4JTest {
         assertFalse(vr6.isValid());
         s = vr6.getIssues().get(0);
         assertEquals(1, vr6.getIssues().size());
-        assertTrue(s, s.contains("JSON") && s.contains("valid") && s.contains("ComputationGraphConfiguration"));
+        assertTrue(s.contains("JSON") && s.contains("valid") && s.contains("ComputationGraphConfiguration"), s);
         assertEquals("ComputationGraph", vr6.getFormatType());
         assertEquals(ComputationGraph.class, vr6.getFormatClass());
         assertNotNull(vr6.getException());

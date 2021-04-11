@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.aeron.ipc;
 
@@ -20,21 +24,24 @@ import io.aeron.Aeron;
 import io.aeron.driver.MediaDriver;
 import lombok.extern.slf4j.Slf4j;
 import org.agrona.CloseHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.nd4j.common.tests.BaseND4JTest;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-/**
- * Created by agibsonccc on 9/22/16.
- */
 @Slf4j
+@NotThreadSafe
+@Disabled("Tests are too flaky")
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class LargeNdArrayIpcTest extends BaseND4JTest {
     private MediaDriver mediaDriver;
     private Aeron.Context ctx;
@@ -47,7 +54,7 @@ public class LargeNdArrayIpcTest extends BaseND4JTest {
         return 180000L;
     }
 
-    @Before
+    @BeforeEach
     public void before() {
         if(isIntegrationTests()) {
             //MediaDriver.loadPropertiesFile("aeron.properties");
@@ -58,7 +65,7 @@ public class LargeNdArrayIpcTest extends BaseND4JTest {
         }
     }
 
-    @After
+    @AfterEach
     public void after() {
         if(isIntegrationTests()) {
             CloseHelper.quietClose(mediaDriver);
@@ -66,15 +73,17 @@ public class LargeNdArrayIpcTest extends BaseND4JTest {
     }
 
     @Test
+    @Disabled
     public void testMultiThreadedIpcBig() throws Exception {
         skipUnlessIntegrationTests();   //Long-running test - don't run as part of unit tests by default
 
         int length = (int) 1e7;
         INDArray arr = Nd4j.ones(length);
         AeronNDArrayPublisher publisher;
-        ctx = new Aeron.Context().publicationConnectionTimeout(-1).availableImageHandler(AeronUtil::printAvailableImage)
+        ctx = new Aeron.Context()
+                .driverTimeoutMs(1000000).availableImageHandler(AeronUtil::printAvailableImage)
                         .unavailableImageHandler(AeronUtil::printUnavailableImage)
-                        .aeronDirectoryName(mediaDriver.aeronDirectoryName()).keepAliveInterval(10000)
+                        .aeronDirectoryName(mediaDriver.aeronDirectoryName()).keepAliveIntervalNs(1000000)
                         .errorHandler(err -> err.printStackTrace());
 
         final AtomicBoolean running = new AtomicBoolean(true);
@@ -122,7 +131,7 @@ public class LargeNdArrayIpcTest extends BaseND4JTest {
 
         Thread.sleep(10000);
 
-        publisher = AeronNDArrayPublisher.builder().publishRetryTimeOut(3000).streamId(streamId).channel(channel)
+        publisher = AeronNDArrayPublisher.builder().publishRetryTimeOut(300000).streamId(streamId).channel(channel)
                         .aeron(aeron).build();
 
 
@@ -148,10 +157,10 @@ public class LargeNdArrayIpcTest extends BaseND4JTest {
 
     private Aeron.Context getContext() {
         if (ctx == null)
-            ctx = new Aeron.Context().publicationConnectionTimeout(-1)
+            ctx = new Aeron.Context().driverTimeoutMs(1000000)
                             .availableImageHandler(AeronUtil::printAvailableImage)
                             .unavailableImageHandler(AeronUtil::printUnavailableImage)
-                            .aeronDirectoryName(mediaDriver.aeronDirectoryName()).keepAliveInterval(10000)
+                            .aeronDirectoryName(mediaDriver.aeronDirectoryName()).keepAliveIntervalNs(100000)
                             .errorHandler(err -> err.printStackTrace());
         return ctx;
     }

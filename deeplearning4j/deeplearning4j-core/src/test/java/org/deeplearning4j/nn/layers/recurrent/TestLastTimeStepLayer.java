@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.nn.layers.recurrent;
 
@@ -29,37 +33,52 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.recurrent.LastTimeStep;
 import org.deeplearning4j.nn.conf.layers.recurrent.SimpleRnn;
 import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.enums.RnnDataFormat;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
 import org.nd4j.linalg.learning.config.AdaGrad;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
 import static org.deeplearning4j.nn.api.OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT;
 import static org.deeplearning4j.nn.weights.WeightInit.XAVIER_UNIFORM;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.nd4j.linalg.activations.Activation.IDENTITY;
 import static org.nd4j.linalg.activations.Activation.TANH;
 import static org.nd4j.linalg.lossfunctions.LossFunctions.LossFunction.MSE;
 
-
-@RunWith(Parameterized.class)
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class TestLastTimeStepLayer extends BaseDL4JTest {
-    private RNNFormat rnnDataFormat;
 
-    public TestLastTimeStepLayer(RNNFormat rnnDataFormat){
-        this.rnnDataFormat = rnnDataFormat;
-    }
-    @Parameterized.Parameters(name="{0}")
-    public static Object[] params(){
-        return RNNFormat.values();
+    public static Stream<Arguments> params() {
+        List<Arguments> args = new ArrayList<>();
+        for(Nd4jBackend nd4jBackend : BaseNd4jTestWithBackends.BACKENDS) {
+            for(RNNFormat rnnFormat : RNNFormat.values()) {
+                args.add(Arguments.of(rnnFormat,nd4jBackend));
+            }
+        }
+        return args.stream();
     }
 
-    @Test
-    public void testLastTimeStepVertex() {
+    @ParameterizedTest
+    @MethodSource("org.deeplearning4j.nn.layers.recurrent.TestLastTimeStepLayer#params")
+    public void testLastTimeStepVertex(RNNFormat rnnDataFormat,Nd4jBackend backend) {
 
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder().graphBuilder().addInputs("in")
                 .addLayer("lastTS", new LastTimeStep(new SimpleRnn.Builder()
@@ -121,8 +140,9 @@ public class TestLastTimeStepLayer extends BaseDL4JTest {
         TestUtils.testModelSerialization(graph);
     }
 
-    @Test
-    public void testMaskingAndAllMasked(){
+    @ParameterizedTest
+    @MethodSource("org.deeplearning4j.nn.layers.recurrent.TestLastTimeStepLayer#params")
+    public void testMaskingAndAllMasked(RNNFormat rnnDataFormat,Nd4jBackend backend) {
         ComputationGraphConfiguration.GraphBuilder builder = new NeuralNetConfiguration.Builder()
                 .optimizationAlgo(STOCHASTIC_GRADIENT_DESCENT)
                 .weightInit(XAVIER_UNIFORM)

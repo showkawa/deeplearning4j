@@ -1,29 +1,36 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.shape.indexing;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ErrorCollector;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.impl.scalar.ScalarAdd;
@@ -33,42 +40,42 @@ import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import org.nd4j.linalg.indexing.SpecifiedIndex;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Adam Gibson
  */
 @Slf4j
-@RunWith(Parameterized.class)
-public class IndexingTestsC extends BaseNd4jTest {
-    @Rule
-    public ErrorCollector collector = new ErrorCollector();
+@NativeTag
+@Tag(TagNames.NDARRAY_INDEXING)
+public class IndexingTestsC extends BaseNd4jTestWithBackends {
 
-    public IndexingTestsC(Nd4jBackend backend) {
-        super(backend);
-    }
 
-    @Test
-    public void testExecSubArray() {
+
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testExecSubArray(Nd4jBackend backend) {
         INDArray nd = Nd4j.create(new double[] {1, 2, 3, 4, 5, 6}, new int[] {2, 3});
 
         INDArray sub = nd.get(NDArrayIndex.all(), NDArrayIndex.interval(0, 2));
         Nd4j.getExecutioner().exec(new ScalarAdd(sub, 2));
-        assertEquals(getFailureMessage(), Nd4j.create(new double[][] {{3, 4}, {6, 7}}), sub);
+        assertEquals(Nd4j.create(new double[][] {{3, 4}, {6, 7}}), sub,getFailureMessage(backend));
 
     }
 
 
-    @Test
-    public void testLinearViewElementWiseMatching() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testLinearViewElementWiseMatching(Nd4jBackend backend) {
         INDArray linspace = Nd4j.linspace(1, 4, 4).reshape(2, 2);
         INDArray dup = linspace.dup();
         linspace.addi(dup);
     }
 
 
-    @Test
-    public void testGetRows() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGetRows(Nd4jBackend backend) {
         INDArray arr = Nd4j.linspace(1, 9, 9, DataType.DOUBLE).reshape(3, 3);
         INDArray testAssertion = Nd4j.create(new double[][] {{4, 5}, {7, 8}});
 
@@ -77,8 +84,9 @@ public class IndexingTestsC extends BaseNd4jTest {
 
     }
 
-    @Test
-    public void testFirstColumn() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testFirstColumn(Nd4jBackend backend) {
         INDArray arr = Nd4j.create(new double[][] {{5, 7}, {6, 8}});
 
         INDArray assertion = Nd4j.create(new double[] {5, 6});
@@ -86,8 +94,9 @@ public class IndexingTestsC extends BaseNd4jTest {
         assertEquals(assertion, test);
     }
 
-    @Test
-    public void testMultiRow() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMultiRow(Nd4jBackend backend) {
         INDArray matrix = Nd4j.linspace(1, 9, 9, DataType.DOUBLE).reshape(3, 3);
         INDArray assertion = Nd4j.create(new double[][] {{4, 7}});
 
@@ -95,8 +104,9 @@ public class IndexingTestsC extends BaseNd4jTest {
         assertEquals(assertion, test);
     }
 
-    @Test
-    public void testPointIndexes() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPointIndexes(Nd4jBackend backend) {
         INDArray arr = Nd4j.create(DataType.DOUBLE, 4, 3, 2);
         INDArray get = arr.get(NDArrayIndex.all(), NDArrayIndex.point(1), NDArrayIndex.all());
         assertArrayEquals(new long[] {4, 2}, get.shape());
@@ -112,8 +122,9 @@ public class IndexingTestsC extends BaseNd4jTest {
         assertEquals(assertion, linspacedGet);
     }
 
-    @Test
-    public void testGetWithVariedStride() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGetWithVariedStride(Nd4jBackend backend) {
         int ph = 0;
         int pw = 0;
         int sy = 2;
@@ -162,8 +173,9 @@ public class IndexingTestsC extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testRowVectorInterval() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRowVectorInterval(Nd4jBackend backend) {
         int len = 30;
         INDArray row = Nd4j.zeros(1, len);
         for (int i = 0; i < len; i++) {
@@ -191,8 +203,9 @@ public class IndexingTestsC extends BaseNd4jTest {
             assertTrue(last10b.getDouble(i) == 20 + i);
     }
 
-    @Test
-    public void test1dSubarray_1() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void test1dSubarray_1(Nd4jBackend backend) {
         val data = Nd4j.linspace(DataType.FLOAT,0, 10, 1);
         val exp = Nd4j.createFromArray(new float[]{3.f, 4.f});
         val dataAtIndex = data.get(NDArrayIndex.interval(3, 5));
@@ -200,8 +213,9 @@ public class IndexingTestsC extends BaseNd4jTest {
         assertEquals(exp, dataAtIndex);
     }
 
-    @Test
-    public void test1dSubarray_2() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void test1dSubarray_2(Nd4jBackend backend) {
         val data = Nd4j.linspace(DataType.FLOAT,1, 10, 1);
         val exp = Nd4j.createFromArray(new float[]{4.f, 6.f});
         val dataAtIndex = data.get(Nd4j.createFromArray(new int[]{3, 5}));
@@ -209,8 +223,9 @@ public class IndexingTestsC extends BaseNd4jTest {
         assertEquals(exp, dataAtIndex);
     }
 
-    @Test
-    public void testGet() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGet(Nd4jBackend backend) {
 //        System.out.println("Testing sub-array put and get with a 3D array ...");
 
         INDArray arr = Nd4j.linspace(0, 124, 125).reshape(5, 5, 5);
@@ -266,8 +281,9 @@ public class IndexingTestsC extends BaseNd4jTest {
 //        System.out.println("... done");
     }
 
-    @Test
-    public void testSimplePoint() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSimplePoint(Nd4jBackend backend) {
         INDArray A = Nd4j.linspace(1, 3 * 3 * 3, 3 * 3 * 3).reshape(3, 3, 3);
 
         /*
@@ -283,17 +299,18 @@ public class IndexingTestsC extends BaseNd4jTest {
         expected.putScalar(0, 1, 12);
         expected.putScalar(1, 0, 14);
         expected.putScalar(1, 1, 15);
-        assertEquals("View with two get", expected, viewTwo);
-        assertEquals("View with one get", expected, viewOne); //FAILS!
-        assertEquals("Two views should be the same", viewOne, viewTwo); //obviously fails
+        assertEquals(expected, viewTwo,"View with two get");
+        assertEquals( expected, viewOne,"View with one get"); //FAILS!
+        assertEquals(viewOne, viewTwo,"Two views should be the same"); //obviously fails
     }
 
     /*
         This is the same as the above test - just tests every possible window with a slice from the 0th dim
         They all fail - so it's possibly unrelated to the value of the index
      */
-    @Test
-    public void testPointIndexing() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPointIndexing(Nd4jBackend backend) {
         int slices = 5;
         int rows = 5;
         int cols = 5;
@@ -311,9 +328,10 @@ public class IndexingTestsC extends BaseNd4jTest {
                     INDArray sameView = A.get(ndi_Slice, ndi_I, ndi_J);
                     String failureMessage = String.format("Fails for (%d , %d - %d, %d - %d)\n", s, i, rows, j, cols);
                     try {
-                        assertEquals(failureMessage, aView, sameView);
+                        assertEquals(aView, sameView,failureMessage);
                     } catch (Throwable t) {
-                        collector.addError(t);
+                        log.error("Error on view ",t);
+                        //collector.addError(t);
                     }
                 }
             }

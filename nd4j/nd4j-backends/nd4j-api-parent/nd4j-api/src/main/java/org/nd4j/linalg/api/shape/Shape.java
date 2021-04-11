@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.api.shape;
 
@@ -36,12 +40,6 @@ import org.nd4j.common.util.ArrayUtil;
 import java.nio.*;
 import java.util.*;
 
-/**
- * Encapsulates all shape related logic (vector of 0 dimension is a scalar is equivalent to
- * a vector of length 1...)
- *
- * @author Adam Gibson
- */
 public class Shape {
 
 
@@ -3276,8 +3274,9 @@ public class Shape {
         */
 
         val dtype = ArrayOptionsHelper.dataType(extras);
-        val empty = ArrayOptionsHelper.hasBitSet(extras, ArrayOptionsHelper.ATYPE_EMPTY_BIT);
-        return Nd4j.getExecutioner().createShapeInfo(shape, stride, elementWiseStride, order, dtype, empty);
+        //val empty = ArrayOptionsHelper.hasBitSet(extras, ArrayOptionsHelper.ATYPE_EMPTY_BIT);
+        //just propogate extra // it is the same value in the backend
+        return Nd4j.getExecutioner().createShapeInfo(shape, stride, elementWiseStride, order, dtype, extras); 
     }
 
     public static DataBuffer createSparseInformation(int[] flags, long[] sparseOffsets, int[] hiddenDimensions,
@@ -3540,7 +3539,7 @@ public class Shape {
         return shape.length;
     }
 
-    public static int rankFromShape(long[] shape){
+    public static int rankFromShape(long[] shape) {
         if(shape == null){
             throw new ND4JIllegalStateException("Cannot get rank from null shape array");
         }
@@ -3552,7 +3551,7 @@ public class Shape {
     }
 
     public static void assertBroadcastable(@NonNull int[] x, @NonNull int[] y){
-        if(!areShapesBroadcastable(x, y)){
+        if(!areShapesBroadcastable(x, y)) {
             throw new ND4JIllegalStateException("Arrays are different shape and are not broadcastable." +
                     " Array 1 shape = " + Arrays.toString(x) + ", array 2 shape = " + Arrays.toString(y));
         }
@@ -3571,7 +3570,7 @@ public class Shape {
     }
 
     public static boolean areShapesBroadcastable(@NonNull int[] x, @NonNull int[] y){
-        //Ported from: https://github.com/deeplearning4j/libnd4j/blob/master/include/helpers/impl/ShapeUtils.cpp
+        //Ported from: https://github.com/eclipse/deeplearning4j/libnd4j/blob/master/include/helpers/impl/ShapeUtils.cpp
 
         int minRank = Math.min(x.length, y.length);
         for( int i=-1; i>= -minRank; i--){
@@ -3584,7 +3583,7 @@ public class Shape {
     }
 
     public static boolean areShapesBroadcastable(@NonNull long[] left, @NonNull long[] right){
-        //Ported from: https://github.com/deeplearning4j/libnd4j/blob/master/include/helpers/impl/ShapeUtils.cpp
+        //Ported from: https://github.com/eclipse/deeplearning4j/libnd4j/blob/master/include/helpers/impl/ShapeUtils.cpp
 
         int minRank = Math.min(left.length, right.length);
 
@@ -3687,9 +3686,6 @@ public class Shape {
     }
 
     public static DataType pickPairwiseDataType(@NonNull DataType typeX, @NonNull Number number) {
-        if (!Nd4j.isExperimentalMode())
-            return typeX;
-
         if (number instanceof Double) {
             return pickPairwiseDataType(typeX, DataType.DOUBLE);
         } else if (number instanceof Float) {
@@ -3707,10 +3703,16 @@ public class Shape {
         }
     }
 
+    /**
+     * Return a data type to use for output
+     * within a pair wise operation such as add or subtract.
+     * Basically: favor float like data types
+     * over ints since they're typically used for indexing.
+     * @param typeX the first input data type
+     * @param typeY the second input data type
+     * @return the resolved data type
+     */
     public static DataType pickPairwiseDataType(@NonNull DataType typeX, @NonNull DataType typeY) {
-        if (!Nd4j.isExperimentalMode())
-            return typeX;
-
         if (typeX == typeY)
             return typeX;
 
@@ -3754,7 +3756,7 @@ public class Shape {
         return ArrayOptionsHelper.arrayType(shapeInfo) == ArrayType.EMPTY;
     }
 
-    public static void assertValidOrder(char order){
+    public static void assertValidOrder(char order) {
         if(order != 'c' && order != 'f' && order != 'a'){
             throw new IllegalArgumentException("Invalid order arg: must be 'c' or 'f' (or 'a' for vectors), got '" + order + "'");
         }
@@ -3764,7 +3766,7 @@ public class Shape {
      * Create an INDArray to represent the (possibly null) int[] dimensions.
      * If null or length 0, returns an empty INT array. Otherwise, returns a 1d INT NDArray
      * @param dimensions Dimensions to convert
-     * @return Dimenions as an INDArray
+     * @return Dimensions as an INDArray
      */
     public static INDArray ndArrayDimFromInt(int... dimensions){
         if (dimensions == null || dimensions.length == 0)
@@ -3797,10 +3799,10 @@ public class Shape {
                 retShape = new long[]{1, 1};
             }
         } else {
-            if(keepDims){
+            if(keepDims) {
                 retShape = x.shape().clone();
                 if(wholeArray){
-                    for( int i=0; i<retShape.length; i++ ){
+                    for( int i = 0; i < retShape.length; i++) {
                         retShape[i] = 1;
                     }
                 } else {

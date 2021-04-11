@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.api.ops.random.impl;
 
@@ -21,16 +25,13 @@ import org.nd4j.autodiff.samediff.SDVariable;
 import org.nd4j.common.base.Preconditions;
 import org.nd4j.imports.NoOpNameFoundException;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.OpContext;
 import org.nd4j.linalg.api.ops.random.BaseRandomOp;
+import org.nd4j.linalg.api.shape.LongShapeDescriptor;
 
+import java.util.Arrays;
 import java.util.List;
 
-/**
- * This Op implements numpy.choice method
- * It fills Z from source, following probabilities for each source element
- *
- * @author raver119@gmail.com
- */
 public class Choice extends BaseRandomOp {
 
     public Choice() {
@@ -41,7 +42,7 @@ public class Choice extends BaseRandomOp {
         super(source, probabilities, z);
         Preconditions.checkArgument(source.dataType() == probabilities.dataType() && z.dataType() == source.dataType(), "Data types of all arguments should match");
         Preconditions.checkState(source.length() == probabilities.length(), "From & probabilities length mismatch: %s vs. %s",
-                            source.length(), probabilities.length());
+                source.length(), probabilities.length());
         if (probabilities.elementWiseStride() < 1 || source.elementWiseStride() < 1)
             throw new IllegalStateException("Source and probabilities should have element-wise stride >= 1");
         this.extraArgs = new Object[] {0.0};
@@ -69,7 +70,18 @@ public class Choice extends BaseRandomOp {
     }
 
     @Override
+    public List<LongShapeDescriptor> calculateOutputShape(OpContext oc) {
+        return calculateOutputShape();
+    }
+
+    @Override
+    public List<LongShapeDescriptor> calculateOutputShape() {
+        LongShapeDescriptor longShapeDescriptor = LongShapeDescriptor.fromShape(shape,dataType);
+        return Arrays.asList(longShapeDescriptor);
+    }
+
+    @Override
     public List<SDVariable> doDiff(List<SDVariable> f1) {
-        return null;
+        throw new UnsupportedOperationException("Choice does not have a derivative");
     }
 }

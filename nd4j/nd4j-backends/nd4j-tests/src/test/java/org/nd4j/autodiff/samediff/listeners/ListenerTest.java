@@ -1,22 +1,28 @@
 /*
- * Copyright (c) 2015-2019 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
  */
 
 package org.nd4j.autodiff.samediff.listeners;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.autodiff.listeners.At;
 import org.nd4j.autodiff.listeners.BaseListener;
 import org.nd4j.autodiff.listeners.Listener;
@@ -34,7 +40,7 @@ import org.nd4j.autodiff.samediff.internal.SameDiffOp;
 import org.nd4j.autodiff.samediff.internal.Variable;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.evaluation.classification.Evaluation.Metric;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.ops.OpContext;
@@ -55,21 +61,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class ListenerTest extends BaseNd4jTest {
+public class ListenerTest extends BaseNd4jTestWithBackends {
 
-    public ListenerTest(Nd4jBackend backend) {
-        super(backend);
-    }
 
     @Override
     public char ordering() {
         return 'c';
     }
 
-    @Test
-    public void irisHistoryTest() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void irisHistoryTest(Nd4jBackend backend) {
 
         DataSetIterator iter = new IrisDataSetIterator(150, 150);
         NormalizerStandardize std = new NormalizerStandardize();
@@ -119,7 +123,7 @@ public class ListenerTest extends BaseNd4jTest {
 //
 //        sd.evaluateMultiple(iter, evalMap);
 
-        e = (Evaluation) hist.finalTrainingEvaluations().evaluation(predictions);
+        e = hist.finalTrainingEvaluations().evaluation(predictions);
 
         System.out.println(e.stats());
 
@@ -128,10 +132,11 @@ public class ListenerTest extends BaseNd4jTest {
         System.out.println("Losses: " + Arrays.toString(losses));
 
         double acc = hist.finalTrainingEvaluations().getValue(Metric.ACCURACY);
-        assertTrue("Accuracy < 75%, was " + acc, acc >= 0.75);
+        assertTrue(acc >= 0.75,"Accuracy < 75%, was " + acc);
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testListenerCalls(){
         SameDiff sd = SameDiff.create();
         SDVariable in = sd.placeHolder("in", DataType.FLOAT, -1, 4);
@@ -268,8 +273,9 @@ public class ListenerTest extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testCustomListener() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCustomListener(Nd4jBackend backend) {
         SameDiff sd = SameDiff.create();
         SDVariable in = sd.placeHolder("input", DataType.FLOAT, -1, 4);
         SDVariable label = sd.placeHolder("label", DataType.FLOAT, -1, 3);

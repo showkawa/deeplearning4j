@@ -1,53 +1,50 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.common.tools;
 
-import org.junit.After;
-import org.junit.Test;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+
+
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.common.tools.SIS;
 
-import static org.junit.Assert.*;
+import java.nio.file.Path;
 
-/**
- *
- *
- * 
- *
- * @author clavvis
- */
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SISTest {
 	//
-	@Rule
-	public TemporaryFolder tmpFld = new TemporaryFolder();
 	//
 	private SIS sis;
 	//
 	
 	@Test
-	public void testAll() throws Exception {
+	public void testAll(@TempDir Path tmpFld) throws Exception {
 		//
 		sis = new SIS();
 		//
 		int mtLv = 0;
 		//
-		sis.initValues( mtLv, "TEST", System.out, System.err, tmpFld.getRoot().getAbsolutePath(), "Test", "ABC", true, true );
+		sis.initValues( mtLv, "TEST", System.out, System.err, tmpFld.getRoot().toAbsolutePath().toString(), "Test", "ABC", true, true );
 		//
 		String fFName = sis.getfullFileName();
 		sis.info( fFName );
@@ -61,7 +58,7 @@ public class SISTest {
 		//
 	}
 	
-	@After
+	@AfterEach
 	public void after() {
 		//
 		int mtLv = 0;

@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.datasets.iterator;
 
@@ -20,7 +24,10 @@ import lombok.val;
 import org.deeplearning4j.BaseDL4JTest;
 import org.deeplearning4j.datasets.iterator.tools.DataSetGenerator;
 import org.deeplearning4j.datasets.iterator.tools.MultiDataSetGenerator;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.iterator.MultiDataSetIterator;
 import org.nd4j.linalg.exception.ND4JIllegalStateException;
@@ -28,12 +35,9 @@ import org.nd4j.linalg.exception.ND4JIllegalStateException;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.*;
-
-/**
- *
- * @author raver119@gmail.com
- */
+import static org.junit.jupiter.api.Assertions.*;
+@NativeTag
+@Tag(TagNames.FILE_IO)
 public class MultiDataSetSplitterTests extends BaseDL4JTest {
 
     @Test
@@ -55,7 +59,7 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
             while (train.hasNext()) {
                 val data = train.next().getFeatures(0);
 
-                assertEquals("Train failed on iteration " + cnt + "; epoch: " + e, (float) cnt++, data.getFloat(0), 1e-5);
+                assertEquals( (float) cnt++, data.getFloat(0), 1e-5,"Train failed on iteration " + cnt + "; epoch: " + e);
                 gcntTrain++;
                 global++;
             }
@@ -65,7 +69,7 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
 
             while (test.hasNext()) {
                 val data = test.next().getFeatures(0);
-                assertEquals("Train failed on iteration " + cnt + "; epoch: " + e, (float) cnt++, data.getFloat(0), 1e-5);
+                assertEquals( (float) cnt++, data.getFloat(0), 1e-5,"Train failed on iteration " + cnt + "; epoch: " + e);
                 gcntTest++;
                 global++;
             }
@@ -96,7 +100,7 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
             while (train.hasNext()) {
                 val data = train.next().getFeatures(0);
 
-                assertEquals("Train failed on iteration " + cnt + "; epoch: " + e, (float) cnt++, data.getFloat(0), 1e-5);
+                assertEquals( (float) cnt++, data.getFloat(0), 1e-5,"Train failed on iteration " + cnt + "; epoch: " + e);
                 gcntTrain++;
                 global++;
             }
@@ -106,7 +110,7 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
             if (e % 2 == 0)
                 while (test.hasNext()) {
                     val data = test.next().getFeatures(0);
-                    assertEquals("Train failed on iteration " + cnt + "; epoch: " + e, (float) cnt++, data.getFloat(0), 1e-5);
+                    assertEquals((float) cnt++, data.getFloat(0), 1e-5,"Train failed on iteration " + cnt + "; epoch: " + e);
                     gcntTest++;
                     global++;
                 }
@@ -115,46 +119,49 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
         assertEquals(700 * numEpochs + (300 * numEpochs / 2), global);
     }
 
-    @Test(expected = ND4JIllegalStateException.class)
+    @Test()
     public void testSplitter_3() throws Exception {
-        val back = new MultiDataSetGenerator(1000, new int[]{32, 100}, new int[]{32, 5});
+       assertThrows(ND4JIllegalStateException.class,() -> {
+           val back = new MultiDataSetGenerator(1000, new int[]{32, 100}, new int[]{32, 5});
 
-        val splitter = new MultiDataSetIteratorSplitter(back, 1000, 0.7);
+           val splitter = new MultiDataSetIteratorSplitter(back, 1000, 0.7);
 
-        val train = splitter.getTrainIterator();
-        val test = splitter.getTestIterator();
-        val numEpochs = 10;
+           val train = splitter.getTrainIterator();
+           val test = splitter.getTestIterator();
+           val numEpochs = 10;
 
-        int gcntTrain = 0;
-        int gcntTest = 0;
-        int global = 0;
-        // emulating epochs here
-        for (int e = 0; e < numEpochs; e++){
-            int cnt = 0;
-            while (train.hasNext()) {
-                val data = train.next().getFeatures(0);
+           int gcntTrain = 0;
+           int gcntTest = 0;
+           int global = 0;
+           // emulating epochs here
+           for (int e = 0; e < numEpochs; e++){
+               int cnt = 0;
+               while (train.hasNext()) {
+                   val data = train.next().getFeatures(0);
 
-                assertEquals("Train failed on iteration " + cnt + "; epoch: " + e, (float) cnt++, data.getFloat(0), 1e-5);
-                gcntTrain++;
-                global++;
-            }
+                   assertEquals((float) cnt++, data.getFloat(0), 1e-5,"Train failed on iteration " + cnt + "; epoch: " + e);
+                   gcntTrain++;
+                   global++;
+               }
 
-            train.reset();
+               train.reset();
 
 
-            while (test.hasNext()) {
-                val data = test.next().getFeatures(0);
-                assertEquals("Train failed on iteration " + cnt + "; epoch: " + e, (float) cnt++, data.getFloat(0), 1e-5);
-                gcntTest++;
-                global++;
-            }
+               while (test.hasNext()) {
+                   val data = test.next().getFeatures(0);
+                   assertEquals( (float) cnt++, data.getFloat(0), 1e-5,"Train failed on iteration " + cnt + "; epoch: " + e);
+                   gcntTest++;
+                   global++;
+               }
 
-            // shifting underlying iterator by one
-            train.hasNext();
-            back.shift();
-        }
+               // shifting underlying iterator by one
+               train.hasNext();
+               back.shift();
+           }
 
-        assertEquals(1000 * numEpochs, global);
+           assertEquals(1000 * numEpochs, global);
+       });
+
     }
 
     @Test
@@ -185,11 +192,11 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
                 assertNotNull(ds);
 
                 for (int i = 0; i < ds.getFeatures().length; ++i) {
-                    assertEquals("Failed at iteration [" + globalIter + "]", (double) globalIter, ds.getFeatures()[i].getDouble(0), 1e-5f);
+                    assertEquals( (double) globalIter, ds.getFeatures()[i].getDouble(0), 1e-5f,"Failed at iteration [" + globalIter + "]");
                 }
                 globalIter++;
             }
-            assertTrue("Failed at epoch [" + e + "]", trained);
+            assertTrue(trained,"Failed at epoch [" + e + "]");
             assertEquals(800, globalIter);
 
 
@@ -202,11 +209,11 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
                 assertNotNull(ds);
 
                 for (int i = 0; i < ds.getFeatures().length; ++i) {
-                    assertEquals("Failed at iteration [" + globalIter + "]", (double) globalIter, ds.getFeatures()[i].getDouble(0), 1e-5f);
+                    assertEquals((double) globalIter, ds.getFeatures()[i].getDouble(0), 1e-5f,"Failed at iteration [" + globalIter + "]");
                 }
                 globalIter++;
             }
-            assertTrue("Failed at epoch [" + e + "]", tested);
+            assertTrue(tested,"Failed at epoch [" + e + "]");
             assertEquals(900, globalIter);
 
             // validation set is used every 5 epochs
@@ -219,11 +226,11 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
                     assertNotNull(ds);
 
                     for (int i = 0; i < ds.getFeatures().length; ++i) {
-                        assertEquals("Failed at iteration [" + globalIter + "]", (double) globalIter, ds.getFeatures()[i].getDouble(0), 1e-5f);
+                        assertEquals( (double) globalIter, ds.getFeatures()[i].getDouble(0), 1e-5f,"Failed at iteration [" + globalIter + "]");
                     }
                     globalIter++;
                 }
-                assertTrue("Failed at epoch [" + e + "]", validated);
+                assertTrue(validated,"Failed at epoch [" + e + "]");
             }
 
             // all 3 iterators have exactly 1000 elements combined
@@ -256,8 +263,7 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
                     val data = partIterator.next().getFeatures();
 
                     for (int i = 0; i < data.length; ++i) {
-                        assertEquals("Train failed on iteration " + cnt + "; epoch: " + e,
-                                (float) perEpoch, data[i].getFloat(0), 1e-5);
+                        assertEquals((float) perEpoch, data[i].getFloat(0), 1e-5,"Train failed on iteration " + cnt + "; epoch: " + e);
                     }
                     //gcntTrain++;
                     global++;
@@ -299,12 +305,12 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
                 assertNotNull(ds);
 
                 for (int i = 0; i < ds.getFeatures().length; ++i) {
-                    assertEquals("Failed at iteration [" + globalIter + "]", (double) globalIter,
-                            ds.getFeatures()[i].getDouble(0), 1e-5f);
+                    assertEquals((double) globalIter,
+                            ds.getFeatures()[i].getDouble(0), 1e-5f,"Failed at iteration [" + globalIter + "]");
                 }
                 globalIter++;
             }
-            assertTrue("Failed at epoch [" + e + "]", trained);
+            assertTrue(trained,"Failed at epoch [" + e + "]");
             assertEquals(800, globalIter);
 
 
@@ -316,11 +322,11 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
                 val ds = testIter.next();
                 assertNotNull(ds);
                 for (int i = 0; i < ds.getFeatures().length; ++i) {
-                    assertEquals("Failed at iteration [" + globalIter + "]", (double) globalIter, ds.getFeatures()[i].getDouble(0), 1e-5f);
+                    assertEquals((double) globalIter, ds.getFeatures()[i].getDouble(0), 1e-5f,"Failed at iteration [" + globalIter + "]");
                 }
                 globalIter++;
             }
-            assertTrue("Failed at epoch [" + e + "]", tested);
+            assertTrue(tested,"Failed at epoch [" + e + "]");
             assertEquals(900, globalIter);
 
             // validation set is used every 5 epochs
@@ -333,12 +339,12 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
                     assertNotNull(ds);
 
                     for (int i = 0; i < ds.getFeatures().length; ++i) {
-                        assertEquals("Failed at iteration [" + globalIter + "]", (double) globalIter,
-                                ds.getFeatures()[i].getDouble(0), 1e-5f);
+                        assertEquals((double) globalIter,
+                                ds.getFeatures()[i].getDouble(0), 1e-5f,"Failed at iteration [" + globalIter + "]");
                     }
                     globalIter++;
                 }
-                assertTrue("Failed at epoch [" + e + "]", validated);
+                assertTrue(validated,"Failed at epoch [" + e + "]");
             }
 
             // all 3 iterators have exactly 1000 elements combined
@@ -370,7 +376,7 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
                 int farCnt = (1000 / 2) * (partNumber) + cnt;
                 val data = iteratorList.get(partNumber).next().getFeatures();
                 for (int i = 0; i < data.length; ++i) {
-                    assertEquals("Train failed on iteration " + cnt + "; epoch: " + e, (float) farCnt, data[i].getFloat(0), 1e-5);
+                    assertEquals( (float) farCnt, data[i].getFloat(0), 1e-5,"Train failed on iteration " + cnt + "; epoch: " + e);
                 }
                 cnt++;
                 global++;
@@ -381,8 +387,8 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
             while (iteratorList.get(0).hasNext()) {
                 val data = iteratorList.get(0).next().getFeatures();
                 for (int i = 0; i < data.length; ++i) {
-                    assertEquals("Train failed on iteration " + cnt + "; epoch: " + e, (float) cnt++,
-                            data[i].getFloat(0), 1e-5);
+                    assertEquals((float) cnt++,
+                            data[i].getFloat(0), 1e-5,"Train failed on iteration " + cnt + "; epoch: " + e);
                 }
                 global++;
             }
@@ -402,7 +408,7 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
             while (iteratorList.get(partNumber).hasNext()) {
                 val data = iteratorList.get(partNumber).next().getFeatures();
                 for (int i = 0; i < data.length; ++i) {
-                    assertEquals("Train failed on iteration " + cnt, (float) (500 * partNumber + cnt), data[i].getFloat(0), 1e-5);
+                    assertEquals( (float) (500 * partNumber + cnt), data[i].getFloat(0), 1e-5,"Train failed on iteration " + cnt);
                 }
                 cnt++;
             }
@@ -427,8 +433,8 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
             while (iteratorList.get(partNumber).hasNext()) {
                 val data = iteratorList.get(partNumber).next().getFeatures();
                 for (int i = 0; i < data.length; ++i) {
-                    assertEquals("Train failed on iteration " + cnt, (float) (500 * partNumber + cnt),
-                            data[i].getFloat(0), 1e-5);
+                    assertEquals( (float) (500 * partNumber + cnt),
+                            data[i].getFloat(0), 1e-5,"Train failed on iteration " + cnt);
                 }
                 cnt++;
             }
@@ -454,8 +460,8 @@ public class MultiDataSetSplitterTests extends BaseDL4JTest {
             val ds = validationIter.next();
             assertNotNull(ds);
             for (int i = 0; i < ds.getFeatures().length; ++i) {
-                assertEquals("Validation failed on iteration " + valCnt, (float) valCnt + 90,
-                        ds.getFeatures()[i].getFloat(0), 1e-5);
+                assertEquals((float) valCnt + 90,
+                        ds.getFeatures()[i].getFloat(0), 1e-5,"Validation failed on iteration " + valCnt);
             }
             valCnt++;
         }

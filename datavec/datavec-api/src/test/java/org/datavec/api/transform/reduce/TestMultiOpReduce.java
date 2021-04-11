@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.datavec.api.transform.reduce;
 
@@ -28,27 +32,28 @@ import org.datavec.api.transform.ops.AggregableMultiOp;
 import org.datavec.api.transform.ops.IAggregableReduceOp;
 import org.datavec.api.transform.schema.Schema;
 import org.datavec.api.writable.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.nd4j.common.tests.BaseND4JTest;
+import org.nd4j.common.tests.tags.TagNames;
 
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-/**
- * Created by Alex on 21/03/2016.
- */
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+@Tag(TagNames.JAVA_ONLY)
+@Tag(TagNames.FILE_IO)
 public class TestMultiOpReduce extends BaseND4JTest {
 
     @Test
     public void testMultiOpReducerDouble() {
 
         List<List<Writable>> inputs = new ArrayList<>();
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new DoubleWritable(0)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new DoubleWritable(1)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new DoubleWritable(2)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new DoubleWritable(2)));
+        inputs.add(Arrays.asList(new Text("someKey"), new DoubleWritable(0)));
+        inputs.add(Arrays.asList(new Text("someKey"), new DoubleWritable(1)));
+        inputs.add(Arrays.asList(new Text("someKey"), new DoubleWritable(2)));
+        inputs.add(Arrays.asList(new Text("someKey"), new DoubleWritable(2)));
 
         Map<ReduceOp, Double> exp = new LinkedHashMap<>();
         exp.put(ReduceOp.Min, 0.0);
@@ -81,7 +86,7 @@ public class TestMultiOpReduce extends BaseND4JTest {
             assertEquals(out.get(0), new Text("someKey"));
 
             String msg = op.toString();
-            assertEquals(msg, exp.get(op), out.get(1).toDouble(), 1e-5);
+            assertEquals(exp.get(op), out.get(1).toDouble(), 1e-5,msg);
         }
     }
 
@@ -89,10 +94,10 @@ public class TestMultiOpReduce extends BaseND4JTest {
     public void testReducerInteger() {
 
         List<List<Writable>> inputs = new ArrayList<>();
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(0)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(1)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(2)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(2)));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(0)));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(1)));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(2)));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(2)));
 
         Map<ReduceOp, Double> exp = new LinkedHashMap<>();
         exp.put(ReduceOp.Min, 0.0);
@@ -125,19 +130,18 @@ public class TestMultiOpReduce extends BaseND4JTest {
             assertEquals(out.get(0), new Text("someKey"));
 
             String msg = op.toString();
-            assertEquals(msg, exp.get(op), out.get(1).toDouble(), 1e-5);
+            assertEquals(exp.get(op), out.get(1).toDouble(), 1e-5,msg);
         }
     }
 
 
     @Test
     public void testReduceString() {
-
         List<List<Writable>> inputs = new ArrayList<>();
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new Text("1")));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new Text("2")));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new Text("3")));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new Text("4")));
+        inputs.add(Arrays.asList(new Text("someKey"), new Text("1")));
+        inputs.add(Arrays.asList(new Text("someKey"), new Text("2")));
+        inputs.add(Arrays.asList(new Text("someKey"), new Text("3")));
+        inputs.add(Arrays.asList(new Text("someKey"), new Text("4")));
 
         Map<ReduceOp, String> exp = new LinkedHashMap<>();
         exp.put(ReduceOp.Append, "1234");
@@ -162,7 +166,7 @@ public class TestMultiOpReduce extends BaseND4JTest {
             assertEquals(out.get(0), new Text("someKey"));
 
             String msg = op.toString();
-            assertEquals(msg, exp.get(op), out.get(1).toString());
+            assertEquals(exp.get(op), out.get(1).toString(),msg);
         }
     }
 
@@ -170,12 +174,12 @@ public class TestMultiOpReduce extends BaseND4JTest {
     public void testReduceIntegerIgnoreInvalidValues() {
 
         List<List<Writable>> inputs = new ArrayList<>();
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new Text("0")));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new Text("1")));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(2)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new Text("ignore me")));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new Text("also ignore me")));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new Text("2")));
+        inputs.add(Arrays.asList(new Text("someKey"), new Text("0")));
+        inputs.add(Arrays.asList(new Text("someKey"), new Text("1")));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(2)));
+        inputs.add(Arrays.asList(new Text("someKey"), new Text("ignore me")));
+        inputs.add(Arrays.asList(new Text("someKey"), new Text("also ignore me")));
+        inputs.add(Arrays.asList(new Text("someKey"), new Text("2")));
 
 
         Map<ReduceOp, Double> exp = new LinkedHashMap<>();
@@ -209,7 +213,7 @@ public class TestMultiOpReduce extends BaseND4JTest {
             assertEquals(out.get(0), new Text("someKey"));
 
             String msg = op.toString();
-            assertEquals(msg, exp.get(op), out.get(1).toDouble(), 1e-5);
+            assertEquals(exp.get(op), out.get(1).toDouble(), 1e-5,msg);
         }
 
         for (ReduceOp op : Arrays.asList(ReduceOp.Min, ReduceOp.Max, ReduceOp.Range, ReduceOp.Sum, ReduceOp.Mean,
@@ -237,16 +241,16 @@ public class TestMultiOpReduce extends BaseND4JTest {
     public void testCustomReductions() {
 
         List<List<Writable>> inputs = new ArrayList<>();
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(1), new Text("zero"),
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(1), new Text("zero"),
                         new DoubleWritable(0)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(2), new Text("one"),
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(2), new Text("one"),
                         new DoubleWritable(1)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(3), new Text("two"),
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(3), new Text("two"),
                         new DoubleWritable(2)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(4), new Text("three"),
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(4), new Text("three"),
                         new DoubleWritable(3)));
 
-        List<Writable> expected = Arrays.asList((Writable) new Text("someKey"), new IntWritable(10), new Text("one"),
+        List<Writable> expected = Arrays.asList(new Text("someKey"), new IntWritable(10), new Text("one"),
                         new DoubleWritable(1));
 
 
@@ -287,16 +291,16 @@ public class TestMultiOpReduce extends BaseND4JTest {
     public void testCustomReductionsWithCondition() {
 
         List<List<Writable>> inputs = new ArrayList<>();
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(1), new Text("zero"),
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(1), new Text("zero"),
                 new DoubleWritable(0)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(2), new Text("one"),
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(2), new Text("one"),
                 new DoubleWritable(1)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(3), new Text("two"),
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(3), new Text("two"),
                 new DoubleWritable(2)));
-        inputs.add(Arrays.asList((Writable) new Text("someKey"), new IntWritable(4), new Text("three"),
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(4), new Text("three"),
                 new DoubleWritable(3)));
 
-        List<Writable> expected = Arrays.asList((Writable) new Text("someKey"), new IntWritable(10), new IntWritable(3),
+        List<Writable> expected = Arrays.asList(new Text("someKey"), new IntWritable(10), new IntWritable(3),
                 new DoubleWritable(1));
 
 
@@ -340,7 +344,7 @@ public class TestMultiOpReduce extends BaseND4JTest {
         public IAggregableReduceOp<Writable, List<Writable>> reduceOp() {
             //For testing: let's take the second value
             return new AggregableMultiOp<>(Collections
-                            .<IAggregableReduceOp<Writable, Writable>>singletonList(new AggregableSecond<Writable>()));
+                            .<IAggregableReduceOp<Writable, Writable>>singletonList(new AggregableSecond<>()));
         }
 
         @Override
@@ -482,12 +486,12 @@ public class TestMultiOpReduce extends BaseND4JTest {
                         .addColumnString("filterCol").addColumnString("textCol").build();
 
         List<List<Writable>> inputs = new ArrayList<>();
-        inputs.add(Arrays.<Writable>asList(new Text("someKey"), new IntWritable(1), new Text("a"), new Text("zero")));
-        inputs.add(Arrays.<Writable>asList(new Text("someKey"), new IntWritable(2), new Text("b"), new Text("one")));
-        inputs.add(Arrays.<Writable>asList(new Text("someKey"), new IntWritable(3), new Text("a"), new Text("two")));
-        inputs.add(Arrays.<Writable>asList(new Text("someKey"), new IntWritable(4), new Text("b"), new Text("three")));
-        inputs.add(Arrays.<Writable>asList(new Text("someKey"), new IntWritable(5), new Text("a"), new Text("three")));
-        inputs.add(Arrays.<Writable>asList(new Text("someKey"), new IntWritable(6), new Text("b"), new Text("three")));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(1), new Text("a"), new Text("zero")));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(2), new Text("b"), new Text("one")));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(3), new Text("a"), new Text("two")));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(4), new Text("b"), new Text("three")));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(5), new Text("a"), new Text("three")));
+        inputs.add(Arrays.asList(new Text("someKey"), new IntWritable(6), new Text("b"), new Text("three")));
 
         Condition condition = new StringColumnCondition("filterCol", ConditionOp.Equal, "a");
 

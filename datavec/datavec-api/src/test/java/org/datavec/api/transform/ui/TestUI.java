@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.datavec.api.transform.ui;
 
@@ -31,29 +35,30 @@ import org.datavec.api.writable.DoubleWritable;
 import org.datavec.api.writable.Text;
 import org.datavec.api.writable.Writable;
 import org.joda.time.DateTimeZone;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Disabled;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
 import org.nd4j.common.tests.BaseND4JTest;
+import org.nd4j.common.tests.tags.TagNames;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-
-/**
- * Created by Alex on 25/03/2016.
- */
+import static org.junit.jupiter.api.Assertions.assertEquals;
+@Tag(TagNames.JAVA_ONLY)
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.UI)
 public class TestUI extends BaseND4JTest {
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
 
     @Test
-    public void testUI() throws Exception {
+    public void testUI(@TempDir Path testDir) throws Exception {
         Schema schema = new Schema.Builder().addColumnString("StringColumn").addColumnInteger("IntColumn")
                         .addColumnInteger("IntColumn2").addColumnInteger("IntColumn3")
                         .addColumnTime("TimeColumn", DateTimeZone.UTC).build();
@@ -91,7 +96,7 @@ public class TestUI extends BaseND4JTest {
 
         DataAnalysis da = new DataAnalysis(schema, list);
 
-        File fDir = testDir.newFolder();
+        File fDir = testDir.toFile();
         String tempDir = fDir.getAbsolutePath();
         String outPath = FilenameUtils.concat(tempDir, "datavec_transform_UITest.html");
         System.out.println(outPath);
@@ -142,7 +147,7 @@ public class TestUI extends BaseND4JTest {
 
 
     @Test
-    @Ignore
+    @Disabled
     public void testSequencePlot() throws Exception {
 
         Schema schema = new SequenceSchema.Builder().addColumnDouble("sinx")

@@ -1,49 +1,54 @@
-/*******************************************************************************
- * Copyright (c) 2019 Konduit K.K.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.multithreading;
 
 import lombok.val;
-import org.junit.Test;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.factory.Nd4jBackend;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * @author raver119@gmail.com
- */
-public class MultithreadedTests extends BaseNd4jTest {
-
-    public MultithreadedTests(Nd4jBackend backend) {
-        super(backend);
-    }
+@NativeTag
+@Tag(TagNames.WORKSPACES)
+@Tag(TagNames.MULTI_THREADED)
+public class MultithreadedTests extends BaseNd4jTestWithBackends {
 
     @Override
     public char ordering() {
         return 'c';
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void basicMigrationTest_1() throws Exception {
         if (Nd4j.getAffinityManager().getNumberOfDevices() < 2)
             return;
@@ -56,21 +61,18 @@ public class MultithreadedTests extends BaseNd4jTest {
         val list = new ArrayList<INDArray>();
         for (int e = 0; e < Nd4j.getAffinityManager().getNumberOfDevices(); e++) {
             val t = e;
-            val thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (int f = 0; f < 10; f++) {
-                        val array = Nd4j.create(DataType.INT32, 5, 5).assign(1);
+            val thread = new Thread(() -> {
+                for (int f = 0; f < 10; f++) {
+                    val array = Nd4j.create(DataType.INT32, 5, 5).assign(1);
 
-                        // store current deviceId for further validation
-                        hash.add(Nd4j.getAffinityManager().getDeviceForCurrentThread());
+                    // store current deviceId for further validation
+                    hash.add(Nd4j.getAffinityManager().getDeviceForCurrentThread());
 
-                        // make sure INDArray has proper affinity set
-                        assertEquals(Nd4j.getAffinityManager().getDeviceForCurrentThread(), Nd4j.getAffinityManager().getDeviceForArray(array));
+                    // make sure INDArray has proper affinity set
+                    assertEquals(Nd4j.getAffinityManager().getDeviceForCurrentThread(), Nd4j.getAffinityManager().getDeviceForArray(array));
 
-                        list.add(array);
-                    }
-                };
+                    list.add(array);
+                }
             });
 
             thread.start();

@@ -1,25 +1,34 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.serde.binary;
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.OpValidationSuite;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -32,32 +41,29 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+@NativeTag
+@Tag(TagNames.NDARRAY_SERDE)
+public class BinarySerdeTest extends BaseNd4jTestWithBackends {
 
-/**
- * Created by agibsonccc on 9/23/16.
- */
-public class BinarySerdeTest extends BaseNd4jTest {
-
-    public BinarySerdeTest(Nd4jBackend backend) {
-        super(backend);
-    }
 
     @Override
     public char ordering() {
         return 'c';
     }
 
-    @Test
-    public void testToAndFrom() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testToAndFrom(Nd4jBackend backend) {
         INDArray arr = Nd4j.scalar(1.0);
         ByteBuffer buffer = BinarySerde.toByteBuffer(arr);
         INDArray back = BinarySerde.toArray(buffer);
         assertEquals(arr, back);
     }
 
-    @Test
-    public void testToAndFromHeapBuffer() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testToAndFromHeapBuffer(Nd4jBackend backend) {
         INDArray arr = Nd4j.scalar(1.0);
         ByteBuffer buffer = BinarySerde.toByteBuffer(arr);
         ByteBuffer heapBuffer = ByteBuffer.allocate(buffer.remaining());
@@ -66,8 +72,9 @@ public class BinarySerdeTest extends BaseNd4jTest {
         assertEquals(arr, back);
     }
 
-    @Test
-    public void testToAndFromCompressed() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testToAndFromCompressed(Nd4jBackend backend) {
         OpValidationSuite.ignoreFailing();  //Failing 2019/01/24
         INDArray arr = Nd4j.scalar(1.0);
         INDArray compress = Nd4j.getCompressor().compress(arr, "GZIP");
@@ -80,8 +87,9 @@ public class BinarySerdeTest extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testToAndFromCompressedLarge() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testToAndFromCompressedLarge(Nd4jBackend backend) {
         OpValidationSuite.ignoreFailing();  //Failing 2019/01/24
         INDArray arr = Nd4j.zeros((int) 1e7);
         INDArray compress = Nd4j.getCompressor().compress(arr, "GZIP");
@@ -94,8 +102,9 @@ public class BinarySerdeTest extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testReadWriteFile() throws Exception {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testReadWriteFile(Nd4jBackend backend) throws Exception {
         File tmpFile = new File(System.getProperty("java.io.tmpdir"),
                         "ndarraytmp-" + UUID.randomUUID().toString() + " .bin");
         tmpFile.deleteOnExit();
@@ -105,8 +114,9 @@ public class BinarySerdeTest extends BaseNd4jTest {
         assertEquals(rand, fromDisk);
     }
 
-    @Test
-    public void testReadShapeFile() throws Exception {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testReadShapeFile(Nd4jBackend backend) throws Exception {
         File tmpFile = new File(System.getProperty("java.io.tmpdir"),
                         "ndarraytmp-" + UUID.randomUUID().toString() + " .bin");
         tmpFile.deleteOnExit();
@@ -117,8 +127,9 @@ public class BinarySerdeTest extends BaseNd4jTest {
         assertArrayEquals(rand.shapeInfoDataBuffer().asLong(), buffer.asLong());
     }
 
-    @Test
-    public void timeOldVsNew() throws Exception {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void timeOldVsNew(Nd4jBackend backend) throws Exception {
         int numTrials = 1000;
         long oldTotal = 0;
         long newTotal = 0;

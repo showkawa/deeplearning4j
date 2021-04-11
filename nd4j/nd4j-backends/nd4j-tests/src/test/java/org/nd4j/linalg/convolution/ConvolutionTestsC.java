@@ -1,27 +1,33 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.convolution;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.buffer.util.AllocUtil;
@@ -39,28 +45,24 @@ import org.nd4j.common.primitives.Pair;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * Created by agibsonccc on 9/6/14.
- */
 @Slf4j
-@RunWith(Parameterized.class)
-public class ConvolutionTestsC extends BaseNd4jTest {
-
-    public ConvolutionTestsC(Nd4jBackend backend) {
-        super(backend);
-    }
+@NativeTag
+public class ConvolutionTestsC extends BaseNd4jTestWithBackends {
 
 
-    @Test
-    public void testConvOutWidthAndHeight() {
+
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testConvOutWidthAndHeight(Nd4jBackend backend) {
         long outSize = Convolution.outSize(2, 1, 1, 2, 1, false);
         assertEquals(6, outSize);
     }
 
-    @Test
-    public void testIm2Col() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2Col(Nd4jBackend backend) {
         INDArray linspaced = Nd4j.linspace(1, 16, 16, DataType.DOUBLE).reshape(2, 2, 2, 2);
         INDArray ret = Convolution.im2col(linspaced, 1, 1, 1, 1, 2, 2, 0, false);
         INDArray im2colAssertion = Nd4j.create(new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -83,8 +85,9 @@ public class ConvolutionTestsC extends BaseNd4jTest {
 
     }
 
-    @Test
-    public void testIm2Col2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2Col2(Nd4jBackend backend) {
         int kh = 2;
         int kw = 2;
         int ph = 0;
@@ -105,8 +108,10 @@ public class ConvolutionTestsC extends BaseNd4jTest {
     }
 
     @Test
-    @Ignore
-    public void testCompareIm2ColImpl() {
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCompareIm2ColImpl(Nd4jBackend backend) {
 
         int[] miniBatches = {1, 3, 5};
         int[] depths = {1, 3, 5};
@@ -186,8 +191,9 @@ public class ConvolutionTestsC extends BaseNd4jTest {
         DataTypeUtil.setDTypeForContext(initialType);
     }
 
-    @Test
-    public void testPooling2D_Same() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling2D_Same(Nd4jBackend backend) {
         int[] miniBatches = {1, 3, 5};
         int[] depths = {1, 3, 5};
         int[] inHeights = {5, 21};
@@ -248,7 +254,7 @@ public class ConvolutionTestsC extends BaseNd4jTest {
 
                                                     Convolution.pooling2D(in, kh, kw, sh, sw, padTop, padLeft, 1, 1,
                                                             true, Pooling2D.Pooling2DType.PNORM, Pooling2D.Divisor.INCLUDE_PADDING,
-                                                            (double) pnorm, outSize[0], outSize[1], output);
+                                                            pnorm, outSize[0], outSize[1], output);
 
                                                     break;
                                                 case MAX:
@@ -270,7 +276,7 @@ public class ConvolutionTestsC extends BaseNd4jTest {
 
                                             reduced = reduced.reshape('c',m,d, outSize[0], outSize[1]).dup('c');
 
-                                            assertEquals("Failed opType: " + type, reduced, output);
+                                            assertEquals(reduced, output,"Failed opType: " + type);
                                         }
                                     }
                                 }
@@ -282,8 +288,9 @@ public class ConvolutionTestsC extends BaseNd4jTest {
         }
     }
 
-    @Test
-    public void testMoreIm2Col2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMoreIm2Col2(Nd4jBackend backend) {
         int kh = 2;
         int kw = 2;
         int ph = 0;
@@ -304,8 +311,9 @@ public class ConvolutionTestsC extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testCol2Im() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCol2Im(Nd4jBackend backend) {
         int kh = 1;
         int kw = 1;
         int sy = 1;
@@ -320,8 +328,9 @@ public class ConvolutionTestsC extends BaseNd4jTest {
         assertEquals(assertion, newTest);
     }
 
-    @Test
-    public void testimcolim() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testimcolim(Nd4jBackend backend) {
         int nEx = 2;
         int depth = 3;
         int width = 7;
@@ -344,7 +353,9 @@ public class ConvolutionTestsC extends BaseNd4jTest {
 
 
     @Test
-    @Ignore
+    @Disabled
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testMaxPoolBackprop(){
         Nd4j.getRandom().setSeed(12345);
 
@@ -400,7 +411,7 @@ public class ConvolutionTestsC extends BaseNd4jTest {
                     INDArray expEpsNext = expGradMaxPoolBackPropSame(input, epsilon, kernel, strides, same);
 
                     String msg = "input=" + pIn.getSecond() + ", eps=" + pEps.getSecond();
-                    assertEquals(msg, expEpsNext, epsNext);
+                    assertEquals( expEpsNext, epsNext,msg);
                 }
             }
         }

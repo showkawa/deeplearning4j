@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.datavec.image.recordreader;
 
@@ -32,9 +36,13 @@ import org.datavec.api.writable.DoubleWritable;
 import org.datavec.api.writable.NDArrayWritable;
 import org.datavec.api.writable.Writable;
 import org.datavec.api.writable.batch.NDArrayRecordBatch;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -42,31 +50,31 @@ import org.nd4j.common.io.ClassPathResource;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.*;
-
-/**
- * Created by Alex on 27/09/2016.
- */
+import static org.junit.jupiter.api.Assertions.*;
+@NativeTag
+@Tag(TagNames.FILE_IO)
 public class TestImageRecordReader {
 
-    @Rule
-    public TemporaryFolder testDir = new TemporaryFolder();
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testEmptySplit() throws IOException {
-        InputSplit data = new CollectionInputSplit(new ArrayList<URI>());
-        new ImageRecordReader().initialize(data, null);
+        assertThrows(IllegalArgumentException.class,() -> {
+            InputSplit data = new CollectionInputSplit(new ArrayList<>());
+            new ImageRecordReader().initialize(data, null);
+        });
+
     }
 
     @Test
-    public void testMetaData() throws IOException {
+    public void testMetaData(@TempDir Path testDir) throws IOException {
 
-        File parentDir = testDir.newFolder();
+        File parentDir = testDir.toFile();
         new ClassPathResource("datavec-data-image/testimages/").copyDirectory(parentDir);
         //        System.out.println(f.getAbsolutePath());
         //        System.out.println(f.getParentFile().getParentFile().getAbsolutePath());
@@ -103,11 +111,11 @@ public class TestImageRecordReader {
     }
 
     @Test
-    public void testImageRecordReaderLabelsOrder() throws Exception {
+    public void testImageRecordReaderLabelsOrder(@TempDir Path testDir) throws Exception {
         //Labels order should be consistent, regardless of file iteration order
 
         //Idea: labels order should be consistent regardless of input file order
-        File f = testDir.newFolder();
+        File f = testDir.toFile();
         new ClassPathResource("datavec-data-image/testimages/").copyDirectory(f);
         File f0 = new File(f, "/class0/0.jpg");
         File f1 = new File(f, "/class1/A.jpg");
@@ -134,11 +142,11 @@ public class TestImageRecordReader {
 
 
     @Test
-    public void testImageRecordReaderRandomization() throws Exception {
+    public void testImageRecordReaderRandomization(@TempDir Path testDir) throws Exception {
         //Order of FileSplit+ImageRecordReader should be different after reset
 
         //Idea: labels order should be consistent regardless of input file order
-        File f0 = testDir.newFolder();
+        File f0 = testDir.toFile();
         new ClassPathResource("datavec-data-image/testimages/").copyDirectory(f0);
 
         FileSplit fs = new FileSplit(f0, new Random(12345));
@@ -188,13 +196,13 @@ public class TestImageRecordReader {
 
 
     @Test
-    public void testImageRecordReaderRegression() throws Exception {
+    public void testImageRecordReaderRegression(@TempDir Path testDir) throws Exception {
 
         PathLabelGenerator regressionLabelGen = new TestRegressionLabelGen();
 
         ImageRecordReader rr = new ImageRecordReader(28, 28, 3, regressionLabelGen);
 
-        File rootDir = testDir.newFolder();
+        File rootDir = testDir.toFile();
         new ClassPathResource("datavec-data-image/testimages/").copyDirectory(rootDir);
         FileSplit fs = new FileSplit(rootDir);
         rr.initialize(fs);
@@ -243,10 +251,10 @@ public class TestImageRecordReader {
     }
 
     @Test
-    public void testListenerInvocationBatch() throws IOException {
+    public void testListenerInvocationBatch(@TempDir Path testDir) throws IOException {
         ParentPathLabelGenerator labelMaker = new ParentPathLabelGenerator();
         ImageRecordReader rr = new ImageRecordReader(32, 32, 3, labelMaker);
-        File f = testDir.newFolder();
+        File f = testDir.toFile();
         new ClassPathResource("datavec-data-image/testimages/").copyDirectory(f);
 
         File parent = f;
@@ -259,10 +267,10 @@ public class TestImageRecordReader {
     }
 
     @Test
-    public void testListenerInvocationSingle() throws IOException {
+    public void testListenerInvocationSingle(@TempDir Path testDir) throws IOException {
         ParentPathLabelGenerator labelMaker = new ParentPathLabelGenerator();
         ImageRecordReader rr = new ImageRecordReader(32, 32, 3, labelMaker);
-        File parent = testDir.newFolder();
+        File parent = testDir.toFile();
         new ClassPathResource("datavec-data-image/testimages/class0/").copyDirectory(parent);
         int numFiles = parent.list().length;
         rr.initialize(new FileSplit(parent));
@@ -314,7 +322,7 @@ public class TestImageRecordReader {
 
 
     @Test
-    public void testImageRecordReaderPathMultiLabelGenerator() throws Exception {
+    public void testImageRecordReaderPathMultiLabelGenerator(@TempDir Path testDir) throws Exception {
         Nd4j.setDataType(DataType.FLOAT);
         //Assumption: 2 multi-class (one hot) classification labels: 2 and 3 classes respectively
         // PLUS single value (Writable) regression label
@@ -323,7 +331,7 @@ public class TestImageRecordReader {
 
         ImageRecordReader rr = new ImageRecordReader(28, 28, 3, multiLabelGen);
 
-        File rootDir = testDir.newFolder();
+        File rootDir = testDir.toFile();
         new ClassPathResource("datavec-data-image/testimages/").copyDirectory(rootDir);
         FileSplit fs = new FileSplit(rootDir);
         rr.initialize(fs);
@@ -470,9 +478,9 @@ public class TestImageRecordReader {
 
 
     @Test
-    public void testNCHW_NCHW() throws Exception {
+    public void testNCHW_NCHW(@TempDir Path testDir) throws Exception {
         //Idea: labels order should be consistent regardless of input file order
-        File f0 = testDir.newFolder();
+        File f0 = testDir.toFile();
         new ClassPathResource("datavec-data-image/testimages/").copyDirectory(f0);
 
         FileSplit fs0 = new FileSplit(f0, new Random(12345));

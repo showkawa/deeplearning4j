@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.optimize.solver;
 
@@ -38,7 +42,10 @@ import org.deeplearning4j.optimize.solvers.LBFGS;
 import org.deeplearning4j.optimize.solvers.LineGradientDescent;
 import org.deeplearning4j.optimize.solvers.StochasticGradientDescent;
 import org.deeplearning4j.optimize.stepfunctions.NegativeDefaultStepFunction;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -61,8 +68,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
+@Tag(TagNames.TRAINING)
 public class TestOptimizers extends BaseDL4JTest {
 
     //For debugging.
@@ -114,13 +124,13 @@ public class TestOptimizers extends BaseDL4JTest {
             double[] scores = new double[nCallsToOptimizer + 1];
             scores[0] = score;
             for (int i = 0; i < nCallsToOptimizer; i++) {
-                for( int j=0; j<nIter; j++ ) {
+                for( int j = 0; j<nIter; j++ ) {
                     network.fit(ds);
                 }
                 double scoreAfter = network.score(ds);
                 scores[i + 1] = scoreAfter;
-                assertTrue("Score is NaN after optimization", !Double.isNaN(scoreAfter));
-                assertTrue("OA= " + oa + ", before= " + score + ", after= " + scoreAfter, scoreAfter <= score);
+                assertTrue(!Double.isNaN(scoreAfter),"Score is NaN after optimization");
+                assertTrue(scoreAfter <= score,"OA= " + oa + ", before= " + score + ", after= " + scoreAfter);
                 score = scoreAfter;
             }
 
@@ -238,8 +248,8 @@ public class TestOptimizers extends BaseDL4JTest {
         //Expected behaviour after optimization:
         //(a) score is better (lower) after optimization.
         //(b) Parameters are closer to minimum after optimization (TODO)
-        assertTrue("Score did not improve after optimization (b= " + scoreBefore + " ,a= " + scoreAfter + ")",
-                        scoreAfter < scoreBefore);
+        assertTrue(scoreAfter < scoreBefore,
+                "Score did not improve after optimization (b= " + scoreBefore + " ,a= " + scoreAfter + ")");
     }
 
     private static ConvexOptimizer getOptimizer(OptimizationAlgorithm oa, NeuralNetConfiguration conf, Model m) {
@@ -600,8 +610,7 @@ public class TestOptimizers extends BaseDL4JTest {
                 opt.optimize(LayerWorkspaceMgr.noWorkspaces());
                 m.computeGradientAndScore(LayerWorkspaceMgr.noWorkspaces());
                 scores[i] = m.score();
-                assertTrue("NaN or infinite score: " + scores[i],
-                                !Double.isNaN(scores[i]) && !Double.isInfinite(scores[i]));
+                assertTrue(!Double.isNaN(scores[i]) && !Double.isInfinite(scores[i]),"NaN or infinite score: " + scores[i]);
             }
         }
 

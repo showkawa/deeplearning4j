@@ -1,29 +1,35 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.datavec.api.split;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.nd4j.common.tests.BaseND4JTest;
+import org.nd4j.common.tests.tags.TagNames;
 
 import java.net.URI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.*;
+@Tag(TagNames.JAVA_ONLY)
+@Tag(TagNames.FILE_IO)
 public class NumberedFileInputSplitTests  extends BaseND4JTest {
     @Test
     public void testNumberedFileInputSplitBasic() {
@@ -65,60 +71,81 @@ public class NumberedFileInputSplitTests  extends BaseND4JTest {
         runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testNumberedFileInputSplitWithLeadingSpaces() {
-        String baseString = "/path/to/files/prefix-%5d.suffix";
-        int minIdx = 0;
-        int maxIdx = 10;
-        runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        assertThrows(IllegalArgumentException.class,() -> {
+            String baseString = "/path/to/files/prefix-%5d.suffix";
+            int minIdx = 0;
+            int maxIdx = 10;
+            runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        });
+
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testNumberedFileInputSplitWithNoLeadingZeroInPadding() {
-        String baseString = "/path/to/files/prefix%5d.suffix";
-        int minIdx = 0;
-        int maxIdx = 10;
-        runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        assertThrows(IllegalArgumentException.class, () -> {
+            String baseString = "/path/to/files/prefix%5d.suffix";
+            int minIdx = 0;
+            int maxIdx = 10;
+            runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        });
+
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testNumberedFileInputSplitWithLeadingPlusInPadding() {
-        String baseString = "/path/to/files/prefix%+5d.suffix";
-        int minIdx = 0;
-        int maxIdx = 10;
-        runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        assertThrows(IllegalArgumentException.class,() -> {
+            String baseString = "/path/to/files/prefix%+5d.suffix";
+            int minIdx = 0;
+            int maxIdx = 10;
+            runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        });
+
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testNumberedFileInputSplitWithLeadingMinusInPadding() {
-        String baseString = "/path/to/files/prefix%-5d.suffix";
-        int minIdx = 0;
-        int maxIdx = 10;
-        runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        assertThrows(IllegalArgumentException.class,() -> {
+            String baseString = "/path/to/files/prefix%-5d.suffix";
+            int minIdx = 0;
+            int maxIdx = 10;
+            runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        });
+
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testNumberedFileInputSplitWithTwoDigitsInPadding() {
-        String baseString = "/path/to/files/prefix%011d.suffix";
-        int minIdx = 0;
-        int maxIdx = 10;
-        runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+       assertThrows(IllegalArgumentException.class,() -> {
+           String baseString = "/path/to/files/prefix%011d.suffix";
+           int minIdx = 0;
+           int maxIdx = 10;
+           runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+       });
+
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testNumberedFileInputSplitWithInnerZerosInPadding() {
-        String baseString = "/path/to/files/prefix%101d.suffix";
-        int minIdx = 0;
-        int maxIdx = 10;
-        runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        assertThrows(IllegalArgumentException.class,() -> {
+            String baseString = "/path/to/files/prefix%101d.suffix";
+            int minIdx = 0;
+            int maxIdx = 10;
+            runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        });
+
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void testNumberedFileInputSplitWithRepeatInnerZerosInPadding() {
-        String baseString = "/path/to/files/prefix%0505d.suffix";
-        int minIdx = 0;
-        int maxIdx = 10;
-        runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        assertThrows(IllegalArgumentException.class,() -> {
+            String baseString = "/path/to/files/prefix%0505d.suffix";
+            int minIdx = 0;
+            int maxIdx = 10;
+            runNumberedFileInputSplitTest(baseString, minIdx, maxIdx);
+        });
+
     }
 
 
@@ -131,7 +158,7 @@ public class NumberedFileInputSplitTests  extends BaseND4JTest {
             String path = locs[j++].getPath();
             String exp = String.format(baseString, i);
             String msg = exp + " vs " + path;
-            assertTrue(msg, path.endsWith(exp));    //Note: on Windows, Java can prepend drive to path - "/C:/"
+            assertTrue(path.endsWith(exp),msg);    //Note: on Windows, Java can prepend drive to path - "/C:/"
         }
     }
 }

@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.spark.impl.graph;
 
@@ -43,8 +47,12 @@ import org.deeplearning4j.spark.api.RDDTrainingApproach;
 import org.deeplearning4j.spark.api.Repartition;
 import org.deeplearning4j.spark.api.TrainingMaster;
 import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.evaluation.IEvaluation;
 import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.evaluation.classification.ROC;
@@ -65,9 +73,13 @@ import scala.Tuple2;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@Ignore("AB 2019/05/24 - Rarely getting stuck on CI - see issue #7657")
+@Disabled("AB 2019/05/24 - Rarely getting stuck on CI - see issue #7657")
+@Tag(TagNames.FILE_IO)
+@Tag(TagNames.SPARK)
+@Tag(TagNames.DIST_SYSTEMS)
+@NativeTag
 public class TestSparkComputationGraph extends BaseSparkTest {
 
     public static ComputationGraph getBasicNetIris2Class() {
@@ -209,7 +221,7 @@ public class TestSparkComputationGraph extends BaseSparkTest {
         }
     }
 
-    @Ignore("AB 2019/05/23 - Failing on CI only - passing locally. Possible precision or threading issue")
+    @Disabled("AB 2019/05/23 - Failing on CI only - passing locally. Possible precision or threading issue")
     public void testSeedRepeatability() throws Exception {
 
         ComputationGraphConfiguration conf = new NeuralNetConfiguration.Builder().seed(12345).updater(Updater.RMSPROP)
@@ -277,12 +289,13 @@ public class TestSparkComputationGraph extends BaseSparkTest {
 
         boolean eq1 = p1.equalsWithEps(p2, 0.01);
         boolean eq2 = p1.equalsWithEps(p3, 0.01);
-        assertTrue("Model 1 and 2 params should be equal", eq1);
-        assertFalse("Model 1 and 3 params shoud be different", eq2);
+        assertTrue(eq1, "Model 1 and 2 params should be equal");
+        assertFalse(eq2, "Model 1 and 3 params shoud be different");
     }
 
 
-    @Test(timeout = 60000L)
+    @Test()
+    @Timeout(60000L)
     public void testEvaluationAndRoc() {
         for( int evalWorkers : new int[]{1, 4, 8}) {
             DataSetIterator iter = new IrisDataSetIterator(5, 150);

@@ -1,27 +1,33 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.convolution;
 
 import lombok.val;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.buffer.util.AllocUtil;
@@ -39,24 +45,17 @@ import org.nd4j.common.util.ArrayUtil;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.nd4j.linalg.indexing.NDArrayIndex.all;
 import static org.nd4j.linalg.indexing.NDArrayIndex.point;
 
-/**
- * Created by agibsonccc on 9/6/14.
- */
-@RunWith(Parameterized.class)
-public class ConvolutionTests extends BaseNd4jTest {
+@NativeTag
+public class ConvolutionTests extends BaseNd4jTestWithBackends {
 
-    public ConvolutionTests(Nd4jBackend backend) {
-        super(backend);
-    }
-
-
-    @Test
-    public void testIm2ColKnownValues() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2ColKnownValues(Nd4jBackend backend) {
         //Input: w=3, h=3, depth=2, minibatch = 2
         //kH=2, kW=2
         /*
@@ -111,13 +110,13 @@ public class ConvolutionTests extends BaseNd4jTest {
         //Input data: shape [miniBatch,depth,height,width]
         INDArray input = Nd4j.create(new int[] {miniBatch, depth, height, width}, 'c');
         input.put(new INDArrayIndex[] {point(0), point(0), all(),
-                        all()}, Nd4j.create(new double[][] {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}}));
+                all()}, Nd4j.create(new double[][] {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}}));
         input.put(new INDArrayIndex[] {point(0), point(1), all(),
-                        all()}, Nd4j.create(new double[][] {{9, 10, 11}, {12, 13, 14}, {15, 16, 17}}));
+                all()}, Nd4j.create(new double[][] {{9, 10, 11}, {12, 13, 14}, {15, 16, 17}}));
         input.put(new INDArrayIndex[] {point(1), point(0), all(),
-                        all()}, Nd4j.create(new double[][] {{18, 19, 20}, {21, 22, 23}, {24, 25, 26}}));
+                all()}, Nd4j.create(new double[][] {{18, 19, 20}, {21, 22, 23}, {24, 25, 26}}));
         input.put(new INDArrayIndex[] {point(1), point(1), all(),
-                        all()}, Nd4j.create(new double[][] {{27, 28, 29}, {30, 31, 32}, {33, 34, 35}}));
+                all()}, Nd4j.create(new double[][] {{27, 28, 29}, {30, 31, 32}, {33, 34, 35}}));
 
         //Expected data:
         INDArray expected = Nd4j.create(new int[] {miniBatch, depth, kH, kW, outH, outW}, 'c');
@@ -126,57 +125,57 @@ public class ConvolutionTests extends BaseNd4jTest {
         //depth 0
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{0, 1}, {3, 4}}));
+                Nd4j.create(new double[][] {{0, 1}, {3, 4}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{1, 2}, {4, 5}}));
+                Nd4j.create(new double[][] {{1, 2}, {4, 5}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{3, 4}, {6, 7}}));
+                Nd4j.create(new double[][] {{3, 4}, {6, 7}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{4, 5}, {7, 8}}));
+                Nd4j.create(new double[][] {{4, 5}, {7, 8}}));
         //depth 1
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{9, 10}, {12, 13}}));
+                Nd4j.create(new double[][] {{9, 10}, {12, 13}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{10, 11}, {13, 14}}));
+                Nd4j.create(new double[][] {{10, 11}, {13, 14}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{12, 13}, {15, 16}}));
+                Nd4j.create(new double[][] {{12, 13}, {15, 16}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{13, 14}, {16, 17}}));
+                Nd4j.create(new double[][] {{13, 14}, {16, 17}}));
 
         //Example 1
         //depth 0
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{18, 19}, {21, 22}}));
+                Nd4j.create(new double[][] {{18, 19}, {21, 22}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{19, 20}, {22, 23}}));
+                Nd4j.create(new double[][] {{19, 20}, {22, 23}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{21, 22}, {24, 25}}));
+                Nd4j.create(new double[][] {{21, 22}, {24, 25}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{22, 23}, {25, 26}}));
+                Nd4j.create(new double[][] {{22, 23}, {25, 26}}));
         //depth 1
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{27, 28}, {30, 31}}));
+                Nd4j.create(new double[][] {{27, 28}, {30, 31}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{28, 29}, {31, 32}}));
+                Nd4j.create(new double[][] {{28, 29}, {31, 32}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{30, 31}, {33, 34}}));
+                Nd4j.create(new double[][] {{30, 31}, {33, 34}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{31, 32}, {34, 35}}));
+                Nd4j.create(new double[][] {{31, 32}, {34, 35}}));
 
         INDArray out = Convolution.im2col(input, kH, kW, sY, sX, pY, pX, false);
         assertEquals(expected, out);
@@ -194,8 +193,9 @@ public class ConvolutionTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testIm2ColKnownValuesDilated() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2ColKnownValuesDilated(Nd4jBackend backend) {
         //Input: w=4, h=4, depth=1, minibatch = 2, dilation=2, stride 1
         //kH=2, kW=2
         /*
@@ -307,8 +307,9 @@ public class ConvolutionTests extends BaseNd4jTest {
         assertEquals(expected, out3p);
     }
 
-    @Test
-    public void testIm2ColKnownValuesDilatedStrided() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2ColKnownValuesDilatedStrided(Nd4jBackend backend) {
         //Input: w=5, h=5, depth=1, minibatch = 1, dilation=2, stride 2
         //kH=2, kW=2
         /*
@@ -389,8 +390,9 @@ public class ConvolutionTests extends BaseNd4jTest {
         assertEquals(expected, out3p);
     }
 
-    @Test
-    public void testIm2ColKnownValuesMiniBatch3() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2ColKnownValuesMiniBatch3(Nd4jBackend backend) {
         //Input: w=3, h=3, depth=2, minibatch = 3
         //kH=2, kW=2
         /*
@@ -460,17 +462,17 @@ public class ConvolutionTests extends BaseNd4jTest {
         //Input data: shape [miniBatch,depth,height,width]
         INDArray input = Nd4j.create(new int[] {miniBatch, depth, height, width}, 'c');
         input.put(new INDArrayIndex[] {point(0), point(0), all(),
-                        all()}, Nd4j.create(new double[][] {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}}));
+                all()}, Nd4j.create(new double[][] {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}}));
         input.put(new INDArrayIndex[] {point(0), point(1), all(),
-                        all()}, Nd4j.create(new double[][] {{9, 10, 11}, {12, 13, 14}, {15, 16, 17}}));
+                all()}, Nd4j.create(new double[][] {{9, 10, 11}, {12, 13, 14}, {15, 16, 17}}));
         input.put(new INDArrayIndex[] {point(1), point(0), all(),
-                        all()}, Nd4j.create(new double[][] {{18, 19, 20}, {21, 22, 23}, {24, 25, 26}}));
+                all()}, Nd4j.create(new double[][] {{18, 19, 20}, {21, 22, 23}, {24, 25, 26}}));
         input.put(new INDArrayIndex[] {point(1), point(1), all(),
-                        all()}, Nd4j.create(new double[][] {{27, 28, 29}, {30, 31, 32}, {33, 34, 35}}));
+                all()}, Nd4j.create(new double[][] {{27, 28, 29}, {30, 31, 32}, {33, 34, 35}}));
         input.put(new INDArrayIndex[] {point(2), point(0), all(),
-                        all()}, Nd4j.create(new double[][] {{36, 37, 38}, {39, 40, 41}, {42, 43, 44}}));
+                all()}, Nd4j.create(new double[][] {{36, 37, 38}, {39, 40, 41}, {42, 43, 44}}));
         input.put(new INDArrayIndex[] {point(2), point(1), all(),
-                        all()}, Nd4j.create(new double[][] {{45, 46, 47}, {48, 49, 50}, {51, 52, 53}}));
+                all()}, Nd4j.create(new double[][] {{45, 46, 47}, {48, 49, 50}, {51, 52, 53}}));
 
         //Expected data:
         INDArray expected = Nd4j.create(new int[] {miniBatch, depth, kH, kW, outH, outW}, 'c');
@@ -479,85 +481,85 @@ public class ConvolutionTests extends BaseNd4jTest {
         //depth 0
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{0, 1}, {3, 4}}));
+                Nd4j.create(new double[][] {{0, 1}, {3, 4}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{1, 2}, {4, 5}}));
+                Nd4j.create(new double[][] {{1, 2}, {4, 5}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{3, 4}, {6, 7}}));
+                Nd4j.create(new double[][] {{3, 4}, {6, 7}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{4, 5}, {7, 8}}));
+                Nd4j.create(new double[][] {{4, 5}, {7, 8}}));
         //depth 1
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{9, 10}, {12, 13}}));
+                Nd4j.create(new double[][] {{9, 10}, {12, 13}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{10, 11}, {13, 14}}));
+                Nd4j.create(new double[][] {{10, 11}, {13, 14}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{12, 13}, {15, 16}}));
+                Nd4j.create(new double[][] {{12, 13}, {15, 16}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{13, 14}, {16, 17}}));
+                Nd4j.create(new double[][] {{13, 14}, {16, 17}}));
 
         //Example 1
         //depth 0
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{18, 19}, {21, 22}}));
+                Nd4j.create(new double[][] {{18, 19}, {21, 22}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{19, 20}, {22, 23}}));
+                Nd4j.create(new double[][] {{19, 20}, {22, 23}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{21, 22}, {24, 25}}));
+                Nd4j.create(new double[][] {{21, 22}, {24, 25}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{22, 23}, {25, 26}}));
+                Nd4j.create(new double[][] {{22, 23}, {25, 26}}));
         //depth 1
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{27, 28}, {30, 31}}));
+                Nd4j.create(new double[][] {{27, 28}, {30, 31}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{28, 29}, {31, 32}}));
+                Nd4j.create(new double[][] {{28, 29}, {31, 32}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{30, 31}, {33, 34}}));
+                Nd4j.create(new double[][] {{30, 31}, {33, 34}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{31, 32}, {34, 35}}));
+                Nd4j.create(new double[][] {{31, 32}, {34, 35}}));
 
         //Example 2
         //depth 0
         expected.put(new INDArrayIndex[] {point(2), point(0), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{36, 37}, {39, 40}}));
+                Nd4j.create(new double[][] {{36, 37}, {39, 40}}));
         expected.put(new INDArrayIndex[] {point(2), point(0), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{37, 38}, {40, 41}}));
+                Nd4j.create(new double[][] {{37, 38}, {40, 41}}));
         expected.put(new INDArrayIndex[] {point(2), point(0), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{39, 40}, {42, 43}}));
+                Nd4j.create(new double[][] {{39, 40}, {42, 43}}));
         expected.put(new INDArrayIndex[] {point(2), point(0), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{40, 41}, {43, 44}}));
+                Nd4j.create(new double[][] {{40, 41}, {43, 44}}));
         //depth 1
         expected.put(new INDArrayIndex[] {point(2), point(1), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{45, 46}, {48, 49}}));
+                Nd4j.create(new double[][] {{45, 46}, {48, 49}}));
         expected.put(new INDArrayIndex[] {point(2), point(1), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{46, 47}, {49, 50}}));
+                Nd4j.create(new double[][] {{46, 47}, {49, 50}}));
         expected.put(new INDArrayIndex[] {point(2), point(1), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{48, 49}, {51, 52}}));
+                Nd4j.create(new double[][] {{48, 49}, {51, 52}}));
         expected.put(new INDArrayIndex[] {point(2), point(1), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{49, 50}, {52, 53}}));
+                Nd4j.create(new double[][] {{49, 50}, {52, 53}}));
 
         INDArray out = Convolution.im2col(input, kH, kW, sY, sX, pY, pX, false);
         assertEquals(expected, out);
@@ -575,8 +577,9 @@ public class ConvolutionTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testIm2ColSamePadding() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2ColSamePadding(Nd4jBackend backend) {
         //Input: w=3, h=3, depth=2, minibatch = 2, kH/kW = 2, stride=1
 
         //Idea with same padding:
@@ -658,13 +661,13 @@ public class ConvolutionTests extends BaseNd4jTest {
         //Input data: shape [miniBatch,depth,height,width]
         INDArray input = Nd4j.create(new int[] {miniBatch, depth, inH, inW}, 'c');
         input.put(new INDArrayIndex[] {point(0), point(0), all(),
-                        all()}, Nd4j.create(new double[][] {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}}));
+                all()}, Nd4j.create(new double[][] {{0, 1, 2}, {3, 4, 5}, {6, 7, 8}}));
         input.put(new INDArrayIndex[] {point(0), point(1), all(),
-                        all()}, Nd4j.create(new double[][] {{9, 10, 11}, {12, 13, 14}, {15, 16, 17}}));
+                all()}, Nd4j.create(new double[][] {{9, 10, 11}, {12, 13, 14}, {15, 16, 17}}));
         input.put(new INDArrayIndex[] {point(1), point(0), all(),
-                        all()}, Nd4j.create(new double[][] {{18, 19, 20}, {21, 22, 23}, {24, 25, 26}}));
+                all()}, Nd4j.create(new double[][] {{18, 19, 20}, {21, 22, 23}, {24, 25, 26}}));
         input.put(new INDArrayIndex[] {point(1), point(1), all(),
-                        all()}, Nd4j.create(new double[][] {{27, 28, 29}, {30, 31, 32}, {33, 34, 35}}));
+                all()}, Nd4j.create(new double[][] {{27, 28, 29}, {30, 31, 32}, {33, 34, 35}}));
 
         //Expected data:
         INDArray expected = Nd4j.create(new int[] {miniBatch, depth, kH, kW, outH, outW}, 'c');
@@ -673,118 +676,118 @@ public class ConvolutionTests extends BaseNd4jTest {
         //depth 0
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{0, 1}, {3, 4}}));
+                Nd4j.create(new double[][] {{0, 1}, {3, 4}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{1, 2}, {4, 5}}));
+                Nd4j.create(new double[][] {{1, 2}, {4, 5}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(2)},
-                        Nd4j.create(new double[][] {{2, 0}, {5, 0}}));
+                Nd4j.create(new double[][] {{2, 0}, {5, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{3, 4}, {6, 7}}));
+                Nd4j.create(new double[][] {{3, 4}, {6, 7}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{4, 5}, {7, 8}}));
+                Nd4j.create(new double[][] {{4, 5}, {7, 8}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(2)},
-                        Nd4j.create(new double[][] {{5, 0}, {8, 0}}));
+                Nd4j.create(new double[][] {{5, 0}, {8, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(2), point(0)},
-                        Nd4j.create(new double[][] {{6, 7}, {0, 0}}));
+                Nd4j.create(new double[][] {{6, 7}, {0, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(2), point(1)},
-                        Nd4j.create(new double[][] {{7, 8}, {0, 0}}));
+                Nd4j.create(new double[][] {{7, 8}, {0, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(2), point(2)},
-                        Nd4j.create(new double[][] {{8, 0}, {0, 0}}));
+                Nd4j.create(new double[][] {{8, 0}, {0, 0}}));
         //depth 1
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{9, 10}, {12, 13}}));
+                Nd4j.create(new double[][] {{9, 10}, {12, 13}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{10, 11}, {13, 14}}));
+                Nd4j.create(new double[][] {{10, 11}, {13, 14}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(2)},
-                        Nd4j.create(new double[][] {{11, 0}, {14, 0}}));
+                Nd4j.create(new double[][] {{11, 0}, {14, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{12, 13}, {15, 16}}));
+                Nd4j.create(new double[][] {{12, 13}, {15, 16}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{13, 14}, {16, 17}}));
+                Nd4j.create(new double[][] {{13, 14}, {16, 17}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(2)},
-                        Nd4j.create(new double[][] {{14, 0}, {17, 0}}));
+                Nd4j.create(new double[][] {{14, 0}, {17, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(2), point(0)},
-                        Nd4j.create(new double[][] {{15, 16}, {0, 0}}));
+                Nd4j.create(new double[][] {{15, 16}, {0, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(2), point(1)},
-                        Nd4j.create(new double[][] {{16, 17}, {0, 0}}));
+                Nd4j.create(new double[][] {{16, 17}, {0, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(2), point(2)},
-                        Nd4j.create(new double[][] {{17, 0}, {0, 0}}));
+                Nd4j.create(new double[][] {{17, 0}, {0, 0}}));
 
         //Example 1
         //depth 0
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{18, 19}, {21, 22}}));
+                Nd4j.create(new double[][] {{18, 19}, {21, 22}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{19, 20}, {22, 23}}));
+                Nd4j.create(new double[][] {{19, 20}, {22, 23}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(0), point(2)},
-                        Nd4j.create(new double[][] {{20, 0}, {23, 0}}));
+                Nd4j.create(new double[][] {{20, 0}, {23, 0}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{21, 22}, {24, 25}}));
+                Nd4j.create(new double[][] {{21, 22}, {24, 25}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{22, 23}, {25, 26}}));
+                Nd4j.create(new double[][] {{22, 23}, {25, 26}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(1), point(2)},
-                        Nd4j.create(new double[][] {{23, 0}, {26, 0}}));
+                Nd4j.create(new double[][] {{23, 0}, {26, 0}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(2), point(0)},
-                        Nd4j.create(new double[][] {{24, 25}, {0, 0}}));
+                Nd4j.create(new double[][] {{24, 25}, {0, 0}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(2), point(1)},
-                        Nd4j.create(new double[][] {{25, 26}, {0, 0}}));
+                Nd4j.create(new double[][] {{25, 26}, {0, 0}}));
         expected.put(new INDArrayIndex[] {point(1), point(0), all(),
                         all(), point(2), point(2)},
-                        Nd4j.create(new double[][] {{26, 0}, {0, 0}}));
+                Nd4j.create(new double[][] {{26, 0}, {0, 0}}));
 
         //depth 1
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{27, 28}, {30, 31}}));
+                Nd4j.create(new double[][] {{27, 28}, {30, 31}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{28, 29}, {31, 32}}));
+                Nd4j.create(new double[][] {{28, 29}, {31, 32}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(0), point(2)},
-                        Nd4j.create(new double[][] {{29, 0}, {32, 0}}));
+                Nd4j.create(new double[][] {{29, 0}, {32, 0}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{30, 31}, {33, 34}}));
+                Nd4j.create(new double[][] {{30, 31}, {33, 34}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{31, 32}, {34, 35}}));
+                Nd4j.create(new double[][] {{31, 32}, {34, 35}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(1), point(2)},
-                        Nd4j.create(new double[][] {{32, 0}, {35, 0}}));
+                Nd4j.create(new double[][] {{32, 0}, {35, 0}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(2), point(0)},
-                        Nd4j.create(new double[][] {{33, 34}, {0, 0}}));
+                Nd4j.create(new double[][] {{33, 34}, {0, 0}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(2), point(1)},
-                        Nd4j.create(new double[][] {{34, 35}, {0, 0}}));
+                Nd4j.create(new double[][] {{34, 35}, {0, 0}}));
         expected.put(new INDArrayIndex[] {point(1), point(1), all(),
                         all(), point(2), point(2)},
-                        Nd4j.create(new double[][] {{35, 0}, {0, 0}}));
+                Nd4j.create(new double[][] {{35, 0}, {0, 0}}));
 
         //[miniBatch,depth,kH,kW,outH,outW]
         INDArray outAlloc = Nd4j.create(miniBatch, depth, kH, kW, outH, outW);
@@ -834,8 +837,9 @@ public class ConvolutionTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testIm2ColSamePaddingStride2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2ColSamePaddingStride2(Nd4jBackend backend) {
         //Input: h=3, w=4, depth=2, minibatch = 1, kH/kW = 3, stride=2
 
         //Idea with same padding:
@@ -903,10 +907,10 @@ public class ConvolutionTests extends BaseNd4jTest {
         //Input data: shape [miniBatch,depth,height,width]
         INDArray input = Nd4j.create(new int[] {miniBatch, depth, inH, inW}, 'c');
         input.put(new INDArrayIndex[] {point(0), point(0), all(),
-                        all()}, Nd4j.create(new double[][] {{0, 1, 2, 3}, {4, 5, 6, 7}, {8, 9, 10, 11}}));
+                all()}, Nd4j.create(new double[][] {{0, 1, 2, 3}, {4, 5, 6, 7}, {8, 9, 10, 11}}));
         input.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all()},
-                        Nd4j.create(new double[][] {{12, 13, 14, 15}, {16, 17, 18, 19}, {20, 21, 22, 23}}));
+                Nd4j.create(new double[][] {{12, 13, 14, 15}, {16, 17, 18, 19}, {20, 21, 22, 23}}));
 
         //Expected data:
         INDArray expected = Nd4j.create(new int[] {miniBatch, depth, kH, kW, outH, outW}, 'c');
@@ -915,29 +919,29 @@ public class ConvolutionTests extends BaseNd4jTest {
         //depth 0
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{0, 0, 0}, {0, 1, 2}, {4, 5, 6}}));
+                Nd4j.create(new double[][] {{0, 0, 0}, {0, 1, 2}, {4, 5, 6}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{0, 0, 0}, {2, 3, 0}, {6, 7, 0}}));
+                Nd4j.create(new double[][] {{0, 0, 0}, {2, 3, 0}, {6, 7, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{4, 5, 6}, {8, 9, 10}, {0, 0, 0}}));
+                Nd4j.create(new double[][] {{4, 5, 6}, {8, 9, 10}, {0, 0, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{6, 7, 0}, {10, 11, 0}, {0, 0, 0}}));
+                Nd4j.create(new double[][] {{6, 7, 0}, {10, 11, 0}, {0, 0, 0}}));
         //depth 1
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{0, 0, 0}, {12, 13, 14}, {16, 17, 18}}));
+                Nd4j.create(new double[][] {{0, 0, 0}, {12, 13, 14}, {16, 17, 18}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{0, 0, 0}, {14, 15, 0}, {18, 19, 0}}));
+                Nd4j.create(new double[][] {{0, 0, 0}, {14, 15, 0}, {18, 19, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{16, 17, 18}, {20, 21, 22}, {0, 0, 0}}));
+                Nd4j.create(new double[][] {{16, 17, 18}, {20, 21, 22}, {0, 0, 0}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{18, 19, 0}, {22, 23, 0}, {0, 0, 0}}));
+                Nd4j.create(new double[][] {{18, 19, 0}, {22, 23, 0}, {0, 0, 0}}));
 
         //[miniBatch,depth,kH,kW,outH,outW]
         INDArray outAlloc = Nd4j.create(miniBatch, depth, kH, kW, outH, outW);
@@ -987,8 +991,9 @@ public class ConvolutionTests extends BaseNd4jTest {
 
 
 
-    @Test
-    public void testCol2ImSamePaddingStride2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCol2ImSamePaddingStride2(Nd4jBackend backend) {
         //Input: h=3, w=4, depth=2, minibatch = 1, kH/kW = 3, stride=2
 
         //Idea with same padding:
@@ -1074,39 +1079,39 @@ public class ConvolutionTests extends BaseNd4jTest {
         //depth 0
         col6d.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{0, 0, 0}, {0, 1, 2}, {4, 5, 6}}));
+                Nd4j.create(new double[][] {{0, 0, 0}, {0, 1, 2}, {4, 5, 6}}));
         col6d.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{0, 0, 0}, {2, 3, 0}, {6, 7, 0}}));
+                Nd4j.create(new double[][] {{0, 0, 0}, {2, 3, 0}, {6, 7, 0}}));
         col6d.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{4, 5, 6}, {8, 9, 10}, {0, 0, 0}}));
+                Nd4j.create(new double[][] {{4, 5, 6}, {8, 9, 10}, {0, 0, 0}}));
         col6d.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{6, 7, 0}, {10, 11, 0}, {0, 0, 0}}));
+                Nd4j.create(new double[][] {{6, 7, 0}, {10, 11, 0}, {0, 0, 0}}));
         //depth 1
         col6d.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(0)},
-                        Nd4j.create(new double[][] {{0, 0, 0}, {12, 13, 14}, {16, 17, 18}}));
+                Nd4j.create(new double[][] {{0, 0, 0}, {12, 13, 14}, {16, 17, 18}}));
         col6d.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(0), point(1)},
-                        Nd4j.create(new double[][] {{0, 0, 0}, {14, 15, 0}, {18, 19, 0}}));
+                Nd4j.create(new double[][] {{0, 0, 0}, {14, 15, 0}, {18, 19, 0}}));
         col6d.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(0)},
-                        Nd4j.create(new double[][] {{16, 17, 18}, {20, 21, 22}, {0, 0, 0}}));
+                Nd4j.create(new double[][] {{16, 17, 18}, {20, 21, 22}, {0, 0, 0}}));
         col6d.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all(), point(1), point(1)},
-                        Nd4j.create(new double[][] {{18, 19, 0}, {22, 23, 0}, {0, 0, 0}}));
+                Nd4j.create(new double[][] {{18, 19, 0}, {22, 23, 0}, {0, 0, 0}}));
 
 
         //Expected result:
         INDArray expected = Nd4j.create(miniBatch, depth, inH, inW);
         expected.put(new INDArrayIndex[] {point(0), point(0), all(),
                         all()},
-                        Nd4j.create(new double[][] {{0, 1, 4, 3}, {8, 10, 24, 14}, {8, 9, 20, 11}}));
+                Nd4j.create(new double[][] {{0, 1, 4, 3}, {8, 10, 24, 14}, {8, 9, 20, 11}}));
         expected.put(new INDArrayIndex[] {point(0), point(1), all(),
                         all()},
-                        Nd4j.create(new double[][] {{12, 13, 28, 15}, {32, 34, 72, 38}, {20, 21, 44, 23}}));
+                Nd4j.create(new double[][] {{12, 13, 28, 15}, {32, 34, 72, 38}, {20, 21, 44, 23}}));
 
 
         INDArray col2imResult = Nd4j.create(miniBatch, depth, inH, inW);
@@ -1116,8 +1121,9 @@ public class ConvolutionTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testCol2ImSamePaddingStride1Dilation2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCol2ImSamePaddingStride1Dilation2(Nd4jBackend backend) {
         //Input: h=4, w=5, depth=1, minibatch = 1, kH/kW = 2, stride=1, dilation 2
 
         //Idea with same padding:
@@ -1303,14 +1309,16 @@ public class ConvolutionTests extends BaseNd4jTest {
 
 
 
-    @Test
-    public void testConvOutWidthAndHeight() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testConvOutWidthAndHeight(Nd4jBackend backend) {
         long outSize = Convolution.outSize(2, 1, 1, 2, 1, false);
         assertEquals(6, outSize);
     }
 /*
-    @Test
-    public void testIm2Col() {
+      @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2Col(Nd4jBackend backend) {
         INDArray linspaced = Nd4j.linspace(1, 16, 16, DataType.FLOAT).reshape(2, 2, 2, 2);
         INDArray ret = Convolution.im2col(linspaced, 1, 1, 1, 1, 2, 2, 0, false);
         System.out.println(ret);
@@ -1320,8 +1328,8 @@ public class ConvolutionTests extends BaseNd4jTest {
 
 
     @Test
-    @Ignore
-    public void testCompareIm2ColImpl() {
+    @Disabled
+    public void testCompareIm2ColImpl(Nd4jBackend backend) {
 
         int[] miniBatches = {1, 3, 5};
         int[] depths = {1, 3, 5};
@@ -1336,17 +1344,17 @@ public class ConvolutionTests extends BaseNd4jTest {
         boolean[] coverall = {false, true};
 
         DataType[] types = new DataType[] {DataType.FLOAT, DataType.FLOAT,
-                        DataType.FLOAT, DataType.FLOAT};
+                DataType.FLOAT, DataType.FLOAT};
         DataBuffer.AllocationMode[] modes =
-                        new DataBuffer.AllocationMode[] {DataBuffer.AllocationMode.HEAP, DataBuffer.AllocationMode.HEAP,
-                                        DataBuffer.AllocationMode.DIRECT, DataBuffer.AllocationMode.DIRECT};
+                new DataBuffer.AllocationMode[] {DataBuffer.AllocationMode.HEAP, DataBuffer.AllocationMode.HEAP,
+                        DataBuffer.AllocationMode.DIRECT, DataBuffer.AllocationMode.DIRECT};
 
         String factoryClassName = Nd4j.factory().getClass().toString().toLowerCase();
         if (factoryClassName.contains("jcublas") || factoryClassName.contains("cuda")) {
             //Only test direct for CUDA; test all for CPU
             types = new DataType[] {DataType.FLOAT, DataType.FLOAT};
             modes = new DataBuffer.AllocationMode[] {DataBuffer.AllocationMode.DIRECT,
-                            DataBuffer.AllocationMode.DIRECT};
+                    DataBuffer.AllocationMode.DIRECT};
         }
 
         DataType initialType = Nd4j.dataType();
@@ -1380,12 +1388,12 @@ public class ConvolutionTests extends BaseNd4jTest {
                                                         //assertEquals(in.data().dataType(), opType);
 
                                                         INDArray outOrig = OldConvolution.im2col(in, kh, kw, sh, sw, ph,
-                                                                        pw, -1, cAll); //Old implementation
+                                                                pw, -1, cAll); //Old implementation
                                                         INDArray outNew = Convolution.im2col(in, kh, kw, sh, sw, ph, pw,
-                                                                        cAll); //Current implementation
+                                                                cAll); //Current implementation
 
                                                         assertArrayEquals(outOrig.data().asFloat(),
-                                                                        outNew.data().asFloat(), 0.01f);
+                                                                outNew.data().asFloat(), 0.01f);
                                                         assertEquals(outOrig, outNew);
                                                     }
                                                 }
@@ -1404,8 +1412,8 @@ public class ConvolutionTests extends BaseNd4jTest {
     }
 
     @Test
-    @Ignore
-    public void testCompareIm2Col() {
+    @Disabled
+    public void testCompareIm2Col(Nd4jBackend backend) {
 
         int[] miniBatches = {1, 3, 5};
         int[] depths = {1, 3, 5};
@@ -1419,17 +1427,17 @@ public class ConvolutionTests extends BaseNd4jTest {
         int[] padW = {0, 1, 2};
 
         DataType[] types = new DataType[] {DataType.FLOAT, DataType.FLOAT,
-                        DataType.FLOAT, DataType.FLOAT};
+                DataType.FLOAT, DataType.FLOAT};
         DataBuffer.AllocationMode[] modes =
-                        new DataBuffer.AllocationMode[] {DataBuffer.AllocationMode.HEAP, DataBuffer.AllocationMode.HEAP,
-                                        DataBuffer.AllocationMode.DIRECT, DataBuffer.AllocationMode.DIRECT};
+                new DataBuffer.AllocationMode[] {DataBuffer.AllocationMode.HEAP, DataBuffer.AllocationMode.HEAP,
+                        DataBuffer.AllocationMode.DIRECT, DataBuffer.AllocationMode.DIRECT};
 
         String factoryClassName = Nd4j.factory().getClass().toString().toLowerCase();
         if (factoryClassName.contains("jcublas") || factoryClassName.contains("cuda")) {
             //Only test direct for CUDA; test all for CPU
             types = new DataType[] {DataType.FLOAT, DataType.FLOAT};
             modes = new DataBuffer.AllocationMode[] {DataBuffer.AllocationMode.DIRECT,
-                            DataBuffer.AllocationMode.DIRECT};
+                    DataBuffer.AllocationMode.DIRECT};
         }
 
         DataType inititalType = Nd4j.dataType();
@@ -1458,12 +1466,12 @@ public class ConvolutionTests extends BaseNd4jTest {
                                                     assertEquals(in.data().allocationMode(), mode);
                                                     assertEquals(in.data().dataType(), type);
                                                     INDArray im2col = Convolution.im2col(in, kh, kw, sh, sw, ph, pw,
-                                                                    false); //Cheating, to get correct shape for input
+                                                            false); //Cheating, to get correct shape for input
 
                                                     INDArray imgOutOld =
-                                                                    OldConvolution.col2im(im2col, sh, sw, ph, pw, h, w);
+                                                            OldConvolution.col2im(im2col, sh, sw, ph, pw, h, w);
                                                     INDArray imgOutNew =
-                                                                    Convolution.col2im(im2col, sh, sw, ph, pw, h, w);
+                                                            Convolution.col2im(im2col, sh, sw, ph, pw, h, w);
                                                     System.out.println("F order test");
                                                     System.out.println(imgOutOld);
                                                     System.out.println(imgOutNew);
@@ -1484,8 +1492,9 @@ public class ConvolutionTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testCol2Im() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCol2Im(Nd4jBackend backend) {
         int kh = 1;
         int kw = 1;
         int sy = 1;
@@ -1503,8 +1512,9 @@ public class ConvolutionTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testimcolim() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testimcolim(Nd4jBackend backend) {
         int nEx = 2;
         int depth = 3;
         int width = 7;
@@ -1525,8 +1535,9 @@ public class ConvolutionTests extends BaseNd4jTest {
         assertEquals(assertcol2im, col2im);
     }
 
-    @Test
-    public void testIm2ColWithDilation() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testIm2ColWithDilation(Nd4jBackend backend) {
         int kH = 2;
         int kW = 2;
         int sH = 1;
@@ -1569,7 +1580,8 @@ public class ConvolutionTests extends BaseNd4jTest {
     }
 
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testPoolingEdgeCases(){
         //Average pooling with same mode: should we include the padded values, when deciding what to divide by?
         ///*** Note: Mode 2 is the "DL4J always divide by kH*kW" approach ***
@@ -1647,14 +1659,15 @@ public class ConvolutionTests extends BaseNd4jTest {
 
                 String msg = "inOrder=" + inputOrder + ", outOrder=" + outputOrder;
                 val vr = actDl4j.get(point(0), point(0), all(), all());
-                assertEquals(msg, expDl4j, vr);
-                assertEquals(msg, expEnabled, actEnabled.get(point(0), point(0), all(), all()));
+                assertEquals(expDl4j, vr,msg);
+                assertEquals(expEnabled, actEnabled.get(point(0), point(0), all(), all()),msg);
             }
         }
     }
 
-    @Test
-    public void testPooling1() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling1(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{6.f, 7.f, 10.f, 11.f, 22.f, 23.f, 26.f, 27.f, 38.f, 39.f, 42.f, 43.f, 54.f, 55.f, 58.f, 59.f}, new int[]{2, 2, 2, 2}, 'c');
 
@@ -1671,7 +1684,7 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
 
             /*
             k=2, s=2, p=0, d=1, same mode, divisor = 1
@@ -1715,8 +1728,9 @@ public class ConvolutionTests extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testPooling2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling2(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{6.f, 7.f,  10.f,  11.f,  22.f,  23.f,  26.f,  27.f,  38.f,  39.f,  42.f,  43.f,  54.f,  55.f,  58.f, 59.f}, new int[]{2, 2, 2, 2}, 'c');
 
@@ -1733,12 +1747,13 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
-    @Test
-    public void testPooling3() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling3(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{11.f,  12.f,  15.f,  16.f,  27.f,  28.f,  31.f,  32.f,  43.f,  44.f,  47.f,  48.f,  59.f,  60.f,  63.f, 64.f}, new int[]{2, 2, 2, 2}, 'c');
 
@@ -1755,13 +1770,14 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals( exp, out,"Output order: " + outputOrder);
         }
     }
 
 
-    @Test
-    public void testPooling4() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling4(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{11.f,  12.f,  15.f,  16.f,  27.f,  28.f,  31.f,  32.f,  43.f,  44.f,  47.f,  48.f,  59.f,  60.f,  63.f, 64.f}, new int[]{2, 2, 2, 2}, 'c');
 
@@ -1778,13 +1794,14 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
 
-    @Test
-    public void testPooling5() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling5(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{7.f,    8.f,   11.f,   12.f,   14.f,   15.f,   27.f,   28.f,   31.f,   32.f,   34.f,   35.f, 42.f,   43.f,   46.f,   47.f,   49.f,   50.f,   57.f,   58.f,   61.f,   62.f,   64.f,   65.f, 77.f,   78.f,   81.f,   82.f,   84.f,   85.f,   92.f,   93.f,   96.f,   97.f,   99.f,  100.f}, new int[]{2, 3, 3, 2}, 'c');
 
@@ -1801,13 +1818,14 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
 
-    @Test
-    public void testPooling6() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling6(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{7.f,   8.f,  11.f,  12.f,  27.f,  28.f,  31.f,  32.f,  57.f,  58.f,  61.f,  62.f,  77.f,  78.f,  81.f, 82.f}, new int[]{2, 2, 2, 2}, 'c');
 
@@ -1824,13 +1842,14 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
 
-    @Test
-    public void testPooling7() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling7(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{7.f, 9.f, 17.f, 19.f, 32.f, 34.f, 42.f, 44.f, 57.f, 59.f, 67.f, 69.f, 82.f, 84.f, 92.f, 94.f}, new int[]{2, 2, 2, 2}, 'c');
 
@@ -1847,12 +1866,13 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
-    @Test
-    public void testPooling8() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling8(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{1.f, 2.5f, 4.5f, 8.5f, 10.f, 12.f, 18.5f, 20.f, 22.f, 26.f, 27.5f, 29.5f, 33.5f, 35.f, 37.f, 43.5f, 45.f, 47.f,  51.f, 52.5f, 54.5f,  58.5f, 60.f, 62.f, 68.5f, 70.f, 72.f,  76.f, 77.5f, 79.5f, 83.5f, 85.f, 87.f,  93.5f, 95.f, 97.f}, new int[]{2, 2, 3, 3}, 'c');
 
@@ -1869,12 +1889,13 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
-    @Test
-    public void testPooling9() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling9(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{0.25f, 1.25f, 2.25f,  4.25f, 10.f, 12.f, 9.25f, 20.f, 22.f, 6.5f, 13.75f, 14.75f, 16.75f, 35.f, 37.f,  21.75f, 45.f, 47.f,  12.75f, 26.25f, 27.25f,  29.25f, 60.f, 62.f, 34.25f, 70.f, 72.f, 19.f, 38.75f, 39.75f, 41.75f, 85.f, 87.f, 46.75f, 95.f, 97.f}, new int[]{2, 2, 3, 3}, 'c');
 
@@ -1891,12 +1912,13 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
-    @Test
-    public void testPooling10() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling10(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{4.f, 6.f, 7.5f, 14.f, 16.f, 17.5f,  21.5f, 23.5f, 25.f, 29.f, 31.f, 32.5f, 39.f, 41.f, 42.5f, 46.5f, 48.5f, 50.f, 54.f, 56.f, 57.5f,  64.f, 66.f, 67.5f, 71.5f, 73.5f, 75.f, 79.f, 81.f, 82.5f, 89.f, 91.f, 92.5f,  96.5f, 98.5f, 100.f}, new int[]{2, 2, 3, 3}, 'c');
 
@@ -1913,12 +1935,13 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
-    @Test
-    public void testPooling11() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling11(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{3, 4, 6, 7}, new int[]{1, 1, 2, 2}, 'c');
 
@@ -1935,12 +1958,13 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
-    @Test
-    public void testPooling12() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling12(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c', 'f'}) {
             INDArray exp = Nd4j.create(new float[]{3.f, 4.f, 4.5f, 6.f, 7.f, 7.5f, 7.5f, 8.5f, 9.f}, new int[]{1, 1, 3, 3}, 'c');
 
@@ -1957,13 +1981,14 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals( exp, out,"Output order: " + outputOrder);
         }
     }
 
 
-    @Test
-    public void testPooling13() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testPooling13(Nd4jBackend backend) {
         for( char outputOrder : new char[]{'c'}) {
             INDArray exp = Nd4j.create(new float[]{3.f, 4.f, 4.5f, 6.f, 7.f, 7.5f, 7.5f, 8.5f, 9.f}, new int[]{1, 1, 3, 3}, 'c');
 
@@ -1980,13 +2005,14 @@ public class ConvolutionTests extends BaseNd4jTest {
 
             INDArray out = op.getOutputArgument(0);
 
-            assertEquals("Output order: " + outputOrder, exp, out);
+            assertEquals(exp, out,"Output order: " + outputOrder);
         }
     }
 
 
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testPoolingDilation(){
 
         int[] inputShape = {1, 1, 4, 5};
@@ -2112,7 +2138,7 @@ public class ConvolutionTests extends BaseNd4jTest {
                 }
 
                 String msg = "TestNum=" + testNum + ", Mode: " + mode + ", " + pIn.getSecond();
-                assertEquals(msg, exp, out);
+                assertEquals(exp, out,msg);
                 testNum++;
             }
         }

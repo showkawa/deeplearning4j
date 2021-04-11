@@ -1,19 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- * Copyright (c) 2020 Konduit K.K.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.models.embeddings.loader;
 
@@ -102,87 +105,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-/**
- * This is utility class, providing various methods for WordVectors serialization
- *
- * List of available serialization methods (please keep this list consistent with source code):
- *
- * <ul>
- * <li>Serializers for Word2Vec:</li>
- * {@link #writeWordVectors(WeightLookupTable, File)}
- * {@link #writeWordVectors(WeightLookupTable, OutputStream)}
- * {@link #writeWord2VecModel(Word2Vec, File)}
- * {@link #writeWord2VecModel(Word2Vec, String)}
- * {@link #writeWord2VecModel(Word2Vec, OutputStream)}
- *
- * <li>Deserializers for Word2Vec:</li>
- * {@link #readWord2VecModel(String)}
- * {@link #readWord2VecModel(String, boolean)}
- * {@link #readWord2VecModel(File)}
- * {@link #readWord2VecModel(File, boolean)}
- * {@link #readAsBinaryNoLineBreaks(File)}
- * {@link #readAsBinaryNoLineBreaks(InputStream)}
- * {@link #readAsBinary(File)}
- * {@link #readAsBinary(InputStream)}
- * {@link #readAsCsv(File)}
- * {@link #readAsCsv(InputStream)}
- * {@link #readBinaryModel(InputStream, boolean, boolean)}
- * {@link #readWord2VecFromText(File, File, File, File, VectorsConfiguration)}
- * {@link #readWord2Vec(String, boolean)}
- * {@link #readWord2Vec(File, boolean)}
- * {@link #readWord2Vec(InputStream, boolean)}
- *
- * <li>Serializers for ParaVec:</li>
- * {@link #writeParagraphVectors(ParagraphVectors, File)}
- * {@link #writeParagraphVectors(ParagraphVectors, String)}
- * {@link #writeParagraphVectors(ParagraphVectors, OutputStream)}
- *
- * <li>Deserializers for ParaVec:</li>
- * {@link #readParagraphVectors(File)}
- * {@link #readParagraphVectors(String)}
- * {@link #readParagraphVectors(InputStream)}
- *
- *
- * <li>Adapters</li>
- * {@link #fromTableAndVocab(WeightLookupTable, VocabCache)}
- * {@link #fromPair(Pair)}
- * {@link #loadTxt(File)}
- * {@link #loadTxt(InputStream)}
- *
- * <li>Serializers to tSNE format</li>
- * {@link #writeTsneFormat(Word2Vec, INDArray, File)}
- *
- * <li>FastText serializer:</li>
- * {@link #writeWordVectors(FastText, File)}
- *
- * <li>FastText deserializer:</li>
- * {@link #readWordVectors(File)}
- *
- * <li>SequenceVectors serializers:</li>
- * {@link #writeSequenceVectors(SequenceVectors, OutputStream)}
- * {@link #writeSequenceVectors(SequenceVectors, SequenceElementFactory, File)}
- * {@link #writeSequenceVectors(SequenceVectors, SequenceElementFactory, String)}
- * {@link #writeSequenceVectors(SequenceVectors, SequenceElementFactory, OutputStream)}
- * {@link #writeLookupTable(WeightLookupTable, File)}
- * {@link #writeVocabCache(VocabCache, File)}
- * {@link #writeVocabCache(VocabCache, OutputStream)}
- *
- * <li>SequenceVectors deserializers:</li>
- * {@link #readSequenceVectors(File, boolean)}
- * {@link #readSequenceVectors(String, boolean)}
- * {@link #readSequenceVectors(SequenceElementFactory, File)}
- * {@link #readSequenceVectors(InputStream, boolean)}
- * {@link #readSequenceVectors(SequenceElementFactory, InputStream)}
- * {@link #readLookupTable(File)}
- * {@link #readLookupTable(InputStream)}
- *
- * </ul>
- *
- * @author Adam Gibson
- * @author raver119
- * @author alexander@skymind.io
- * @author Alexei KLENIN
- */
 @Slf4j
 public class WordVectorSerializer {
     private static final int MAX_SIZE = 50;
@@ -2687,8 +2609,14 @@ public class WordVectorSerializer {
 
             String tokenPreProcessorClassName = configuration.getTokenPreProcessor();
             if (StringUtils.isNotEmpty(tokenPreProcessorClassName)) {
-                TokenPreProcess preProcessor = DL4JClassLoading.createNewInstance(tokenizerFactoryClassName);
-                factory.setTokenPreProcessor(preProcessor);
+                Object preProcessor = DL4JClassLoading.createNewInstance(tokenizerFactoryClassName);
+                if(preProcessor instanceof TokenPreProcess) {
+                    TokenPreProcess tokenPreProcess = (TokenPreProcess) preProcessor;
+                    factory.setTokenPreProcessor(tokenPreProcess);
+                }
+                else {
+                    log.warn("Found instance of {}, was not actually a pre processor. Ignoring.",tokenPreProcessorClassName);
+                }
             }
 
             return factory;
@@ -2746,7 +2674,7 @@ public class WordVectorSerializer {
         Nd4j.getMemoryManager().setOccasionalGcFrequency(50000);
 
         CompressedRamStorage<Integer> storage = new CompressedRamStorage.Builder<Integer>().useInplaceCompression(false)
-                        .setCompressor(new NoOp()).emulateIsAbsent(false).build();
+                .setCompressor(new NoOp()).emulateIsAbsent(false).build();
 
         VocabCache<VocabWord> vocabCache = new AbstractCache.Builder<VocabWord>().build();
 
@@ -3022,7 +2950,7 @@ public class WordVectorSerializer {
     public static <T extends SequenceElement>  void writeLookupTable(WeightLookupTable<T> weightLookupTable,
                                                                      @NonNull File file) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file),
-                                                                                StandardCharsets.UTF_8))) {
+                StandardCharsets.UTF_8))) {
             int numWords = weightLookupTable.getVocabCache().numWords();
             int layersSize = weightLookupTable.layerSize();
             long totalNumberOfDocs = weightLookupTable.getVocabCache().totalNumberOfDocs();
@@ -3137,8 +3065,8 @@ public class WordVectorSerializer {
      * @return Word2Vec
      */
     public static Word2Vec readWord2Vec(
-                @NonNull InputStream stream,
-                boolean readExtendedTable) throws IOException {
+            @NonNull InputStream stream,
+            boolean readExtendedTable) throws IOException {
         SequenceVectors<VocabWord> vectors = readSequenceVectors(stream, readExtendedTable);
 
         Word2Vec word2Vec = new Word2Vec
@@ -3181,7 +3109,7 @@ public class WordVectorSerializer {
      *
      * @param path File
      */
-     public static FastText readWordVectors(File path) {
+    public static FastText readWordVectors(File path) {
         FastText result = null;
         try {
             FileInputStream fileIn = new FileInputStream(path);
@@ -3190,7 +3118,7 @@ public class WordVectorSerializer {
                 result = (FastText) in.readObject();
             } catch (ClassNotFoundException ex) {
 
-             }
+            }
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
@@ -3228,8 +3156,8 @@ public class WordVectorSerializer {
     }
 
     /**
-    *   Helper static methods to read data from input stream.
-    */
+     *   Helper static methods to read data from input stream.
+     */
     public static class ReadHelper {
         /**
          * Read a float from a data input stream Credit to:

@@ -1,33 +1,52 @@
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
+
 package org.nd4j.autodiff.internal;
 
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nd4j.autodiff.samediff.internal.DependencyList;
 import org.nd4j.autodiff.samediff.internal.DependencyTracker;
 import org.nd4j.autodiff.samediff.internal.IdentityDependencyTracker;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.nd4j.common.primitives.Pair;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
-import org.nd4j.common.primitives.Pair;
 
 import java.util.Collections;
 
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class TestDependencyTracker extends BaseNd4jTest {
+public class TestDependencyTracker extends BaseNd4jTestWithBackends {
 
-    public TestDependencyTracker(Nd4jBackend backend) {
-        super(backend);
-    }
 
     @Override
     public char ordering() {
         return 'c';
     }
 
-    @Test
-    public void testSimple(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSimple(Nd4jBackend backend){
 
         DependencyTracker<String,String> dt = new DependencyTracker<>();
 
@@ -73,8 +92,9 @@ public class TestDependencyTracker extends BaseNd4jTest {
         assertTrue(dt.isEmpty());
     }
 
-    @Test
-    public void testSatisfiedBeforeAdd(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testSatisfiedBeforeAdd(Nd4jBackend backend) {
         DependencyTracker<String,String> dt = new DependencyTracker<>();
 
         //Check different order of adding dependencies: i.e., mark X as satisfied, then add x -> y dependency
@@ -112,8 +132,9 @@ public class TestDependencyTracker extends BaseNd4jTest {
         assertFalse(dt.hasNewAllSatisfied());
     }
 
-    @Test
-    public void testMarkUnsatisfied(){
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMarkUnsatisfied(Nd4jBackend backend){
 
         DependencyTracker<String,String> dt = new DependencyTracker<>();
         dt.addDependency("y", "x");
@@ -144,7 +165,9 @@ public class TestDependencyTracker extends BaseNd4jTest {
     }
 
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    @NativeTag
     public void testIdentityDependencyTracker(){
         IdentityDependencyTracker<INDArray, String> dt = new IdentityDependencyTracker<>();
         assertTrue(dt.isEmpty());

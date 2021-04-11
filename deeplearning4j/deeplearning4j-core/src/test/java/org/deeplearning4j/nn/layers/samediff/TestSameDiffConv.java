@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.nn.layers.samediff;
 
@@ -31,7 +35,10 @@ import org.deeplearning4j.nn.layers.samediff.testlayers.SameDiffConv;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.params.ConvolutionParamInitializer;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -43,10 +50,14 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.Assume.assumeTrue;
 
 @Slf4j
+@NativeTag
+@Tag(TagNames.SAMEDIFF)
+@Tag(TagNames.CUSTOM_FUNCTIONALITY)
+@Tag(TagNames.DL4J_OLD_API)
 public class TestSameDiffConv extends BaseDL4JTest {
 
     private static final boolean PRINT_RESULTS = true;
@@ -206,13 +217,13 @@ public class TestSameDiffConv extends BaseDL4JTest {
                                             INDArray out = net.output(in);
                                             INDArray outExp = net2.output(in);
 
-                                            assertEquals(msg, outExp, out);
+                                            assertEquals(outExp, out, msg);
 
                                             //Also check serialization:
                                             MultiLayerNetwork netLoaded = TestUtils.testModelSerialization(net);
                                             INDArray outLoaded = netLoaded.output(in);
 
-                                            assertEquals(msg, outExp, outLoaded);
+                                            assertEquals(outExp, outLoaded, msg);
 
                                             //Sanity check on different minibatch sizes:
                                             INDArray newIn = Nd4j.vstack(in, in);
@@ -309,7 +320,7 @@ public class TestSameDiffConv extends BaseDL4JTest {
                         boolean gradOK = GradientCheckUtil.checkGradients(new GradientCheckUtil.MLNConfig().net(net).input(f)
                                 .labels(l).subset(true).maxPerParam(50));
 
-                        assertTrue(msg, gradOK);
+                        assertTrue(gradOK, msg);
 
                         TestUtils.testModelSerialization(net);
 

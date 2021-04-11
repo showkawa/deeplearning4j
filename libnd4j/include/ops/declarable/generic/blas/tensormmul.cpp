@@ -1,10 +1,12 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
+/* ******************************************************************************
+ *
  *
  * This program and the accompanying materials are made available under the
  * terms of the Apache License, Version 2.0 which is available at
  * https://www.apache.org/licenses/LICENSE-2.0.
  *
+ *  See the NOTICE file distributed with this work for additional
+ *  information regarding copyright ownership.
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -139,10 +141,10 @@ CUSTOM_OP_IMPL(tensormmul_bp, 3, 2, false, 0, -1) {
     std::vector<int> axesA = ShapeUtils::evalDimsToExclude(Arank, axes0);
     std::vector<int> axesB = ShapeUtils::evalDimsToExclude(Brank, axes1);
 
-    // rank always have to be divided by 2
+
     std::vector<int> axesAdLdC, axesBdLdC;
     if (dLdCrank > 1) {
-        axesAdLdC.resize(dLdCrank / 2);
+        axesAdLdC.resize(axesA.size());
         std::iota(axesAdLdC.begin(), axesAdLdC.end(), 0);
         axesBdLdC = ShapeUtils::evalDimsToExclude(dLdCrank, axesAdLdC);
     }

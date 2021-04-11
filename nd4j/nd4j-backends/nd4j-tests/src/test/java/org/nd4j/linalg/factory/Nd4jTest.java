@@ -1,29 +1,37 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.factory;
 
 import lombok.val;
 import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.Pointer;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.buffer.DataBuffer;
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -34,47 +42,51 @@ import org.nd4j.common.util.ArrayUtil;
 import org.nd4j.nativeblas.NativeOpsHolder;
 
 import java.io.File;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  */
-@RunWith(Parameterized.class)
-public class Nd4jTest extends BaseNd4jTest {
-    public Nd4jTest(Nd4jBackend backend) {
-        super(backend);
-    }
+@Tag(TagNames.RNG)
+@NativeTag
+@Tag(TagNames.FILE_IO)
+public class Nd4jTest extends BaseNd4jTestWithBackends {
 
-    @Test
-    public void testRandShapeAndRNG() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRandShapeAndRNG(Nd4jBackend backend) {
         INDArray ret = Nd4j.rand(new int[] {4, 2}, Nd4j.getRandomFactory().getNewRandomInstance(123));
         INDArray ret2 = Nd4j.rand(new int[] {4, 2}, Nd4j.getRandomFactory().getNewRandomInstance(123));
 
         assertEquals(ret, ret2);
     }
 
-    @Test
-    public void testRandShapeAndMinMax() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testRandShapeAndMinMax(Nd4jBackend backend) {
         INDArray ret = Nd4j.rand(new int[] {4, 2}, -0.125f, 0.125f, Nd4j.getRandomFactory().getNewRandomInstance(123));
         INDArray ret2 = Nd4j.rand(new int[] {4, 2}, -0.125f, 0.125f, Nd4j.getRandomFactory().getNewRandomInstance(123));
         assertEquals(ret, ret2);
     }
 
-    @Test
-    public void testCreateShape() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCreateShape(Nd4jBackend backend) {
         INDArray ret = Nd4j.create(new int[] {4, 2});
 
         assertEquals(ret.length(), 8);
     }
 
-    @Test
-    public void testCreateFromList() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testCreateFromList(Nd4jBackend backend) {
         List<Double> doubles = Arrays.asList(1.0, 2.0);
         INDArray NdarrayDobules = Nd4j.create(doubles);
 
@@ -87,16 +99,18 @@ public class Nd4jTest extends BaseNd4jTest {
         assertEquals((Float)NdarrayFloats.getFloat(1),floats.get(1));
     }
 
-    @Test
-    public void testGetRandom() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGetRandom(Nd4jBackend backend) {
         Random r = Nd4j.getRandom();
         Random t = Nd4j.getRandom();
 
         assertEquals(r, t);
     }
 
-    @Test
-    public void testGetRandomSetSeed() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testGetRandomSetSeed(Nd4jBackend backend) {
         Random r = Nd4j.getRandom();
         Random t = Nd4j.getRandom();
 
@@ -105,8 +119,9 @@ public class Nd4jTest extends BaseNd4jTest {
         assertEquals(r, t);
     }
 
-    @Test
-    public void testOrdering() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testOrdering(Nd4jBackend backend) {
         INDArray fNDArray = Nd4j.create(new float[] {1f}, NDArrayFactory.FORTRAN);
         assertEquals(NDArrayFactory.FORTRAN, fNDArray.ordering());
         INDArray cNDArray = Nd4j.create(new float[] {1f}, NDArrayFactory.C);
@@ -119,8 +134,9 @@ public class Nd4jTest extends BaseNd4jTest {
     }
 
 
-    @Test
-    public void testMean() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testMean(Nd4jBackend backend) {
         INDArray data = Nd4j.create(new double[] {4., 4., 4., 4., 8., 8., 8., 8., 4., 4., 4., 4., 8., 8., 8., 8., 4.,
                         4., 4., 4., 8., 8., 8., 8., 4., 4., 4., 4., 8., 8., 8., 8, 2., 2., 2., 2., 4., 4., 4., 4., 2.,
                         2., 2., 2., 4., 4., 4., 4., 2., 2., 2., 2., 4., 4., 4., 4., 2., 2., 2., 2., 4., 4., 4., 4.},
@@ -129,12 +145,13 @@ public class Nd4jTest extends BaseNd4jTest {
         INDArray actualResult = data.mean(0);
         INDArray expectedResult = Nd4j.create(new double[] {3., 3., 3., 3., 6., 6., 6., 6., 3., 3., 3., 3., 6., 6., 6.,
                 6., 3., 3., 3., 3., 6., 6., 6., 6., 3., 3., 3., 3., 6., 6., 6., 6.}, new int[] {2, 4, 4});
-        assertEquals(getFailureMessage(), expectedResult, actualResult);
+        assertEquals(expectedResult, actualResult,getFailureMessage(backend));
     }
 
 
-    @Test
-    public void testVar() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testVar(Nd4jBackend backend) {
         INDArray data = Nd4j.create(new double[] {4., 4., 4., 4., 8., 8., 8., 8., 4., 4., 4., 4., 8., 8., 8., 8., 4.,
                         4., 4., 4., 8., 8., 8., 8., 4., 4., 4., 4., 8., 8., 8., 8, 2., 2., 2., 2., 4., 4., 4., 4., 2.,
                         2., 2., 2., 4., 4., 4., 4., 2., 2., 2., 2., 4., 4., 4., 4., 2., 2., 2., 2., 4., 4., 4., 4.},
@@ -143,17 +160,19 @@ public class Nd4jTest extends BaseNd4jTest {
         INDArray actualResult = data.var(false, 0);
         INDArray expectedResult = Nd4j.create(new double[] {1., 1., 1., 1., 4., 4., 4., 4., 1., 1., 1., 1., 4., 4., 4.,
                 4., 1., 1., 1., 1., 4., 4., 4., 4., 1., 1., 1., 1., 4., 4., 4., 4.}, new long[] {2, 4, 4});
-        assertEquals(getFailureMessage(), expectedResult, actualResult);
+        assertEquals(expectedResult, actualResult,getFailureMessage(backend));
     }
 
-    @Test
-    public void testVar2() {
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+    public void testVar2(Nd4jBackend backend) {
         INDArray arr = Nd4j.linspace(1, 6, 6, DataType.DOUBLE).reshape(2, 3);
         INDArray var = arr.var(false, 0);
         assertEquals(Nd4j.create(new double[] {2.25, 2.25, 2.25}), var);
     }
 
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testExpandDims(){
         final List<Pair<INDArray, String>> testMatricesC = NDArrayCreationUtil.getAllTestMatricesWithShape('c', 3, 5, 0xDEAD, DataType.DOUBLE);
         final List<Pair<INDArray, String>> testMatricesF = NDArrayCreationUtil.getAllTestMatricesWithShape('f', 7, 11, 0xBEEF, DataType.DOUBLE);
@@ -174,16 +193,17 @@ public class Nd4jTest extends BaseNd4jTest {
 
                 val tmR = testMatrix.ravel();
                 val expR = expanded.ravel();
-                assertEquals(message, 1, expanded.shape()[i < 0 ? i + rank : i]);
-                assertEquals(message, tmR, expR);
-                assertEquals(message, ordering,  expanded.ordering());
+                assertEquals( 1, expanded.shape()[i < 0 ? i + rank : i],message);
+                assertEquals(tmR, expR,message);
+                assertEquals( ordering,  expanded.ordering(),message);
 
                 testMatrix.assign(Nd4j.rand(DataType.DOUBLE, shape));
-                assertEquals(message, testMatrix.ravel(), expanded.ravel());
+                assertEquals(testMatrix.ravel(), expanded.ravel(),message);
             }
         }
     }
-    @Test
+    @ParameterizedTest
+    @MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
     public void testSqueeze(){
         final List<Pair<INDArray, String>> testMatricesC = NDArrayCreationUtil.getAllTestMatricesWithShape('c', 3, 1, 0xDEAD, DataType.DOUBLE);
         final List<Pair<INDArray, String>> testMatricesF = NDArrayCreationUtil.getAllTestMatricesWithShape('f', 7, 1, 0xBEEF, DataType.DOUBLE);
@@ -200,19 +220,18 @@ public class Nd4jTest extends BaseNd4jTest {
             final long[] expShape = ArrayUtil.removeIndex(shape, 1);
             final String message = "Squeezing in dimension 1; Shape before squeezing: " + Arrays.toString(shape) + " " + ordering + " Order; Shape after expanding: " + Arrays.toString(squeezed.shape()) +  " "+squeezed.ordering()+"; Input Created via: " + recreation;
 
-            assertArrayEquals(message, expShape, squeezed.shape());
-            assertEquals(message, ordering, squeezed.ordering());
-            assertEquals(message, testMatrix.ravel(), squeezed.ravel());
+            assertArrayEquals(expShape, squeezed.shape(),message);
+            assertEquals(ordering, squeezed.ordering(),message);
+            assertEquals(testMatrix.ravel(), squeezed.ravel(),message);
 
             testMatrix.assign(Nd4j.rand(shape));
-            assertEquals(message, testMatrix.ravel(), squeezed.ravel());
+            assertEquals(testMatrix.ravel(), squeezed.ravel(),message);
 
         }
     }
 
 
     @Test
-    @Ignore("AB 2019/05/23 - Failing on linux-x86_64-cuda-9.2 - see issue #7657")
     public void testNumpyConversion() throws Exception {
         INDArray linspace = Nd4j.linspace(1,4,4, DataType.FLOAT);
         Pointer convert = Nd4j.getNDArrayFactory().convertToNumpy(linspace);
@@ -230,7 +249,8 @@ public class Nd4jTest extends BaseNd4jTest {
         byte[] dataTwo = new byte[floatBuffer.capacity()];
         floatBuffer.get(dataTwo);
         assertArrayEquals(originalData,dataTwo);
-        floatBuffer.position(0);
+        Buffer buffer = (Buffer) floatBuffer;
+        buffer.position(0);
 
         DataBuffer dataBuffer = Nd4j.createBuffer(new FloatPointer(floatBuffer.asFloatBuffer()),linspace.length(), DataType.FLOAT);
         assertArrayEquals(new float[]{1,2,3,4}, dataBuffer.asFloat(), 1e-5f);
@@ -250,7 +270,6 @@ public class Nd4jTest extends BaseNd4jTest {
 
 
     @Test
-    @Ignore("AB 2019/05/23 - Failing on linux-x86_64-cuda-9.2 - see issue #7657")
     public void testNumpyWrite() throws Exception {
         INDArray linspace = Nd4j.linspace(1,4,4, Nd4j.dataType());
         File tmpFile = new File(System.getProperty("java.io.tmpdir"),"nd4j-numpy-tmp-" + UUID.randomUUID().toString() + ".bin");
@@ -262,7 +281,6 @@ public class Nd4jTest extends BaseNd4jTest {
     }
 
     @Test
-    @Ignore("AB 2019/05/23 - Failing on linux-x86_64-cuda-9.2 - see issue #7657")
     public void testNpyByteArray() throws Exception {
         INDArray linspace = Nd4j.linspace(1,4,4, Nd4j.dataType());
         byte[] bytes = Nd4j.toNpyByteArray(linspace);

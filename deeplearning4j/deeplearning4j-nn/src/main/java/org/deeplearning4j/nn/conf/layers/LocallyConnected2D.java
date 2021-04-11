@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.nn.conf.layers;
 
@@ -41,12 +45,6 @@ import org.nd4j.shade.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.*;
 
-/**
- * SameDiff version of a 2D locally connected layer.
- *
- *
- * @author Max Pumperla
- */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @JsonIgnoreProperties({"paramShapes"})
@@ -203,14 +201,14 @@ public class LocallyConnected2D extends SameDiffLayer {
         }
 
         SDVariable[] inputArray = new SDVariable[outH * outW];
-        for (int i = 0; i < outH; i++) {
-            for (int j = 0; j < outW; j++) {
+        for (int y = 0; y < outH; y++) {
+            for (int x = 0; x < outW; x++) {
                 SDVariable slice = layerInput.get(SDIndex.all(), // miniBatch
                                 SDIndex.all(), // nIn
-                                SDIndex.interval(i * sH, i * sH + kH), // kernel height
-                                SDIndex.interval(j * sW, j * sW + kW) // kernel width
+                                SDIndex.interval(y * sH, y * sH + kH), // kernel height
+                                SDIndex.interval(x * sW, x * sW + kW) // kernel width
                 );
-                inputArray[i * outH + j] = sameDiff.reshape(slice, 1, miniBatch, featureDim);
+                inputArray[x * outH + y] = sameDiff.reshape(slice, 1, miniBatch, featureDim);
             }
         }
         SDVariable concatOutput = sameDiff.concat(0, inputArray); // (outH * outW, miniBatch, featureDim)

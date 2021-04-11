@@ -1,48 +1,53 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.nd4j.linalg.util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.nd4j.linalg.BaseNd4jTest;
+import org.junit.jupiter.api.AfterEach;
+
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
+import org.nd4j.linalg.BaseNd4jTestWithBackends;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.factory.Nd4jBackend;
 import org.nd4j.common.tools.SIS;
 
-import static org.junit.Assert.assertTrue;
+import java.nio.file.Path;
 
-/**
- *
- *
- * 
- *
- * @author clavvis
- */
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @Slf4j
-public class DataSetUtilsTest extends BaseNd4jTest {
+@NativeTag
+@Tag(TagNames.FILE_IO)
+public class DataSetUtilsTest extends BaseNd4jTestWithBackends {
 
-	public DataSetUtilsTest(Nd4jBackend b){
-		super(b);
-	}
+	@TempDir Path tmpFld;
 
 	@Override
 	public char ordering(){
@@ -50,19 +55,19 @@ public class DataSetUtilsTest extends BaseNd4jTest {
 	}
 
 	//
-	@Rule
-	public TemporaryFolder tmpFld = new TemporaryFolder();
+
 	//
 	private SIS sis;
 	//
-	@Test
-	public void testAll() {
+	@ParameterizedTest
+	@MethodSource("org.nd4j.linalg.BaseNd4jTestWithBackends#configs")
+	public void testAll(Nd4jBackend backend) {
 		//
 		sis = new SIS();
 		//
 		int mtLv = 0;
 		//
-		sis.initValues( mtLv, "TEST", System.out, System.err, tmpFld.getRoot().getAbsolutePath(), "Test", "ABC", true, true );
+		sis.initValues( mtLv, "TEST", System.out, System.err, tmpFld.toAbsolutePath().toString(), "Test", "ABC", true, true );
 		//
 		INDArray in_INDA = Nd4j.zeros( 8, 8 );
 		INDArray ot_INDA = Nd4j.ones( 8, 1 );
@@ -91,7 +96,7 @@ public class DataSetUtilsTest extends BaseNd4jTest {
 		//
 	}
 	
-	@After
+	@AfterEach
 	public void after() {
 		//
 		int mtLv = 0;

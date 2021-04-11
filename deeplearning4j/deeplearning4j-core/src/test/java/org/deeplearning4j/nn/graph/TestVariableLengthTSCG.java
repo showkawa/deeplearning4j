@@ -1,18 +1,22 @@
-/*******************************************************************************
- * Copyright (c) 2015-2018 Skymind, Inc.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Apache License, Version 2.0 which is available at
- * https://www.apache.org/licenses/LICENSE-2.0.
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- *
- * SPDX-License-Identifier: Apache-2.0
- ******************************************************************************/
+/*
+ *  ******************************************************************************
+ *  *
+ *  *
+ *  * This program and the accompanying materials are made available under the
+ *  * terms of the Apache License, Version 2.0 which is available at
+ *  * https://www.apache.org/licenses/LICENSE-2.0.
+ *  *
+ *  *  See the NOTICE file distributed with this work for additional
+ *  *  information regarding copyright ownership.
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  * License for the specific language governing permissions and limitations
+ *  * under the License.
+ *  *
+ *  * SPDX-License-Identifier: Apache-2.0
+ *  *****************************************************************************
+ */
 
 package org.deeplearning4j.nn.graph;
 
@@ -31,7 +35,10 @@ import org.deeplearning4j.nn.conf.preprocessor.RnnToFeedForwardPreProcessor;
 import org.deeplearning4j.nn.gradient.Gradient;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
-import org.junit.Test;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.nd4j.common.tests.tags.NativeTag;
+import org.nd4j.common.tests.tags.TagNames;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -44,9 +51,10 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import java.util.Map;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+@NativeTag
+@Tag(TagNames.DL4J_OLD_API)
 public class TestVariableLengthTSCG extends BaseDL4JTest {
 
     @Test
@@ -118,7 +126,7 @@ public class TestVariableLengthTSCG extends BaseDL4JTest {
             for (String s : g1map.keySet()) {
                 INDArray g1s = g1map.get(s);
                 INDArray g2s = g2map.get(s);
-                assertEquals(s, g1s, g2s);
+                assertEquals(g1s, g2s, s);
             }
 
             //Finally: check that the values at the masked outputs don't actually make any difference to:
@@ -136,7 +144,7 @@ public class TestVariableLengthTSCG extends BaseDL4JTest {
                 for (String s : g2map.keySet()) {
                     INDArray g2s = g2map.get(s);
                     INDArray g2sa = g2a.getGradientFor(s);
-                    assertEquals(s, g2s, g2sa);
+                    assertEquals(g2s, g2sa, s);
                 }
             }
         }
@@ -221,7 +229,7 @@ public class TestVariableLengthTSCG extends BaseDL4JTest {
                 INDArray g1s = g1map.get(s);
                 INDArray g2s = g2map.get(s);
 
-                assertNotEquals(s, g1s, g2s);
+                assertNotEquals(g1s, g2s, s);
             }
 
             //Modify the values at the masked time step, and check that neither the gradients, score or activations change
@@ -327,8 +335,7 @@ public class TestVariableLengthTSCG extends BaseDL4JTest {
 
                         net.computeGradientAndScore();
                         double score = net.score();
-
-                        assertEquals(msg, expScore, score, 0.1);
+                        assertEquals( expScore, score, 0.1,msg);
                     }
                 }
             }
