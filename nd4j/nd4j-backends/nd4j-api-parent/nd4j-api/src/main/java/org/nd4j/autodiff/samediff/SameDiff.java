@@ -744,7 +744,8 @@ public class SameDiff extends SDBaseOps {
                 //Only stored in inference session...
                 InferenceSession s = sessions.get(Thread.currentThread().getId());
                 if (s == null)
-                    return null;
+                    throw new UnsupportedOperationException("Cannot get array for ARRAY type SDVariable - use SDVariable.exec or SameDiff.output instead");
+
                 return s.get(varName, InferenceSession.OUTER_FRAME, 0, null, false);
             case PLACEHOLDER:
                 long tid = Thread.currentThread().getId();
@@ -3843,7 +3844,7 @@ public class SameDiff extends SDBaseOps {
 
             //Infer the output types: we can always determine datatype but not always shapes
             if(isImport || (outputDataTypes != null && outputDataTypes.size() == num_outputs))
-                log.warn(
+                log.trace(
                         "Incorrect number of output datatypes: got %s but expected datatypes for %s outputs - %s (op: %s), could be due to variable input types.",
                         (outputDataTypes == null ? null : outputDataTypes.size()), num_outputs, outputDataTypes, function.getClass().getSimpleName());
 

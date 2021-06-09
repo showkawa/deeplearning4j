@@ -25,7 +25,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.deeplearning4j.common.config.DL4JClassLoading;
+import org.deeplearning4j.nn.layers.HelperUtils;
 import org.deeplearning4j.nn.workspace.ArrayType;
 import org.deeplearning4j.nn.workspace.LayerWorkspaceMgr;
 import org.nd4j.common.base.Preconditions;
@@ -62,6 +62,8 @@ public class Dropout implements IDropout {
     private boolean initializedHelper = false;
 
     private int helperCountFail = 0;
+
+    public final static String CUDNN_DROPOUT_HELPER_CLASS_NAME = "org.deeplearning4j.cuda.dropout.CudnnDropoutHelper";
 
     /**
      * @param activationRetainProbability Probability of retaining an activation - see {@link Dropout} javadoc
@@ -105,20 +107,11 @@ public class Dropout implements IDropout {
      * Initialize the CuDNN dropout helper, if possible
      */
     protected void initializeHelper(DataType dataType){
-        String backend = Nd4j.getExecutioner().getEnvironmentInformation().getProperty("backend");
+        helper = HelperUtils.createHelper(CUDNN_DROPOUT_HELPER_CLASS_NAME,
+                "", DropoutHelper.class, "dropout-helper", dataType
+        );
 
-        if("CUDA".equalsIgnoreCase(backend)) {
-            helper = DL4JClassLoading.createNewInstance(
-                    "org.deeplearning4j.cuda.dropout.CudnnDropoutHelper",
-                    DropoutHelper.class,
-                    dataType);
-            log.debug("CudnnDropoutHelper successfully initialized");
-            if (!helper.checkSupported()) {
-                helper = null;
-            }
-        }
-
-        initializedHelper = true;
+        initializedHelper = helper != null;
     }
 
     @Override

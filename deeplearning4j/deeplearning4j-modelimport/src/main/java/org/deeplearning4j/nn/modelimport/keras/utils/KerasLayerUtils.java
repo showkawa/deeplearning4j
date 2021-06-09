@@ -254,7 +254,7 @@ public class KerasLayerUtils {
                 layerClassName.equals(conf.getLAYER_CLASS_NAME_GLOBAL_MAX_POOLING_3D())) {
             layer = new KerasGlobalPooling(layerConfig, enforceTrainingConfig);
         } else if (layerClassName.equals(conf.getLAYER_CLASS_NAME_BATCHNORMALIZATION())) {
-            layer = new KerasBatchNormalization(layerConfig, enforceTrainingConfig);
+            layer = new KerasBatchNormalization(layerConfig, enforceTrainingConfig,previousLayers);
         } else if (layerClassName.equals(conf.getLAYER_CLASS_NAME_EMBEDDING())) {
             layer = new KerasEmbedding(layerConfig, enforceTrainingConfig);
         } else if (layerClassName.equals(conf.getLAYER_CLASS_NAME_INPUT())) {
@@ -297,7 +297,7 @@ public class KerasLayerUtils {
             layer = new KerasUpsampling1D(layerConfig, enforceTrainingConfig);
         } else if (layerClassName.equals(conf.getLAYER_CLASS_NAME_UPSAMPLING_2D())) {
             layer = new KerasUpsampling2D(layerConfig, enforceTrainingConfig);
-        }else if (layerClassName.equals(conf.getLAYER_CLASS_NAME_UPSAMPLING_2D())) {
+        }else if (layerClassName.equals(conf.getLAYER_CLASS_NAME_UPSAMPLING_3D())) {
             layer = new KerasUpsampling3D(layerConfig, enforceTrainingConfig);
         }  else if (layerClassName.equals(conf.getLAYER_CLASS_NAME_CROPPING_3D())) {
             layer = new KerasCropping3D(layerConfig, enforceTrainingConfig);

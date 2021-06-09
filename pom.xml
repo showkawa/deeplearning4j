@@ -43,7 +43,13 @@
         </license>
     </licenses>
 
-
+   <developers>
+       <developer>
+           <organization>Eclipse Foundation</organization>
+           <url>https://github.com/eclipse/deeplearning4j</url>
+           <organizationUrl>https://eclipse.org/</organizationUrl>
+       </developer>
+   </developers>
 
     <modules>
         <module>libnd4j</module>
@@ -63,8 +69,22 @@
     </scm>
 
     <repositories>
+        <!-- Mainly for dokka/kotlinx. Not used outside of releases for kotlin related modules-->
         <repository>
-            <id>sonatype-nexus-snapshots</id>
+            <id>jetbrains-kotlinx</id>
+            <url>https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven</url>
+            <name>Kotlinx repo</name>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+
+
+        <repository>
+            <id>ossrh</id>
             <name>Sonatype Nexus Snapshots</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
             <releases>
@@ -79,7 +99,7 @@
 
     <pluginRepositories>
         <pluginRepository>
-            <id>sonatype-nexus-snapshots</id>
+            <id>ossrh</id>
             <name>Sonatype Nexus Snapshots</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
             <releases>
@@ -108,12 +128,13 @@
         <dl4j.version>1.0.0-SNAPSHOT</dl4j.version>
         <nd4j.version>1.0.0-SNAPSHOT</nd4j.version>
         <datavec.version>1.0.0-SNAPSHOT</datavec.version>
+        <dl4j.release.server>ossrh</dl4j.release.server>
         <dl4j-test-resources.version>1.0.0-SNAPSHOT</dl4j-test-resources.version>
         <dl4j-test-resources.classifier></dl4j-test-resources.classifier>
         <rxjava.version>2.2.21</rxjava.version>
         <jackson-asl.version>1.9.13</jackson-asl.version>
         <asm.version>5.1</asm.version>
-        <arrow.version>0.11.0</arrow.version>
+        <arrow.version>4.0.0</arrow.version>
         <avro.version>1.7.7</avro.version>
         <curator.version>2.8.0</curator.version>
         <guice.version>4.0</guice.version>
@@ -136,7 +157,7 @@
         <paranamer.version>2.6</paranamer.version>
         <ws.rs.version>2.0</ws.rs.version>
         <servlet.version>3.1.0</servlet.version>
-        <snakeyaml.version>1.12</snakeyaml.version>
+        <snakeyaml.version>1.26</snakeyaml.version>
         <snappy.version>1.1.2.6</snappy.version>
         <!-- FIXME: Might need be synced with all modules that uses spring-core plugin (nd4j-cuda-11.0, nd4j-tests, nd4j-common-tests) -->
         <spring.version>5.1.1.RELEASE</spring.version>
@@ -227,11 +248,11 @@
         <logback.version>1.2.3</logback.version>
         <jackson.version>2.12.2</jackson.version>
         <jackson.databind.version>2.12.2</jackson.databind.version>
-        <shaded.snakeyaml.version>1.24</shaded.snakeyaml.version>
+        <shaded.snakeyaml.version>1.26</shaded.snakeyaml.version>
         <geo.jackson.version>2.8.7</geo.jackson.version>
         <lombok.version>1.18.16</lombok.version>
         <cleartk.version>2.0.0</cleartk.version>
-        <lucene-solr.version>7.7.1</lucene-solr.version>
+        <lucene-solr.version>8.8.0</lucene-solr.version>
         <json.versiounitn>20131018</json.versiounitn>
         <google.protobuf.version>3.12.2</google.protobuf.version>
         <google.protobuf.solr.version>2.6.1</google.protobuf.solr.version>
@@ -260,8 +281,8 @@
         <jaxb.version>2.3.0</jaxb.version>
 
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
-        <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
-        <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+        <maven-source-plugin.version>3.2.0</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
         <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -508,7 +529,7 @@
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                         <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
-                        <forkCount>${cpu.core.count}</forkCount>
+                        <forkCount>1</forkCount>
                         <reuseForks>false</reuseForks>
                         <environmentVariables>
                             <OMP_NUM_THREADS>1</OMP_NUM_THREADS>
@@ -525,7 +546,7 @@
                         <forkedProcessExitTimeoutInSeconds>240</forkedProcessExitTimeoutInSeconds>
                         <parallelTestsTimeoutInSeconds>240</parallelTestsTimeoutInSeconds>
                         <parallelTestsTimeoutForcedInSeconds>240</parallelTestsTimeoutForcedInSeconds>
-                        <forkCount>0</forkCount>
+                        <forkCount>1</forkCount>
                         <threadCount>1</threadCount>
                         <perCoreThreadCount>false</perCoreThreadCount>
                     </configuration>
@@ -762,8 +783,10 @@
                 </executions>
                 <extensions>true</extensions>
                 <configuration>
-                    <serverId>sonatype-nexus-snapshots</serverId>
+                    <detail>true</detail>
+                    <serverId>${dl4j.release.server}</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <keepStagingRepositoryOnFailure>true</keepStagingRepositoryOnFailure>
                     <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
                 </configuration>
             </plugin>
@@ -827,6 +850,23 @@
 
     <profiles>
         <profile>
+            <id>parallel-tests</id>
+            <properties>
+                <junit.jupiter.execution.parallel.enabled>true</junit.jupiter.execution.parallel.enabled>
+                <junit.jupiter.execution.parallel.mode.default>concurrent</junit.jupiter.execution.parallel.mode.default>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>test-larger-heap-size</id>
+            <properties>
+                <test.heap.size>2g</test.heap.size>
+                <test.offheap.size>4g</test.offheap.size>
+            </properties>
+        </profile>
+
+
+        <profile>
             <id>github</id>
             <distributionManagement>
                 <repository>
@@ -847,13 +887,13 @@
             <id>ossrh</id>
             <distributionManagement>
                 <repository>
-                    <id>sonatype-nexus-releases</id>
+                    <id>ossrh</id>
                     <name>Nexus Release Repository</name>
                     <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
                 </repository>
 
                 <snapshotRepository>
-                    <id>sonatype-nexus-snapshots</id>
+                    <id>ossrh</id>
                     <name>Sonatype Nexus snapshot repository</name>
                     <url>https://oss.sonatype.org/content/repositories/snapshots</url>
                 </snapshotRepository>
@@ -940,6 +980,8 @@
             <id>release</id>
             <properties>
                 <maven.test.skip>true</maven.test.skip>
+                <gpg.passphrase>${env.MAVEN_GPG_PASSPHRASE}</gpg.passphrase>
+                <gpg.keyname>${env.SONATYPE_GPG_KEY}</gpg.keyname>
             </properties>
             <build>
                 <plugins>
@@ -948,6 +990,8 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven-javadoc-plugin.version}</version>
                         <configuration>
+                            <minmemory>256m</minmemory>
+                            <maxmemory>2048m</maxmemory>
                             <doclint>all,-missing</doclint>
                             <quiet>true</quiet>
                         </configuration>
@@ -970,6 +1014,7 @@
                                 <arg>loopback</arg>
                             </gpgArguments>
                         </configuration>
+
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -1247,7 +1292,7 @@
                         <inherited>true</inherited>
                         <configuration>
                             <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
-                            <forkCount>${cpu.core.count}</forkCount>
+                            <forkCount>1</forkCount>
                             <reuseForks>false</reuseForks>
                             <trimStackTrace>false</trimStackTrace>
                             <environmentVariables>
@@ -1255,13 +1300,13 @@
                                 <DL4J_INTEGRATION_TESTS>true</DL4J_INTEGRATION_TESTS>
                             </environmentVariables>
                             <argLine>-Xmx${test.heap.size} -Dorg.bytedeco.javacpp.maxphysicalbytes=${test.offheap.size} -Dorg.bytedeco.javacpp.maxbytes=${test.offheap.size}</argLine>
-                            <forkCount>${cpu.core.count}</forkCount>
+                            <forkCount>1</forkCount>
                             <reuseForks>false</reuseForks>
                             <forkedProcessTimeoutInSeconds>240</forkedProcessTimeoutInSeconds>
                             <forkedProcessExitTimeoutInSeconds>240</forkedProcessExitTimeoutInSeconds>
                             <parallelTestsTimeoutInSeconds>240</parallelTestsTimeoutInSeconds>
                             <parallelTestsTimeoutForcedInSeconds>240</parallelTestsTimeoutForcedInSeconds>
-                            <forkCount>0</forkCount>
+                            <forkCount>1</forkCount>
                             <threadCount>1</threadCount>
                             <perCoreThreadCount>false</perCoreThreadCount>
                         </configuration>

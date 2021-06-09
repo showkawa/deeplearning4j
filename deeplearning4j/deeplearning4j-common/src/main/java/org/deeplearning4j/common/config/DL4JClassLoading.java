@@ -21,6 +21,7 @@
 package org.deeplearning4j.common.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.nd4j.common.base.Preconditions;
 import org.nd4j.common.config.ND4JClassLoading;
 
 import java.lang.reflect.InvocationTargetException;
@@ -69,15 +70,20 @@ public class DL4JClassLoading {
         }
     }
 
-    public static <T> T createNewInstance(String className, Object... args) {
-        return createNewInstance(className, Object.class, args);
+    public static <T> T createNewInstance(String className) {
+        return createNewInstance(className, Object.class, new Object[0]);//or null;
+    }
+    
+    public static <T> T createNewInstance(String className, Object[] args) {
+       
+    	return createNewInstance(className, Object.class, args);
     }
 
     public static <T> T createNewInstance(String className, Class<? super T> superclass) {
         return createNewInstance(className, superclass, new Class<?>[]{}, new Object[]{});
     }
 
-    public static <T> T createNewInstance(String className, Class<? super T> superclass, Object... args) {
+    public static <T> T createNewInstance(String className, Class<? super T> superclass, Object[] args) {
         Class<?>[] parameterTypes = new Class<?>[args.length];
         for (int i = 0; i < args.length; i++) {
             Object arg = args[i];
@@ -92,10 +98,12 @@ public class DL4JClassLoading {
             String className,
             Class<? super T> superclass,
             Class<?>[] parameterTypes,
-            Object... args) {
+            Object [] args) {
         try {
-            return (T) DL4JClassLoading
-                    .loadClassByName(className)
+            Class<Object> loadedClass =  DL4JClassLoading
+                    .loadClassByName(className);
+            Preconditions.checkNotNull(loadedClass,"Attempted to load class " + className + " but failed. No class found with this name.");
+            return (T) loadedClass
                     .asSubclass(superclass)
                     .getDeclaredConstructor(parameterTypes)
                     .newInstance(args);

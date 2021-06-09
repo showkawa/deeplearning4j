@@ -53,7 +53,7 @@ public class MKLDNNBatchNormHelper implements BatchNormalizationHelper {
     private INDArray meanCache;
     private INDArray varCache;
 
-    public MKLDNNBatchNormHelper(DataType dataType){
+    public MKLDNNBatchNormHelper(DataType dataType) {
 
     }
 
@@ -196,5 +196,10 @@ public class MKLDNNBatchNormHelper implements BatchNormalizationHelper {
     @Override
     public Map<String, Long> helperMemoryUse() {
         return Collections.emptyMap();
+    }
+
+    @Override
+    public boolean checkSupported() {
+        return BaseMKLDNNHelper.mklDnnEnabled();
     }
 }

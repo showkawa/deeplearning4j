@@ -33,6 +33,13 @@ if [ -z "${CUDA_VER}" ]; then export  CUDA_VER=10.2; fi
 if [ -z "${LIBND4J_BUILD_THREADS}" ]; then export  LIBND4J_BUILD_THREADS=$(nproc); fi
 if [ -z "${PROTO_EXEC}" ]; then export PROTO_EXEC="protoc"; fi
 if [ -z "${NDK_VERSION}" ]; then export NDK_VERSION="r21d"; fi
+if [ -z "${PERFORM_RELEASE}" ]; then export PERFORM_RELEASE=0; fi
+if [ -z "${RELEASE_VERSION}" ]; then export RELEASE_VERSION="1.0.0-M1"; fi
+if [ -z "${SNAPSHOT_VERSION}" ]; then export SNAPSHOT_VERSION="1.0.0-SNAPSHOT"; fi
+if [ -z "${MODULES}" ]; then export MODULES=; fi
+if [ -z "${RELEASE_REPO_ID}" ]; then export RELEASE_REPO_ID="deeplearning4j-release-${RELEASE_VERSION}"; fi
+
+
 OTHER_ARGS=()
 while [[ $# -gt 0 ]]
 do
@@ -374,7 +381,7 @@ fi #if armcompute
 
 if [ "${TARGET_OS}" = "android" ];then
 	export ANDROID_NDK="${CROSS_COMPILER_DIR}"
-	XTRA_MVN_ARGS="${XTRA_MVN_ARGS} -pl \":libnd4j,:nd4j-native\" "
+	XTRA_MVN_ARGS="${XTRA_MVN_ARGS}"
 else
 	 if [ "${CURRENT_TARGET}" == "jetson-arm64" ];then
 	 	message  "jetson cuda build "
@@ -382,10 +389,10 @@ else
 		XTRA_ARGS="${XTRA_ARGS} -c cuda  -h cudnn  "
 		XTRA_MVN_ARGS="${XTRA_MVN_ARGS} -Djavacpp.version=1.5.3 -Dcuda.version=${CUDA_VER} -Dlibnd4j.cuda=${CUDA_VER} -Dlibnd4j.chip=cuda -Dlibnd4j.compute=5.3 "
 		bash "${BASE_DIR}/../change-cuda-versions.sh" "${CUDA_VER}"
-		XTRA_MVN_ARGS="${XTRA_MVN_ARGS}  -Dlibnd4j.helper=cudnn -pl \":libnd4j,:nd4j-cuda-${CUDA_VER}\" "
+		XTRA_MVN_ARGS="${XTRA_MVN_ARGS}  -Dlibnd4j.helper=cudnn"
 		export SYSROOT="${CROSS_COMPILER_DIR}/${PREFIX}/libc"
 	else
-		XTRA_MVN_ARGS="${XTRA_MVN_ARGS} -pl \":libnd4j,:nd4j-native\" "
+		XTRA_MVN_ARGS="${XTRA_MVN_ARGS}"
 	fi
 	export RPI_BIN="${CROSS_COMPILER_DIR}/bin/${PREFIX}"
 	export JAVA_LIBRARY_PATH="${CROSS_COMPILER_DIR}/${PREFIX}/lib"
@@ -411,9 +418,16 @@ cd "$BASE_DIR/.."
 message "lets build jars"
 if [ "${DEPLOY-}" != "" ]; then
   message "Deploying to maven"
-  command="mvn  -Dlibnd4j.buildthreads=\"${LIBND4J_BUILD_THREADS}\"  -P\"${PUBLISH_TO}\" deploy  --batch-mode  -Dlibnd4j.platform=${LIBND4J_PLATFORM} -Djavacpp.platform=${LIBND4J_PLATFORM} ${XTRA_MVN_ARGS}  -DprotocCommand=\"${PROTO_EXEC}\"  -DprotocExecutable=\"${PROTO_EXEC}\" -Djavacpp.platform.compiler=\"${COMPILER}\" -Djava.library.path=\"${JAVA_LIBRARY_PATH}\"  --also-make -DskipTests -Dmaven.test.skip=true -Dmaven.javadoc.skip=true "
-  message $command
-  eval $command
+  command="mvn  -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.count=3  $MODULES  -Dmaven.javadoc.failOnError=false -Dlibnd4j.buildthreads=\"${LIBND4J_BUILD_THREADS}\"  -P\"${PUBLISH_TO}\"  deploy  --batch-mode  -Dlibnd4j.platform=${LIBND4J_PLATFORM} -Djavacpp.platform=${LIBND4J_PLATFORM} ${XTRA_MVN_ARGS}  -DprotocCommand=\"${PROTO_EXEC}\"  -DprotocExecutable=\"${PROTO_EXEC}\" -Djavacpp.platform.compiler=\"${COMPILER}\" -Djava.library.path=\"${JAVA_LIBRARY_PATH}\"  -DskipTests -Dmaven.test.skip=true -Dmaven.javadoc.skip=true"
+  message "$command"
+  echo "Perform release or not ${PERFORM_RELEASE}"
+  if [ "${PERFORM_RELEASE}" == "1" ] || [ "${PERFORM_RELEASE}" == 1 ]; then
+      # Note the base dir/.. above means we are in the dl4j root where this script is expected to be
+      bash ./release-specified-component.sh "${RELEASE_VERSION}" "${SNAPSHOT_VERSION}" "${RELEASE_REPO_ID}" "${command}"
+      else
+          eval "$command"
+  fi
+
 else
   message "Installing to local repo"
   command="mvn  install  -Dlibnd4j.buildthreads=\"${LIBND4J_BUILD_THREADS}\"  -Dlibnd4j.platform=${LIBND4J_PLATFORM} -Djavacpp.platform=${LIBND4J_PLATFORM}  ${XTRA_MVN_ARGS}   -DprotocCommand=\"${PROTO_EXEC}\"  -DprotocExecutable=\"${PROTO_EXEC}\"  -Djavacpp.platform.compiler=\"${COMPILER}\" -Djava.library.path=\"${JAVA_LIBRARY_PATH}\"  --also-make -DskipTests -Dmaven.test.skip=true -Dmaven.javadoc.skip=true "
