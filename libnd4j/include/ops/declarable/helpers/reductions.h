@@ -35,7 +35,9 @@ namespace sd {
             void argAbsMax(const NDArray& input, NDArray& output, const std::vector<int>& dimensions);
             void argMin(const NDArray& input, NDArray& output, const std::vector<int>& dimensions);
             void argAbsMin(const NDArray& input, NDArray& output, const std::vector<int>& dimensions);
-            
+            void variance(const NDArray& input, NDArray& output, const std::vector<int>& dimensions, bool biasCorrected);
+            void standardDeviation(const NDArray& input, NDArray& output, const std::vector<int>& dimensions, bool biasCorrected);
+
         }
     }
 }
